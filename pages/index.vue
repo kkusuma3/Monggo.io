@@ -18,7 +18,7 @@
 <template>
   <v-container fluid="" grid-list-xl="" fill-height="">
     <v-row justify="center">
-      <v-col xs="12" md="4">
+      <v-col cols="12" md="4">
         <div class="mb-5">
           <h1 class="text-center headline primary--text">Monggo.io</h1>
           <h2
