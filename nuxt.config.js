@@ -95,7 +95,7 @@ export default {
   meta: {
     name: 'Monggo.io',
     description:
-      'Monggo.io tackles language barriers when traveling to different hotels around the world.',
+      'Monggo IO: The web app that allows users to make hotel requests without worry.',
     theme_color: '#fff',
     ogHost: 'https://mongo-io.web.app',
     twitterCard: 'summary_large_image',
@@ -108,7 +108,7 @@ export default {
     short_name: 'Monggo.io',
     start_url: '/?utm_source=homescreen',
     description:
-      'Monggo.io tackles language barriers when traveling to different hotels around the world.',
+      'Monggo IO: The web app that allows users to make hotel requests without worry.',
     lang: 'id',
     theme_color: '#fff',
     background_color: '#fff'

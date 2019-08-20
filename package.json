@@ -2,7 +2,7 @@
   "name": "monggo-io",
   "version": "1.0.0",
   "private": true,
-  "description": "Monggo.io tackles language barriers when traveling to different hotels around the world.",
+  "description": "Monggo IO: The web app that allows users to make hotel requests without worry.",
   "keywords": [
     "nuxt",
     "nuxt pwa",
