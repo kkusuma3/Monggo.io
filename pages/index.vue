@@ -16,7 +16,7 @@
 </i18n>
 
 <template>
-  <v-container fluid="" grid-list-xl="" fill-height="">
+  <v-container fluid="" fill-height="">
     <v-row justify="center">
       <v-col cols="12" md="4">
         <div class="mb-5">
