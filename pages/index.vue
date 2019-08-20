@@ -20,7 +20,23 @@
     <v-row justify="center">
       <v-col cols="12" md="4">
         <div class="mb-5">
-          <h1 class="text-center headline primary--text">Monggo.io</h1>
+          <h1
+            class="text-center headline primary--text d-flex align-center justify-center"
+            aria-label="Monggo.IO"
+          >
+            <v-img
+              src="/icon-with-text.png"
+              alt="Mongo.IO"
+              max-width="150"
+              contain=""
+            >
+              <template #placeholder="">
+                <v-row class="fill-height ma-0" align="center" justify="center">
+                  <v-progress-circular indeterminate="" color="grey" />
+                </v-row>
+              </template>
+            </v-img>
+          </h1>
           <h2
             class="text-center subtitle-1 primary--text"
             v-html="$t('hotelSimpler')"
