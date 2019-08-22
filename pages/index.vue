@@ -16,16 +16,16 @@
 </i18n>
 
 <template>
-  <v-container fluid="" fill-height="">
+  <v-container fluid="" class="fill-height">
     <v-row justify="center">
-      <v-col cols="12" md="4">
-        <div class="mb-5">
+      <v-col cols="10" md="4">
+        <div class="mb-3">
           <h1
             class="text-center headline primary--text d-flex align-center justify-center"
             aria-label="Monggo.IO"
           >
             <v-img
-              src="/icon-with-text.png"
+              src="/icons/icon-with-text.png"
               alt="Mongo.IO"
               max-width="150"
               contain=""
@@ -68,7 +68,14 @@
             </v-item-group>
           </v-card-text>
         </v-card>
-        <v-btn color="secondary" block="" rounded="">
+        <v-btn
+          color="secondary"
+          block=""
+          rounded=""
+          nuxt=""
+          exact=""
+          :to="localePath({ name: 'qr-scan' })"
+        >
           {{ $t('next') }}
         </v-btn>
       </v-col>
@@ -112,9 +119,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss">
-.theme--light.v-card.v-card--outlined.v-card--outlined-custom {
-  border-color: #ff4081;
-}
-</style>

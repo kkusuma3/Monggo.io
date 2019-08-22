@@ -1,3 +1,4 @@
+import en from 'vuetify/es5/locale/en'
 import id from 'vuetify/es5/locale/id'
 import colors from 'vuetify/es5/util/colors'
 import locales from './utils/locales'
@@ -87,7 +88,7 @@ export default {
       }
     },
     lang: {
-      locales: { id },
+      locales: { 'en-us': en, 'en-uk': en, id },
       current: 'id'
     }
   },

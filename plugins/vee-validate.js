@@ -7,7 +7,8 @@ export default ({ app }) => {
   Vue.use(VeeValidate, {
     i18n: app.i18n,
     dictionary: {
-      en,
+      'en-us': en,
+      'en-uk': en,
       id
     }
   })
