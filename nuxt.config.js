@@ -1,3 +1,4 @@
+import LRU from 'lru-cache'
 import id from 'vuetify/es5/locale/id'
 import colors from 'vuetify/es5/util/colors'
 import locales from './utils/locales'
@@ -84,6 +85,17 @@ export default {
           primary: colors.pink.accent2,
           secondary: colors.pink.darken1
         }
+      },
+      options: {
+        minifyTheme: function(css) {
+          return process.env.NODE_ENV === 'production'
+            ? css.replace(/[\r\n|\r|\n]/g, '')
+            : css
+        },
+        themeCache: new LRU({
+          max: 10,
+          maxAge: 1000 * 60 * 60
+        })
       }
     },
     lang: {
