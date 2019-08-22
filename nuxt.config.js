@@ -72,7 +72,7 @@ export default {
     locales: ['id']
   },
 
-  devModules: [
+  buildModules: [
     // Simple usage
     '@nuxtjs/vuetify'
   ],

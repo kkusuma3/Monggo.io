@@ -37,15 +37,7 @@
     "test": "npm run test:unit",
     "test:e2e": "cypress run",
     "test:e2e:open": "cypress open",
-    "test:unit": "jest",
-    "build:firebase": "yarn --verbose --ignore-engines && yarn clean && yarn build && yarn copy && cd \"functions\" && yarn --verbose --ignore-engines",
-    "clean": "yarn clean:public && yarn clean:functions && yarn clean:static",
-    "clean:functions": "rimraf \"functions/node_modules\" && rimraf \"functions/.nuxt\"",
-    "clean:public": "rimraf -rf \"public/**/*.!(md)\" && rimraf -rf \"public/_nuxt\"",
-    "clean:static": "rimraf \"src/static/sw.js\"",
-    "copy": "cpx \"functions/.nuxt/dist/**/*\" \"public/_nuxt\" && cpx \"src/static/**/*.!(md)\" \"public\"",
-    "deploy": "firebase deploy --only functions,hosting --debug",
-    "start:firebase": "firebase serve --only functions,hosting"
+    "test:unit": "jest"
   },
   "dependencies": {
     "@nuxtjs/google-analytics": "^2.0.2",
@@ -68,7 +60,6 @@
     "babel-eslint": "^10.0.1",
     "babel-jest": "^24.0.0",
     "codecov": "^3.1.0",
-    "cpx": "^1.5.0",
     "cypress": "^3.1.4",
     "eslint": "^5.12.1",
     "eslint-config-prettier": "^4.0.0",
@@ -90,7 +81,6 @@
     "jest-transform-stub": "^2.0.0",
     "lint-staged": "^8.1.0",
     "prettier": "^1.15.3",
-    "rimraf": "^2.6.2",
     "vue-jest": "^3.0.2"
   },
   "engines": {
