@@ -1,6 +1,5 @@
 import en from 'vuetify/es5/locale/en'
 import id from 'vuetify/es5/locale/id'
-import colors from 'vuetify/es5/util/colors'
 import locales from './utils/locales'
 
 const isDev = process.env.NODE_ENV !== 'production'
@@ -82,8 +81,10 @@ export default {
     theme: {
       themes: {
         light: {
-          primary: colors.pink.accent2,
-          secondary: colors.pink.darken1
+          primary: '#C54754',
+          secondary: '#F73F52',
+          tertiary: '#FBA4AD',
+          accent: '#11368E'
         }
       }
     },
@@ -116,12 +117,17 @@ export default {
   },
 
   loading: {
-    color: colors.pink.accent2,
+    color: '#C54754',
     height: '3px'
   },
 
   // https://nuxtjs.org/api/configuration-plugins
-  plugins: ['~plugins/vee-validate', '~plugins/vue-qrcode-reader.client'],
+  plugins: [
+    '~plugins/vee-validate',
+    '~plugins/vue-qrcode-reader.client',
+    '~plugins/notify',
+    '~plugins/components'
+  ],
 
   // https://nuxtjs.org/api/configuration-css
   css: ['~assets/styles/app'],
