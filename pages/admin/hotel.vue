@@ -91,7 +91,6 @@ import { db } from '~/utils/firebase'
 const itemsRef = db.collection('hotels')
 
 export default {
-  nuxtI18n: false,
   layout: 'admin',
   data() {
     return {
