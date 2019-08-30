@@ -44,19 +44,19 @@
         <v-chip
           label=""
           class="ma-1"
-          :color="item.status === 'empty' ? 'success' : 'warning'"
+          :color="item.status === 'empty' ? 'warning' : 'success'"
           text-color="white"
         >
           <v-avatar left>
             <v-icon>
               {{
                 item.status === 'empty'
-                  ? 'mdi-checkbox-marked-circle'
-                  : 'mdi-alert-circle'
+                  ? 'mdi-alert-circle'
+                  : 'mdi-checkbox-marked-circle'
               }}
             </v-icon>
           </v-avatar>
-          <span>Empty</span>
+          <span>{{ item.status === 'empty' ? 'Empty' : 'Reserved' }}</span>
         </v-chip>
       </template>
       <template #item.createdAt="{ item }">
@@ -252,12 +252,7 @@
         <template v-for="meta in item.imagesMeta">
           <v-col :key="meta.url" cols="4" class="d-flex child-flex">
             <v-card ripple="" flat="" @click="onTriggerPreview(meta)">
-              <app-img
-                :src="meta.url"
-                :alt="meta.name"
-                :aspect-ratio="1"
-                @click="onTriggerPreview(meta)"
-              />
+              <app-img :src="meta.url" :alt="meta.name" :aspect-ratio="1" />
             </v-card>
           </v-col>
         </template>
@@ -416,14 +411,17 @@ export default {
     'item.images': async function(images) {
       if (images && images.length > 0) {
         const imagesMeta = await Promise.all(
-          images.map(async image => ({
+          images.map(async (image, i) => ({
+            ...this.item.imagesMeta[i],
             name: image.name,
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.item.imagesMeta = imagesMeta
+        this.item.imagesMeta = _cloneDeep(imagesMeta)
+        this.itemOriginal.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.item.imagesMeta = []
+        this.itemOriginal.imagesMeta = []
       }
     }
   },

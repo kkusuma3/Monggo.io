@@ -1,12 +1,12 @@
 <template>
   <app-wrapper
     :title="title"
+    :is-add-active="false"
     :is-dialog="isDialog"
     :is-editing="isEditing"
     :is-confirming="isConfirming"
     :is-deleting="isDeleting"
     :is-previewing="isPreviewing"
-    @trigger:add="onTriggerAdd"
     @dialog:close="onDialogClose"
     @dialog:action="onDialogAction"
     @delete:close="onDeleteClose"
@@ -26,9 +26,9 @@
       <template #item.image="{ item }">
         <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
           <app-img
-            v-if="item.imagesMeta && item.imagesMeta.length > 0"
-            :src="item.imagesMeta[0].url"
-            :alt="item.imagesMeta[0].name"
+            v-if="item.avatar && item.avatar.length > 0"
+            :src="item.avatar"
+            :alt="item.name"
           />
           <span
             v-else=""
@@ -39,6 +39,21 @@
             {{ getInitials(item.name) }}
           </span>
         </v-avatar>
+      </template>
+      <template #item.role="{ item }">
+        <v-chip
+          label=""
+          class="ma-1"
+          :color="item.role === 'regular' ? 'warning' : 'success'"
+          text-color="white"
+        >
+          <v-avatar left>
+            <v-icon>
+              {{ item.role === 'regular' ? 'mdi-account' : 'mdi-account-star' }}
+            </v-icon>
+          </v-avatar>
+          <span>{{ item.role === 'regular' ? 'Regular' : 'Admin' }}</span>
+        </v-chip>
       </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
@@ -65,7 +80,7 @@
           </template>
           <span>Edit {{ item.name }}</span>
         </v-tooltip>
-        <v-tooltip bottom="">
+        <!-- <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
               :class="`trigger-delete-${slugify(item.name)}`"
@@ -78,7 +93,7 @@
             </v-btn>
           </template>
           <span>Delete {{ item.name }}</span>
-        </v-tooltip>
+        </v-tooltip> -->
       </template>
     </v-data-table>
     <template #form="">
@@ -96,76 +111,59 @@
         label="Name"
         outlined=""
       />
-      <v-textarea
-        v-model="item.description"
-        v-validate="'required'"
-        :error-messages="errors.collect('description')"
+      <v-text-field
+        v-model="item.email"
+        v-validate="'required|email'"
+        :error-messages="errors.collect('email')"
         :disabled="isLoading"
-        data-vv-name="description"
-        data-vv-as="Description"
-        name="description"
+        data-vv-name="email"
+        data-vv-as="Email"
+        name="email"
         clearable=""
-        data-vv-value-path="item.description"
+        data-vv-value-path="item.email"
         required=""
-        label="Description"
+        label="Email"
         outlined=""
-        auto-grow=""
       />
-      <v-file-input
-        v-model="item.images"
-        v-validate="'required'"
-        :error-messages="errors.collect('images')"
+      <v-text-field
+        v-model="item.phone"
         :disabled="isLoading"
-        :prepend-icon="null"
-        data-vv-name="images"
-        data-vv-as="Images"
-        name="images"
-        counter=""
+        name="phone"
         clearable=""
-        data-vv-value-path="item.images"
-        required=""
-        label="Images"
+        label="Phone"
         outlined=""
-        multiple=""
-        :show-size="1000"
-      >
-        <template #selection="{ index, text }">
-          <v-chip v-if="index < 2" label="" small="">
-            {{ text }}
-          </v-chip>
-
-          <span
-            v-else-if="index === 2"
-            class="overline grey--text text--darken-3 mx-2"
-          >
-            +{{ item.images.length - 2 }} File(s)
-          </span>
-        </template>
-      </v-file-input>
+      />
+      <v-autocomplete
+        v-model="item.role"
+        v-validate="'required'"
+        :items="roles"
+        :error-messages="errors.collect('role')"
+        :disabled="isLoading"
+        data-vv-name="role"
+        data-vv-as="Role"
+        name="role"
+        clearable=""
+        data-vv-value-path="item.role"
+        required=""
+        label="Role"
+        outlined=""
+      />
       <v-row>
-        <template v-for="meta in item.imagesMeta">
-          <v-col :key="meta.url" cols="4" class="d-flex child-flex">
-            <v-card ripple="" flat="" @click="onTriggerPreview(meta)">
-              <app-img
-                :src="meta.url"
-                :alt="meta.name"
-                :aspect-ratio="1"
-                @click="onTriggerPreview(meta)"
-              />
-            </v-card>
-          </v-col>
-        </template>
+        <v-col :key="item.avatar" cols="4" class="d-flex child-flex">
+          <v-card ripple="" flat="" @click="onTriggerPreview">
+            <app-img :src="item.avatar" :alt="item.name" :aspect-ratio="1" />
+          </v-card>
+        </v-col>
       </v-row>
     </template>
     <template #preview="">
-      <app-img :src="image.url" :alt="image.name" />
+      <app-img :src="item.avatar" :alt="item.name" />
     </template>
   </app-wrapper>
 </template>
 
 <script>
 import { mapState } from 'vuex'
-import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
 import _cloneDeep from 'lodash.clonedeep'
 import isEqual from 'fast-deep-equal'
@@ -174,7 +172,7 @@ import materialColorHash from 'material-color-hash'
 import initials from 'initials'
 import pluralize from 'pluralize'
 
-import { db, storage } from '~/utils/firebase'
+import { db } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
@@ -195,7 +193,7 @@ export default {
       headers: [
         { text: 'Image', value: 'image', align: 'center', sortable: false },
         { text: 'Name', value: 'name' },
-        { text: 'Description', value: 'description' },
+        { text: 'Role', value: 'role', align: 'center' },
         {
           text: 'Created At',
           value: 'createdAt',
@@ -216,31 +214,29 @@ export default {
       ],
       items: [],
       item: {
-        uid: uuidv4(),
+        uid: '',
         name: '',
-        images: [],
-        imagesMeta: [],
-        description: '',
-        status: '',
+        email: '',
+        phone: '',
+        avatar: '',
+        role: '',
         createdAt: null,
         updatedAt: null
       },
       itemOriginal: {
-        uid: uuidv4(),
+        uid: '',
         name: '',
-        images: [],
-        imagesMeta: [],
-        description: '',
-        status: '',
+        email: '',
+        phone: '',
+        avatar: '',
+        role: '',
         createdAt: null,
         updatedAt: null
       },
-      image: {
-        name: '',
-        url: '',
-        fullPath: '',
-        createdAt: ''
-      }
+      roles: [
+        { text: 'Regular', value: 'regular' },
+        { text: 'Admin', value: 'admin' }
+      ]
     }
   },
   computed: {
@@ -289,66 +285,18 @@ export default {
       return this.isEditing && !isEqual(this.item, this.itemOriginal)
     }
   },
-  watch: {
-    'item.images': async function(images) {
-      if (images && images.length > 0) {
-        const imagesMeta = await Promise.all(
-          images.map(async image => ({
-            name: image.name,
-            url: await this.getUrlFromFile(image)
-          }))
-        )
-        this.item.imagesMeta = imagesMeta
-      } else {
-        this.item.imagesMeta = []
-      }
-    }
-  },
   mounted() {
     this.getItems()
   },
   methods: {
-    async getFileFromUrl(url, name) {
-      try {
-        // Taken from: https://stackoverflow.com/questions/44070437/how-to-get-a-file-or-blob-from-an-url-in-javascript
-        this.$setLoading(true)
-        if (!url) {
-          return
-        }
-        url = url.toString()
-        const response = await fetch(url)
-        const blob = await response.blob()
-        const file = new File([blob], name, {
-          type: blob.type
-        })
-        return file
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
-      }
-    },
-    getUrlFromFile(file) {
-      return new Promise(resolve => {
-        const fileReader = new FileReader()
-        fileReader.readAsDataURL(file)
-        fileReader.addEventListener('load', () => {
-          resolve(fileReader.result)
-        })
-      })
-    },
-
     reset() {
       const item = {
-        uid: uuidv4(),
+        uid: '',
         name: '',
-        images: [],
-        imagesMeta: [],
-        description: '',
-        status: '',
+        email: '',
+        phone: '',
+        avatar: '',
+        role: '',
         createdAt: null,
         updatedAt: null
       }
@@ -365,15 +313,16 @@ export default {
           const data = doc.data()
           items.push({
             ...data,
-            images: [],
             createdAt: data && data.createdAt && data.createdAt.toDate(),
             updatedAt: data && data.updatedAt && data.updatedAt.toDate()
           })
         })
-        if (!collection) {
+        if (collection === this.collection) {
           this.items = items
         } else if (this[collection]) {
           this[collection] = items
+        } else {
+          throw new Error('Collection must be defined in the data.')
         }
       } catch (error) {
         this.$notify({
@@ -385,26 +334,14 @@ export default {
       }
     },
 
-    onTriggerAdd() {
-      this.isDialog = true
-    },
-    async onTriggerEdit(_item) {
+    onTriggerEdit(_item) {
       try {
         this.$setLoading(true)
         this.isDialog = true
         this.isEditing = true
 
-        const item = _cloneDeep(_item)
-
-        const images = await Promise.all(
-          item.imagesMeta.map(meta =>
-            this.getFileFromUrl(meta.url, meta.name || `${uuidv4()}.jpg`)
-          )
-        )
-        item.images = images
-
-        this.item = _cloneDeep(item)
-        this.itemOriginal = _cloneDeep(item)
+        this.item = _cloneDeep(_item)
+        this.itemOriginal = _cloneDeep(_item)
       } catch (error) {
         this.$notify({
           isError: true,
@@ -418,9 +355,8 @@ export default {
       this.isDeleting = true
       this.item = _cloneDeep(item)
     },
-    onTriggerPreview(item) {
+    onTriggerPreview() {
       this.isPreviewing = true
-      this.image = _cloneDeep(item)
     },
 
     onDialogClose() {
@@ -447,30 +383,6 @@ export default {
             createdAt: date,
             updatedAt: date
           }
-          if (this.itemOriginal.imagesMeta.length > 0) {
-            await Promise.all(
-              this.itemOriginal.imagesMeta.map(meta =>
-                storage.ref(meta.fullPath).delete()
-              )
-            )
-          }
-          const imagesMeta = await Promise.all(
-            payload.images.map(async image => {
-              const snap = await storage
-                .ref(this.collection)
-                .child(`${uuidv4()}.jpg`)
-                .put(image)
-              const url = await snap.ref.getDownloadURL()
-              return {
-                url,
-                name: snap.metadata.name,
-                fullPath: snap.metadata.fullPath,
-                createdAt: this.$moment(snap.metadata.timeCreated).toDate()
-              }
-            })
-          )
-          payload.imagesMeta = imagesMeta
-          delete payload.images
           this.isSaved = true
           await db
             .collection(this.collection)
@@ -503,9 +415,6 @@ export default {
           .collection(this.collection)
           .doc(item.uid)
           .delete()
-        await Promise.all(
-          item.imagesMeta.map(meta => storage.ref(meta.fullPath).delete())
-        )
         await this.getItems()
         await this.onDeleteClose()
         await this.$notify({ kind: 'success', message: 'Data is deleted' })
@@ -532,12 +441,7 @@ export default {
 
     onPreviewClose() {
       this.isPreviewing = false
-      this.image = {
-        name: '',
-        url: '',
-        fullPath: '',
-        createdAt: ''
-      }
+      this.image = ''
     },
     onPreviewAction() {
       this.onPreviewClose()

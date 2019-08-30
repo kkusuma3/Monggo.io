@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-row>
+    <v-row v-if="isAddActive">
       <v-col cols="12">
         <div class="d-flex justify-end align-center">
           <v-btn
@@ -242,6 +242,10 @@ import { mapState } from 'vuex'
 export default {
   name: 'AppWrapper',
   props: {
+    isAddActive: {
+      type: Boolean,
+      default: true
+    },
     title: {
       type: String,
       required: true

@@ -173,8 +173,6 @@ export default {
           false
         )
         if (!isAdmin) {
-          this.onLogout()
-        } else {
           try {
             this.$setLoading(true)
             const payload = {
@@ -183,12 +181,27 @@ export default {
               email: user.email,
               phone: user.phoneNumber,
               avatar: user.photoURL,
-              role: 'admin',
+              role: 'regular',
               createdAt: this.$moment().toDate(),
               updatedAt: this.$moment().toDate()
             }
             await usersRef.doc(payload.uid).set(payload, { merge: true })
-            const snap = await usersRef.doc(payload.uid).get()
+            await auth.signOut()
+            await this.$notify({
+              message: `You're not the admin`
+            })
+          } catch (error) {
+            this.$notify({
+              isError: true,
+              message: error.message
+            })
+          } finally {
+            this.$setLoading(false)
+          }
+        } else {
+          try {
+            this.$setLoading(true)
+            const snap = await usersRef.doc(user.uid).get()
             const data = await snap.data()
             await this.$store.commit(`user/${userTypes.SET_USER}`, {
               ...data,

@@ -146,12 +146,7 @@
         <template v-for="meta in item.imagesMeta">
           <v-col :key="meta.url" cols="4" class="d-flex child-flex">
             <v-card ripple="" flat="" @click="onTriggerPreview(meta)">
-              <app-img
-                :src="meta.url"
-                :alt="meta.name"
-                :aspect-ratio="1"
-                @click="onTriggerPreview(meta)"
-              />
+              <app-img :src="meta.url" :alt="meta.name" :aspect-ratio="1" />
             </v-card>
           </v-col>
         </template>
@@ -293,14 +288,17 @@ export default {
     'item.images': async function(images) {
       if (images && images.length > 0) {
         const imagesMeta = await Promise.all(
-          images.map(async image => ({
+          images.map(async (image, i) => ({
+            ...this.item.imagesMeta[i],
             name: image.name,
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.item.imagesMeta = imagesMeta
+        this.item.imagesMeta = _cloneDeep(imagesMeta)
+        this.itemOriginal.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.item.imagesMeta = []
+        this.itemOriginal.imagesMeta = []
       }
     }
   },
@@ -370,10 +368,12 @@ export default {
             updatedAt: data && data.updatedAt && data.updatedAt.toDate()
           })
         })
-        if (!collection) {
+        if (collection === this.collection) {
           this.items = items
         } else if (this[collection]) {
           this[collection] = items
+        } else {
+          throw new Error('Collection must be defined in the data.')
         }
       } catch (error) {
         this.$notify({
