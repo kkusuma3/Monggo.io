@@ -42,14 +42,19 @@
       </template>
       <template #item.status="{ item }">
         <v-chip
-          v-if="item.status === 'empty'"
           label=""
           class="ma-1"
-          color="success"
+          :color="item.status === 'empty' ? 'success' : 'warning'"
           text-color="white"
         >
           <v-avatar left>
-            <v-icon>mdi-checkbox-marked-circle</v-icon>
+            <v-icon>
+              {{
+                item.status === 'empty'
+                  ? 'mdi-checkbox-marked-circle'
+                  : 'mdi-alert-circle'
+              }}
+            </v-icon>
           </v-avatar>
           <span>Empty</span>
         </v-chip>
@@ -410,15 +415,13 @@ export default {
   watch: {
     'item.images': async function(images) {
       if (images && images.length > 0) {
-        if (this.item.imagesMeta.length === 0) {
-          const imagesMeta = await Promise.all(
-            images.map(async image => ({
-              name: image.name,
-              url: await this.getUrlFromFile(image)
-            }))
-          )
-          this.item.imagesMeta = imagesMeta
-        }
+        const imagesMeta = await Promise.all(
+          images.map(async image => ({
+            name: image.name,
+            url: await this.getUrlFromFile(image)
+          }))
+        )
+        this.item.imagesMeta = imagesMeta
       } else {
         this.item.imagesMeta = []
       }

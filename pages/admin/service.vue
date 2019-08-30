@@ -292,15 +292,13 @@ export default {
   watch: {
     'item.images': async function(images) {
       if (images && images.length > 0) {
-        if (this.item.imagesMeta.length === 0) {
-          const imagesMeta = await Promise.all(
-            images.map(async image => ({
-              name: image.name,
-              url: await this.getUrlFromFile(image)
-            }))
-          )
-          this.item.imagesMeta = imagesMeta
-        }
+        const imagesMeta = await Promise.all(
+          images.map(async image => ({
+            name: image.name,
+            url: await this.getUrlFromFile(image)
+          }))
+        )
+        this.item.imagesMeta = imagesMeta
       } else {
         this.item.imagesMeta = []
       }
