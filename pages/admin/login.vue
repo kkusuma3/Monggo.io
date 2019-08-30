@@ -7,7 +7,8 @@
         color="primary"
         @click="onLogin"
       >
-        Login
+        <v-icon left="">mdi-login-variant</v-icon>
+        <span>Login</span>
       </v-btn>
     </v-row>
   </v-container>

@@ -109,7 +109,6 @@
                 :loading="isLoading"
                 :disabled="isLoading"
                 class="delete-close"
-                depressed=""
                 color="secondary"
                 @click="$emit('delete:close')"
               >
@@ -119,6 +118,7 @@
               <v-btn
                 :loading="isLoading"
                 :disabled="isLoading"
+                depressed=""
                 class="delete-action"
                 @click="$emit(`delete:action`)"
               >
@@ -162,7 +162,6 @@
                 :loading="isLoading"
                 :disabled="isLoading"
                 class="confirm-close"
-                depressed=""
                 color="secondary"
                 @click="$emit('confirm:close')"
               >
@@ -172,6 +171,7 @@
               <v-btn
                 :loading="isLoading"
                 :disabled="isLoading"
+                depressed=""
                 class="confirm-action"
                 @click="$emit(`confirm:action`)"
               >

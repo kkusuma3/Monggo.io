@@ -579,7 +579,7 @@ export default {
             createdAt: date,
             updatedAt: date
           }
-          if (this.itemOriginal.imagesMeta.length > 0) {
+          if (this.isEdited) {
             await Promise.all(
               this.itemOriginal.imagesMeta.map(meta =>
                 storage.ref(meta.fullPath).delete()
