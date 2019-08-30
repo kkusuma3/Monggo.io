@@ -9,7 +9,7 @@ const firebaseConfig = {
   authDomain: 'monggo-io.firebaseapp.com',
   databaseURL: 'https://monggo-io.firebaseio.com',
   projectId: 'monggo-io',
-  storageBucket: '',
+  storageBucket: 'monggo-io.appspot.com',
   messagingSenderId: '1015796918633',
   appId: '1:1015796918633:web:07292b6fcc399309'
 }

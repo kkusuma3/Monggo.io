@@ -1,9 +1,17 @@
-export const types = {}
+export const types = {
+  SET_LOADING: 'SET_LOADING'
+}
 
-export const state = () => ({})
+export const state = () => ({
+  isLoading: false
+})
 
 export const getters = {}
 
-export const mutations = {}
+export const mutations = {
+  [types.SET_LOADING]: (state, isLoading) => {
+    state.isLoading = isLoading
+  }
+}
 
 export const actions = {}

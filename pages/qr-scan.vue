@@ -151,6 +151,11 @@
 
 <script>
 export default {
+  head() {
+    return {
+      title: 'QR Scan'
+    }
+  },
   data() {
     return {
       isLoading: false,

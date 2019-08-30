@@ -126,6 +126,7 @@ export default {
     '~plugins/vee-validate',
     '~plugins/vue-qrcode-reader.client',
     '~plugins/notify',
+    '~plugins/loading',
     '~plugins/components'
   ],
 

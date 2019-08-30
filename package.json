@@ -40,15 +40,22 @@
     "test:unit": "jest"
   },
   "dependencies": {
+    "@chenfengyuan/vue-qrcode": "^1.0.1",
     "@nuxtjs/google-analytics": "^2.0.2",
     "@nuxtjs/moment": "^1.2.0",
     "@nuxtjs/pwa": "^3.0.0-beta.16",
     "@nuxtjs/sentry": "^3.0.0",
     "@sindresorhus/slugify": "^0.9.1",
     "cookie-universal-nuxt": "^2.0.17",
+    "fast-deep-equal": "^2.0.1",
     "firebase": "^6.4.2",
+    "initials": "^3.0.1",
+    "is-dark-color": "^1.2.0",
+    "lodash.clonedeep": "^4.5.0",
+    "material-color-hash": "^0.1.6",
     "nuxt": "^2.3.4",
     "nuxt-i18n": "^6.0.1",
+    "pluralize": "^8.0.0",
     "uuid": "^3.3.3",
     "vee-validate": "^2.1.5",
     "vue-qrcode-reader": "^2.0.1"

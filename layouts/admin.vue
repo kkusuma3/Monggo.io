@@ -1,9 +1,9 @@
 <template>
   <v-app>
-    <v-app-bar app="" color="primary" dark="">
+    <v-app-bar v-if="isAuth" app="" color="primary" dark="">
       <v-toolbar-title
         style="cursor: pointer"
-        @click="localePath({ name: 'admin' })"
+        @click="$router.push(localePath({ name: 'admin' }))"
       >
         <h1 class="headline">Monggo.IO Admin</h1>
       </v-toolbar-title>
@@ -33,7 +33,7 @@
         @click="isSidebar = !isSidebar"
       />
     </v-app-bar>
-    <v-navigation-drawer v-model="isSidebar" app="" right="">
+    <v-navigation-drawer v-if="isAuth" v-model="isSidebar" app="" right="">
       <v-list>
         <template v-for="(menu, i) in menus">
           <v-list-item
@@ -61,7 +61,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-content>
+    <v-content v-if="isAuth || $route.name.includes('login')">
       <nuxt />
       <app-notification />
     </v-content>
@@ -69,7 +69,12 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import { auth, db } from '~/utils/firebase'
 import AppNotification from '~/components/AppNotification'
+import { types as userTypes } from '~/store/user'
+
+const usersRef = db.collection('users')
 
 export default {
   components: {
@@ -78,6 +83,7 @@ export default {
   data() {
     return {
       isSidebar: false,
+      admins: [],
       menus: [
         {
           text: 'Hotel',
@@ -112,15 +118,125 @@ export default {
       ]
     }
   },
+  computed: {
+    ...mapGetters('user', ['isAuth'])
+  },
   watch: {
     '$vuetify.breakpoint.name': function(value) {
       if (value !== 'sm') {
         this.isSidebar = false
       }
+    },
+    isAuth(isAuth) {
+      this.initAuth()
     }
   },
+  mounted() {
+    this.init()
+  },
   methods: {
-    onLogout() {}
+    async init() {
+      await this.initAuth()
+      await this.getAdmin()
+      await this.onAuthStateChanged()
+    },
+    async getAdmin() {
+      try {
+        this.$setLoading(true)
+        const snaps = await usersRef.where('role', '==', 'admin').get()
+        const admins = []
+        snaps.forEach(doc => {
+          const data = doc.data()
+          admins.push({
+            ...data,
+            createdAt: data && data.createdAt && data.createdAt.toDate(),
+            updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+          })
+        })
+        this.admins = admins
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    onAuthStateChanged() {
+      auth.onAuthStateChanged(async user => {
+        if (user === null) {
+          return
+        }
+        const isAdmin = this.admins.reduce(
+          (acc, curr) => acc || curr.email === user.email,
+          false
+        )
+        if (!isAdmin) {
+          this.onLogout()
+        } else {
+          try {
+            this.$setLoading(true)
+            const payload = {
+              uid: user.uid,
+              name: user.displayName,
+              email: user.email,
+              phone: user.phoneNumber,
+              avatar: user.photoURL,
+              role: 'admin',
+              createdAt: this.$moment().toDate(),
+              updatedAt: this.$moment().toDate()
+            }
+            await usersRef.doc(payload.uid).set(payload, { merge: true })
+            const snap = await usersRef.doc(payload.uid).get()
+            const data = await snap.data()
+            await this.$store.commit(`user/${userTypes.SET_USER}`, {
+              ...data,
+              createdAt: data && data.createdAt && data.createdAt.toDate(),
+              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+            })
+            await this.$notify({
+              kind: 'success',
+              message: 'Login successfully'
+            })
+          } catch (error) {
+            this.$notify({
+              isError: true,
+              message: error.message
+            })
+          } finally {
+            this.$setLoading(false)
+          }
+        }
+      })
+    },
+    initAuth() {
+      if (!this.isAuth) {
+        const path = this.localePath({ name: 'admin-login' })
+        this.$router.replace(path)
+      } else {
+        const path = this.localePath({ name: 'admin' })
+        this.$router.replace(path)
+      }
+    },
+    async onLogout() {
+      try {
+        this.$setLoading(true)
+        await auth.signOut()
+        await this.$store.commit(`user/${userTypes.SET_USER}`)
+        await this.$notify({
+          kind: 'success',
+          message: 'Logout successfully'
+        })
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    }
   }
 }
 </script>

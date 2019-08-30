@@ -4,7 +4,7 @@
       <template v-for="(menu, i) in menus">
         <v-col :key="`menu_${i}`" cols="12" md="2">
           <v-card
-            :to="{ name: `admin-${menu.to}` }"
+            :to="localePath({ name: `admin-${menu.to}` })"
             color="primary"
             dark=""
             nuxt=""
@@ -24,6 +24,11 @@
 <script>
 export default {
   layout: 'admin',
+  head() {
+    return {
+      title: 'Admin'
+    }
+  },
   data() {
     return {
       menus: [
