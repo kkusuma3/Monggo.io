@@ -12,7 +12,7 @@
           >
             <v-card-text class="text-center">
               <v-icon x-large="">{{ menu.icon }}</v-icon>
-              <h2 class="mt-3">{{ menu.text }}</h2>
+              <h2 class="mt-3">{{ $t(menu.to) }}</h2>
             </v-card-text>
           </v-card>
         </v-col>
@@ -33,32 +33,26 @@ export default {
     return {
       menus: [
         {
-          text: 'Hotel',
           icon: 'mdi-office-building',
           to: 'hotel'
         },
         {
-          text: 'Room',
           icon: 'mdi-hotel',
           to: 'room'
         },
         {
-          text: 'Category',
           icon: 'mdi-tag',
           to: 'category'
         },
         {
-          text: 'Service',
           icon: 'mdi-room-service',
           to: 'service'
         },
         {
-          text: 'Order',
           icon: 'mdi-cart',
           to: 'order'
         },
         {
-          text: 'User',
           icon: 'mdi-account-group',
           to: 'user'
         }

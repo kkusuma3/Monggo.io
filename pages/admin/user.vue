@@ -44,15 +44,17 @@
         <v-chip
           label=""
           class="ma-1"
-          :color="item.role === 'regular' ? 'warning' : 'success'"
+          :color="getRoleColor(item.role)"
           text-color="white"
         >
           <v-avatar left>
             <v-icon>
-              {{ item.role === 'regular' ? 'mdi-account' : 'mdi-account-star' }}
+              {{ getRoleIcon(item.role) }}
             </v-icon>
           </v-avatar>
-          <span>{{ item.role === 'regular' ? 'Regular' : 'Admin' }}</span>
+          <span>
+            {{ getRoleText(item.role) }}
+          </span>
         </v-chip>
       </template>
       <template #item.createdAt="{ item }">
@@ -78,7 +80,7 @@
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
           </template>
-          <span>Edit {{ item.name }}</span>
+          <span>{{ $t('edit') }} {{ item.name }}</span>
         </v-tooltip>
         <!-- <v-tooltip bottom="">
           <template #activator="{ on }">
@@ -92,7 +94,7 @@
               <v-icon>mdi-delete</v-icon>
             </v-btn>
           </template>
-          <span>Delete {{ item.name }}</span>
+          <span>{{ $t('delete') }} {{ item.name }}</span>
         </v-tooltip> -->
       </template>
     </v-data-table>
@@ -103,12 +105,12 @@
         :error-messages="errors.collect('name')"
         :disabled="isLoading"
         data-vv-name="name"
-        data-vv-as="Name"
+        :data-vv-as="$t('name')"
         name="name"
         clearable=""
         data-vv-value-path="item.name"
         required=""
-        label="Name"
+        :label="$t('name')"
         outlined=""
       />
       <v-text-field
@@ -117,12 +119,12 @@
         :error-messages="errors.collect('email')"
         :disabled="isLoading"
         data-vv-name="email"
-        data-vv-as="Email"
+        :data-vv-as="$t('email')"
         name="email"
         clearable=""
         data-vv-value-path="item.email"
         required=""
-        label="Email"
+        :label="$t('email')"
         outlined=""
       />
       <v-text-field
@@ -130,7 +132,7 @@
         :disabled="isLoading"
         name="phone"
         clearable=""
-        label="Phone"
+        :label="$t('phone')"
         outlined=""
       />
       <v-autocomplete
@@ -140,12 +142,12 @@
         :error-messages="errors.collect('role')"
         :disabled="isLoading"
         data-vv-name="role"
-        data-vv-as="Role"
+        :data-vv-as="$t('role')"
         name="role"
         clearable=""
         data-vv-value-path="item.role"
         required=""
-        label="Role"
+        :label="$t('role')"
         outlined=""
       />
       <v-row>
@@ -178,7 +180,7 @@ export default {
   layout: 'admin',
   head() {
     return {
-      title: `${this.title} - Admin`
+      title: `${this.$t(this.title.toLowerCase())} - Admin`
     }
   },
   data() {
@@ -191,11 +193,16 @@ export default {
       isPreviewing: false,
       isSaved: false,
       headers: [
-        { text: 'Image', value: 'image', align: 'center', sortable: false },
-        { text: 'Name', value: 'name' },
-        { text: 'Role', value: 'role', align: 'center' },
         {
-          text: 'Created At',
+          text: this.$tc('image'),
+          value: 'image',
+          align: 'center',
+          sortable: false
+        },
+        { text: this.$t('name'), value: 'name' },
+        { text: this.$t('role'), value: 'role', align: 'center' },
+        {
+          text: this.$t('createdAt'),
           value: 'createdAt',
           align: 'center',
           sort: (a, b) => {
@@ -203,14 +210,19 @@ export default {
           }
         },
         {
-          text: 'Updated At',
+          text: this.$t('updatedAt'),
           value: 'updatedAt',
           align: 'center',
           sort: (a, b) => {
             return this.$moment(a) - this.$moment(b)
           }
         },
-        { text: 'Action', value: 'action', align: 'center', sortable: false }
+        {
+          text: this.$t('action'),
+          value: 'action',
+          align: 'center',
+          sortable: false
+        }
       ],
       items: [],
       item: {
@@ -234,7 +246,8 @@ export default {
         updatedAt: null
       },
       roles: [
-        { text: 'Regular', value: 'regular' },
+        { text: 'Guest', value: 'guest' },
+        { text: 'Operator', value: 'operator' },
         { text: 'Admin', value: 'admin' }
       ]
     }
@@ -283,6 +296,53 @@ export default {
     },
     isEdited() {
       return this.isEditing && !isEqual(this.item, this.itemOriginal)
+    },
+    getRoleColor() {
+      return string => {
+        if (!string) {
+          return
+        }
+        string.toString()
+        switch (string) {
+          case 'guest':
+            return 'info'
+          case 'operator':
+            return 'warning'
+          case 'admin':
+            return 'success'
+          default:
+            return 'error'
+        }
+      }
+    },
+    getRoleIcon() {
+      return string => {
+        if (!string) {
+          return
+        }
+        string.toString()
+        switch (string) {
+          case 'guest':
+            return 'mdi-account'
+          case 'operator':
+            return 'mdi-account-plus'
+          case 'admin':
+            return 'mdi-account-star'
+          default:
+            return 'error'
+        }
+      }
+    },
+    getRoleText() {
+      return string => {
+        if (!string) {
+          return
+        }
+        string.toString()
+        return `${string.charAt(0).toUpperCase()}${string
+          .slice(1)
+          .toLowerCase()}`
+      }
     }
   },
   mounted() {
@@ -380,7 +440,7 @@ export default {
           const date = this.$moment().toDate()
           const payload = {
             ..._cloneDeep(this.item),
-            createdAt: date,
+            createdAt: this.isEditing ? this.item.createdAt : date,
             updatedAt: date
           }
           this.isSaved = true

@@ -1,10 +1,10 @@
 <i18n>
 {
-  "en-US": {
+  "en-us": {
     "hotelSimpler": "Your hotel <strong class='secondary--text'>needs</strong> made <strong class='secondary--text'>simpler</strong>",
     "langPref": "Choose your Language of Preference below"
   },
-  "en-UK": {
+  "en-uk": {
     "hotelSimpler": "Your hotel <strong class='secondary--text'>needs</strong> made <strong class='secondary--text'>simpler</strong>",
     "langPref": "Choose your Language of Preference below"
   },
@@ -100,20 +100,7 @@ export default {
       },
       set(locale) {
         this.$cookies.set('i18n_redirected', locale)
-        this.$router.push(this.switchLocalePath(locale))
-      }
-    }
-  },
-  created() {
-    this.initLocale()
-  },
-  methods: {
-    initLocale() {
-      const currLocale = this.$cookies.get('i18n_redirected')
-      if (!currLocale) {
-        this.$cookies.set('i18n_redirected', this.$i18n.locale)
-      } else {
-        this.$router.push(this.switchLocalePath(currLocale))
+        window.location.reload(true)
       }
     }
   }

@@ -8,7 +8,7 @@
         @click="onLogin"
       >
         <v-icon left="">mdi-login-variant</v-icon>
-        <span>Login</span>
+        <span>{{ $t('login') }}</span>
       </v-btn>
     </v-row>
   </v-container>
@@ -23,7 +23,7 @@ export default {
   layout: 'admin',
   head() {
     return {
-      title: 'Login'
+      title: this.$t('login')
     }
   },
   data() {

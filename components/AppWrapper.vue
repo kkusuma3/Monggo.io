@@ -1,3 +1,17 @@
+<i18n>
+{
+  "en-us": {
+    "deleteConfirmation": "@:delete @:confirmation"
+  },
+  "en-uk": {
+    "deleteConfirmation": "@:delete @:confirmation"
+  },
+  "id": {
+    "deleteConfirmation": "@:confirmation Penghapusan"
+  }
+}
+</i18n>
+
 <template>
   <v-container>
     <v-row v-if="isAddActive">
@@ -12,7 +26,7 @@
             @click="$emit('trigger:add')"
           >
             <v-icon left="">mdi-plus</v-icon>
-            <span>Add {{ title }}</span>
+            <span>{{ $t('add') }} {{ $t(title.toLowerCase()) }}</span>
           </v-btn>
         </div>
       </v-col>
@@ -23,7 +37,7 @@
           <v-app-bar flat="" color="grey lighten-3">
             <v-toolbar-title>
               <h1 class="headline">
-                {{ title }}
+                {{ $t(title.toLowerCase()) }}
               </h1>
             </v-toolbar-title>
           </v-app-bar>
@@ -41,7 +55,8 @@
             <v-app-bar flat="" color="grey lighten-3">
               <v-toolbar-title>
                 <h2 class="title">
-                  {{ isEditing ? 'Edit' : 'Add' }} {{ title }}
+                  {{ isEditing ? $t('edit') : $t('add') }}
+                  {{ $t(title.toLowerCase()) }}
                 </h2>
               </v-toolbar-title>
               <v-spacer />
@@ -66,7 +81,7 @@
                 @click="$emit('dialog:close')"
               >
                 <v-icon left="">mdi-cancel</v-icon>
-                <span>Cancel</span>
+                <span>{{ $t('cancel') }}</span>
               </v-btn>
               <v-btn
                 :loading="isLoading"
@@ -76,7 +91,7 @@
                 @click="$emit(`dialog:action`)"
               >
                 <v-icon>{{ isEditing ? 'mdi-pencil' : 'mdi-plus' }}</v-icon>
-                <span>{{ isEditing ? 'Edit' : 'Add' }}</span>
+                <span>{{ isEditing ? $t('edit') : $t('add') }}</span>
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -86,7 +101,7 @@
             <v-app-bar flat="" color="grey lighten-3">
               <v-toolbar-title>
                 <h2 class="title">
-                  Delete Confirmation
+                  {{ $t('deleteConfirmation') }}
                 </h2>
               </v-toolbar-title>
               <v-spacer />
@@ -113,7 +128,7 @@
                 @click="$emit('delete:close')"
               >
                 <v-icon left="">mdi-cancel</v-icon>
-                <span>Cancel</span>
+                <span>{{ $t('cancel') }}</span>
               </v-btn>
               <v-btn
                 :loading="isLoading"
@@ -123,7 +138,7 @@
                 @click="$emit(`delete:action`)"
               >
                 <v-icon left="">mdi-delete</v-icon>
-                <span>Delete</span>
+                <span>{{ $t('delete') }}</span>
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -138,7 +153,7 @@
             <v-app-bar flat="" color="grey lighten-3">
               <v-toolbar-title>
                 <h2 class="title">
-                  Cancel Edit Confirmation
+                  Cancel Editing Confirmation
                 </h2>
               </v-toolbar-title>
               <v-spacer />
@@ -166,7 +181,7 @@
                 @click="$emit('confirm:close')"
               >
                 <v-icon left="">mdi-cancel</v-icon>
-                <span>Cancel</span>
+                <span>{{ $t('cancel') }}</span>
               </v-btn>
               <v-btn
                 :loading="isLoading"
@@ -176,7 +191,7 @@
                 @click="$emit(`confirm:action`)"
               >
                 <v-icon left="">mdi-check</v-icon>
-                <span>Yes</span>
+                <span>{{ $t('yes') }}</span>
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -216,7 +231,7 @@
                 @click="$emit('preview:close')"
               >
                 <v-icon left="">mdi-cancel</v-icon>
-                <span>Cancel</span>
+                <span>{{ $t('cancel') }}</span>
               </v-btn>
               <v-btn
                 :loading="isLoading"
@@ -226,7 +241,7 @@
                 @click="$emit(`preview:action`)"
               >
                 <v-icon left="">mdi-check</v-icon>
-                <span>Yes</span>
+                <span>{{ $t('ok') }}</span>
               </v-btn>
             </v-card-actions>
           </v-card>

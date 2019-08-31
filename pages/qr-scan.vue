@@ -1,6 +1,6 @@
 <i18n>
 {
-  "en-US": {
+  "en-us": {
     "scan": "Scan the QR Code in your room on the box below",
     "or": "Or",
     "manual": "Manually enter the following",
@@ -10,7 +10,7 @@
     "hintRoomCode": "Ex: 4321",
     "submit": "Submit"
   },
-  "en-UK": {
+  "en-uk": {
     "scan": "Scan the QR Code in your room on the box below",
     "or": "Or",
     "manual": "Manually enter the following",

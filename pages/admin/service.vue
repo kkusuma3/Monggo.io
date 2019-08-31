@@ -63,7 +63,7 @@
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
           </template>
-          <span>Edit {{ item.name }}</span>
+          <span>{{ $t('edit') }} {{ item.name }}</span>
         </v-tooltip>
         <v-tooltip bottom="">
           <template #activator="{ on }">
@@ -77,7 +77,7 @@
               <v-icon>mdi-delete</v-icon>
             </v-btn>
           </template>
-          <span>Delete {{ item.name }}</span>
+          <span>{{ $t('delete') }} {{ item.name }}</span>
         </v-tooltip>
       </template>
     </v-data-table>
@@ -88,12 +88,12 @@
         :error-messages="errors.collect('name')"
         :disabled="isLoading"
         data-vv-name="name"
-        data-vv-as="Name"
+        :data-vv-as="$t('name')"
         name="name"
         clearable=""
         data-vv-value-path="item.name"
         required=""
-        label="Name"
+        :label="$t('name')"
         outlined=""
       />
       <v-textarea
@@ -102,12 +102,12 @@
         :error-messages="errors.collect('description')"
         :disabled="isLoading"
         data-vv-name="description"
-        data-vv-as="Description"
+        :data-vv-as="$t('description')"
         name="description"
         clearable=""
         data-vv-value-path="item.description"
         required=""
-        label="Description"
+        :label="$t('description')"
         outlined=""
         auto-grow=""
       />
@@ -118,13 +118,13 @@
         :disabled="isLoading"
         :prepend-icon="null"
         data-vv-name="images"
-        data-vv-as="Images"
+        :data-vv-as="$tc('image', 2)"
         name="images"
         counter=""
         clearable=""
         data-vv-value-path="item.images"
         required=""
-        label="Images"
+        :label="$tc('image', 2)"
         outlined=""
         multiple=""
         :show-size="1000"
@@ -138,7 +138,8 @@
             v-else-if="index === 2"
             class="overline grey--text text--darken-3 mx-2"
           >
-            +{{ item.images.length - 2 }} File(s)
+            +{{ item.images.length - 2 }}
+            {{ $tc('file', item.images.length - 2) }}
           </span>
         </template>
       </v-file-input>
@@ -175,7 +176,7 @@ export default {
   layout: 'admin',
   head() {
     return {
-      title: `${this.title} - Admin`
+      title: `${this.$t(this.title.toLowerCase())} - Admin`
     }
   },
   data() {
@@ -188,11 +189,16 @@ export default {
       isPreviewing: false,
       isSaved: false,
       headers: [
-        { text: 'Image', value: 'image', align: 'center', sortable: false },
-        { text: 'Name', value: 'name' },
-        { text: 'Description', value: 'description' },
         {
-          text: 'Created At',
+          text: this.$tc('image'),
+          value: 'image',
+          align: 'center',
+          sortable: false
+        },
+        { text: this.$t('name'), value: 'name' },
+        { text: this.$t('description'), value: 'description' },
+        {
+          text: this.$t('createdAt'),
           value: 'createdAt',
           align: 'center',
           sort: (a, b) => {
@@ -200,14 +206,19 @@ export default {
           }
         },
         {
-          text: 'Updated At',
+          text: this.$t('updatedAt'),
           value: 'updatedAt',
           align: 'center',
           sort: (a, b) => {
             return this.$moment(a) - this.$moment(b)
           }
         },
-        { text: 'Action', value: 'action', align: 'center', sortable: false }
+        {
+          text: this.$t('action'),
+          value: 'action',
+          align: 'center',
+          sortable: false
+        }
       ],
       items: [],
       item: {
@@ -444,7 +455,7 @@ export default {
           const date = this.$moment().toDate()
           const payload = {
             ..._cloneDeep(this.item),
-            createdAt: date,
+            createdAt: this.isEditing ? this.item.createdAt : date,
             updatedAt: date
           }
           if (this.isEdited) {

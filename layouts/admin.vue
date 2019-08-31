@@ -1,3 +1,17 @@
+<i18n>
+{
+  "en-us": {
+    "logout": "Logout"
+  },
+  "en-uk": {
+    "logout": "Logout"
+  },
+  "id": {
+    "logout": "Keluar"
+  }
+}
+</i18n>
+
 <template>
   <v-app>
     <v-app-bar v-if="isAuth" app="" color="primary" dark="">
@@ -5,7 +19,7 @@
         style="cursor: pointer"
         @click="$router.push(localePath({ name: 'admin' }))"
       >
-        <h1 class="headline">Monggo.IO Admin</h1>
+        <h1 class="headline">Monggo.IO</h1>
       </v-toolbar-title>
       <v-toolbar-items class="hidden-sm-and-down ml-4">
         <template v-for="(menu, i) in menus">
@@ -17,15 +31,42 @@
             exact=""
           >
             <v-icon left="">{{ menu.icon }}</v-icon>
-            <span>{{ menu.text }}</span>
+            <span>{{ $t(menu.to) }}</span>
           </v-btn>
         </template>
       </v-toolbar-items>
       <v-spacer />
       <v-toolbar-items class="hidden-sm-and-down">
+        <v-menu offset-y="" bottom="">
+          <template #activator="{ on }">
+            <v-btn text="" v-on="on">
+              <v-icon left="">mdi-translate</v-icon>
+              <span>{{ $t('language') }}</span>
+              <v-icon dark="" right="">mdi-chevron-down</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <template v-for="(locale, i) in locales">
+              <v-list-item
+                :key="`menu_toolbar_locale_${locale.code}_${i}`"
+                :to="switchLocalePath(locale.code)"
+                nuxt=""
+                exact=""
+                ripple=""
+                @click="onLocaleChange(locale.code)"
+              >
+                <v-list-item-content>
+                  <v-list-item-title>
+                    {{ locale.name }}
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-list>
+        </v-menu>
         <v-btn text="" nuxt="" exact="" @click="onLogout">
           <v-icon left="">mdi-logout-variant</v-icon>
-          <span>Logout</span>
+          <span>{{ $t('logout') }}</span>
         </v-btn>
       </v-toolbar-items>
       <v-app-bar-nav-icon
@@ -47,16 +88,37 @@
               <v-icon>{{ menu.icon }}</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              <v-list-item-title>{{ menu.text }}</v-list-item-title>
+              <v-list-item-title>{{ $t(menu.to) }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </template>
+        <v-list-group prepend-icon="mdi-translate" no-action="">
+          <template #activator="">
+            <v-list-item-content>
+              <v-list-item-title>{{ $t('language') }}</v-list-item-title>
+            </v-list-item-content>
+          </template>
+          <template v-for="(locale, i) in locales">
+            <v-list-item
+              :key="`menu_sidebar_locale_${locale.code}_${i}`"
+              :to="switchLocalePath(locale.code)"
+              nuxt=""
+              exact=""
+              ripple=""
+              @click="onLocaleChange(locale.code)"
+            >
+              <v-list-item-content>
+                <v-list-item-title>{{ locale.name }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+        </v-list-group>
         <v-list-item nuxt="" exact="" ripple="">
           <v-list-item-icon>
             <v-icon>mdi-logout-variant</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
-            <v-list-item-title>Logout</v-list-item-title>
+            <v-list-item-title>{{ $t('logout') }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -73,6 +135,7 @@ import { mapGetters } from 'vuex'
 import { auth, db } from '~/utils/firebase'
 import AppNotification from '~/components/AppNotification'
 import { types as userTypes } from '~/store/user'
+import locales from '~/utils/locales'
 
 const usersRef = db.collection('users')
 
@@ -84,34 +147,29 @@ export default {
     return {
       isSidebar: false,
       admins: [],
+      locales: [...locales],
       menus: [
         {
-          text: 'Hotel',
           icon: 'mdi-office-building',
           to: 'hotel'
         },
         {
-          text: 'Room',
           icon: 'mdi-hotel',
           to: 'room'
         },
         {
-          text: 'Category',
           icon: 'mdi-tag',
           to: 'category'
         },
         {
-          text: 'Service',
           icon: 'mdi-room-service',
           to: 'service'
         },
         {
-          text: 'Order',
           icon: 'mdi-cart',
           to: 'order'
         },
         {
-          text: 'User',
           icon: 'mdi-account-group',
           to: 'user'
         }
@@ -136,9 +194,18 @@ export default {
   },
   methods: {
     async init() {
+      await this.initLocale()
       await this.initAuth()
       await this.getAdmin()
       await this.onAuthStateChanged()
+    },
+    initLocale() {
+      const currLocale = this.$cookies.get('i18n_redirected')
+      if (!currLocale) {
+        this.$cookies.set('i18n_redirected', this.$i18n.locale)
+      } else {
+        this.$router.push(this.switchLocalePath(currLocale))
+      }
     },
     async getAdmin() {
       try {
@@ -181,7 +248,7 @@ export default {
               email: user.email,
               phone: user.phoneNumber,
               avatar: user.photoURL,
-              role: 'regular',
+              role: 'guest',
               createdAt: this.$moment().toDate(),
               updatedAt: this.$moment().toDate()
             }
@@ -249,6 +316,10 @@ export default {
       } finally {
         this.$setLoading(false)
       }
+    },
+    onLocaleChange(locale) {
+      this.$cookies.set('i18n_redirected', locale)
+      window.location.reload(true)
     }
   }
 }
