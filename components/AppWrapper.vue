@@ -56,7 +56,7 @@
               <v-toolbar-title>
                 <h2 class="title">
                   {{ isEditing ? $t('edit') : $t('add') }}
-                  {{ $t(title.toLowerCase()) }}
+                  {{ $t(formattedTitle) }}
                 </h2>
               </v-toolbar-title>
               <v-spacer />

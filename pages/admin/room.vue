@@ -293,6 +293,7 @@ export default {
         images: [],
         imagesMeta: [],
         description: '',
+        hasQr: false,
         status: 'empty',
         createdAt: null,
         updatedAt: null
@@ -304,6 +305,7 @@ export default {
         images: [],
         imagesMeta: [],
         description: '',
+        hasQr: false,
         status: 'empty',
         createdAt: null,
         updatedAt: null
@@ -431,6 +433,7 @@ export default {
         images: [],
         imagesMeta: [],
         description: '',
+        hasQr: false,
         status: 'empty',
         createdAt: null,
         updatedAt: null

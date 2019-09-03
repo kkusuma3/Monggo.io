@@ -15,6 +15,7 @@ export default {
   email: 'Email',
   phone: 'Nomor Ponsel',
   add: 'Tambah',
+  see: 'Lihat',
   edit: 'Edit',
   delete: 'Hapus',
   yes: 'Ya',

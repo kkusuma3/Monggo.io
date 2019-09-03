@@ -1,3 +1,32 @@
+<i18n>
+{
+  "en-us": {
+    "alreadyHasQR": "Already has @:(qr-code)",
+    "notHasQr": "Doesn't has @:(qr-code)",
+    "uniqueQR": "Please choose another room, this room already has @:(qr-code)",
+    "seeQr": "@:(see) @:(qr-code) for {name}",
+    "editQr": "@:(edit) @:(qr-code) for {name}",
+    "deleteQr": "@:(delete) @:(qr-code) for {name}"
+  },
+  "en-uk": {
+    "alreadyHasQR": "Already has @:(qr-code)",
+    "notHasQr": "Doesn't has @:(qr-code)",
+    "uniqueQR": "Please choose another room, this room already has @:(qr-code)",
+    "seeQr": "@:(see) @:(qr-code) for {name}",
+    "editQr": "@:(edit) @:(qr-code) for {name}",
+    "deleteQr": "@:(delete) @:(qr-code) for {name}"
+  },
+  "id": {
+    "alreadyHasQR": "Telah memiliki @:(qr-code)",
+    "notHasQr": "Doesn't has @:(qr-code)",
+    "uniqueQR": "Silakan pilih kamar lain, kamar ini sudah memiliki @:(qr-code)",
+    "seeQr": "@:(see) @:(qr-code) untuk {name}",
+    "editQr": "@:(edit) @:(qr-code) untuk {name}",
+    "deleteQr": "@:(delete) @:(qr-code) untuk {name}"
+  }
+}
+</i18n>
+
 <template>
   <app-wrapper
     :title="title"
@@ -25,7 +54,10 @@
       :loading="isLoading"
     >
       <template #item.image="{ item }">
-        <qr-code :value="item.uid" :options="{ scale: 1 }" />
+        <qr-code
+          :value="item.uid"
+          :options="{ scale: 1, color: { dark: '#C54754' } }"
+        />
       </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
@@ -50,7 +82,7 @@
               <v-icon>mdi-qrcode</v-icon>
             </v-btn>
           </template>
-          <span>See QR Code for {{ item.refData.room.name }}</span>
+          <span>{{ $t('seeQr', { name: item.refData.room.name }) }}</span>
         </v-tooltip>
         <v-tooltip bottom="">
           <template #activator="{ on }">
@@ -64,7 +96,7 @@
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('edit') }} QR Code for {{ item.refData.room.name }}</span>
+          <span>{{ $t('seeQr', { name: item.refData.room.name }) }}</span>
         </v-tooltip>
         <v-tooltip bottom="">
           <template #activator="{ on }">
@@ -79,7 +111,7 @@
             </v-btn>
           </template>
           <span>
-            {{ $t('delete') }} QR Code for {{ item.refData.room.name }}
+            {{ $t('deleteQr', { name: item.refData.room.name }) }}
           </span>
         </v-tooltip>
       </template>
@@ -101,14 +133,34 @@
         required=""
         label="Room"
         outlined=""
-      />
+      >
+        <template #item="{ item: roomItem }">
+          <v-list-item-content>
+            <v-list-item-title>
+              {{ roomItem.name }}
+            </v-list-item-title>
+          </v-list-item-content>
+          <v-tooltip bottom="">
+            <template #activator="{ on }">
+              <v-list-item-action v-on="on">
+                <v-icon>
+                  {{ roomItem.hasQr ? 'mdi-check' : 'mdi-close' }}
+                </v-icon>
+              </v-list-item-action>
+            </template>
+            <span>
+              {{ roomItem.hasQr ? $t('alreadyHasQr') : $t('notHasQr') }}
+            </span>
+          </v-tooltip>
+        </template>
+      </v-autocomplete>
     </template>
     <template #preview="">
       <div class="d-flex justify-center align-center">
         <qr-code
           v-if="isPreviewing"
           :value="item.uid"
-          :options="{ scale: 5 }"
+          :options="{ scale: 5, color: { dark: '#C54754' } }"
         />
       </div>
     </template>
@@ -211,18 +263,42 @@ export default {
       return this.isEditing && !isEqual(this.item, this.itemOriginal)
     }
   },
-  mounted() {
-    this.getItems(this.collection, async data => {
-      const roomRefDoc = await data.roomRef.get()
-      const roomRef = roomRefDoc.data()
-      delete data.roomRef
-      return {
-        room: roomRef
+  watch: {
+    'item.room': function(id) {
+      const room = this.rooms.find(({ uid }) => uid === id)
+      console.log(id, room)
+      if (room && room.hasQr && this.isEdited) {
+        this.$notify({
+          isError: true,
+          message: this.$t('uniqueQR')
+        })
+        this.item.room = ''
       }
-    })
+    }
+  },
+  mounted() {
+    this.getItems(this.collection, this.itemsCallback)
     this.getItems('rooms')
   },
   methods: {
+    async itemsCallback(data) {
+      try {
+        this.$setLoading(true)
+        const roomRefDoc = await data.roomRef.get()
+        const roomRef = roomRefDoc.data()
+        delete data.roomRef
+        return {
+          room: roomRef
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     reset() {
       const item = {
         uid: uuidv4(),
@@ -324,14 +400,18 @@ export default {
             .collection(this.collection)
             .doc(payload.uid)
             .set(payload, { merge: true })
-          await this.getItems(this.collection, async data => {
-            const roomRefDoc = await data.roomRef.get()
-            const roomRef = roomRefDoc.data()
-            delete data.roomRef
-            return {
-              room: roomRef
-            }
-          })
+          await db
+            .collection('rooms')
+            .doc(payload.room)
+            .set({ hasQr: true }, { merge: true })
+          if (this.isEdited) {
+            await db
+              .collection('rooms')
+              .doc(payload.room)
+              .set({ hasQr: false }, { merge: true })
+          }
+          await this.getItems(this.collection, this.itemsCallback)
+          await this.getItems('rooms')
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: 'Data is saved' })
         }
@@ -358,14 +438,12 @@ export default {
           .collection(this.collection)
           .doc(item.uid)
           .delete()
-        await this.getItems(this.collection, async data => {
-          const roomRefDoc = await data.roomRef.get()
-          const roomRef = roomRefDoc.data()
-          delete data.roomRef
-          return {
-            room: roomRef
-          }
-        })
+        await db
+          .collection('rooms')
+          .doc(item.room)
+          .set({ hasQr: false }, { merge: true })
+        await this.getItems(this.collection, this.itemsCallback)
+        await this.getItems('rooms')
         await this.onDeleteClose()
         await this.$notify({ kind: 'success', message: 'Data is deleted' })
       } catch (error) {

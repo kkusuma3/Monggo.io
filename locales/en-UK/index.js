@@ -15,6 +15,7 @@ export default {
   email: 'Email',
   phone: 'Phone',
   add: 'Add',
+  see: 'See',
   edit: 'Edit',
   delete: 'Delete',
   yes: 'Yes',
