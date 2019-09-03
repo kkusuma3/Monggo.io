@@ -26,7 +26,7 @@
             @click="$emit('trigger:add')"
           >
             <v-icon left="">mdi-plus</v-icon>
-            <span>{{ $t('add') }} {{ $t(title.toLowerCase()) }}</span>
+            <span>{{ $t('add') }} {{ $t(formattedTitle) }}</span>
           </v-btn>
         </div>
       </v-col>
@@ -37,7 +37,7 @@
           <v-app-bar flat="" color="grey lighten-3">
             <v-toolbar-title>
               <h1 class="headline">
-                {{ $t(title.toLowerCase()) }}
+                {{ $t(formattedTitle) }}
               </h1>
             </v-toolbar-title>
           </v-app-bar>
@@ -253,6 +253,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import paramCase from 'param-case'
 
 export default {
   name: 'AppWrapper',
@@ -299,7 +300,10 @@ export default {
     }
   },
   computed: {
-    ...mapState(['isLoading'])
+    ...mapState(['isLoading']),
+    formattedTitle() {
+      return paramCase(this.title)
+    }
   }
 }
 </script>

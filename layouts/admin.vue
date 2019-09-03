@@ -49,7 +49,6 @@
             <template v-for="(locale, i) in locales">
               <v-list-item
                 :key="`menu_toolbar_locale_${locale.code}_${i}`"
-                :to="switchLocalePath(locale.code)"
                 nuxt=""
                 exact=""
                 ripple=""
@@ -101,7 +100,6 @@
           <template v-for="(locale, i) in locales">
             <v-list-item
               :key="`menu_sidebar_locale_${locale.code}_${i}`"
-              :to="switchLocalePath(locale.code)"
               nuxt=""
               exact=""
               ripple=""
@@ -156,6 +154,10 @@ export default {
         {
           icon: 'mdi-hotel',
           to: 'room'
+        },
+        {
+          icon: 'mdi-qrcode',
+          to: 'qr-code'
         },
         {
           icon: 'mdi-tag',
@@ -319,7 +321,7 @@ export default {
     },
     onLocaleChange(locale) {
       this.$cookies.set('i18n_redirected', locale)
-      window.location.reload(true)
+      this.$router.push(this.switchLocalePath(locale))
     }
   }
 }

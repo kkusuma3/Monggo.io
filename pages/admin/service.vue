@@ -169,6 +169,7 @@ import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
 import pluralize from 'pluralize'
+import paramCase from 'param-case'
 
 import { db, storage } from '~/utils/firebase'
 
@@ -176,7 +177,7 @@ export default {
   layout: 'admin',
   head() {
     return {
-      title: `${this.$t(this.title.toLowerCase())} - Admin`
+      title: `${this.$t(paramCase(this.title))} - Admin`
     }
   },
   data() {
@@ -252,7 +253,7 @@ export default {
   computed: {
     ...mapState(['isLoading']),
     collection() {
-      return pluralize(this.title.toLowerCase())
+      return pluralize(paramCase(this.title))
     },
     slugify() {
       return string => {
@@ -365,19 +366,30 @@ export default {
       this.itemOriginal = _cloneDeep(item)
     },
 
-    async getItems(collection = this.collection) {
+    async getItems(collection = this.collection, cb) {
       try {
         this.$setLoading(true)
         const snaps = await db.collection(collection).get()
         const items = []
-        snaps.forEach(doc => {
+        snaps.forEach(async doc => {
           const data = doc.data()
-          items.push({
-            ...data,
-            images: [],
-            createdAt: data && data.createdAt && data.createdAt.toDate(),
-            updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-          })
+          if (cb) {
+            const refData = await cb(data)
+            items.push({
+              ...data,
+              refData,
+              images: [],
+              createdAt: data && data.createdAt && data.createdAt.toDate(),
+              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+            })
+          } else {
+            items.push({
+              ...data,
+              images: [],
+              createdAt: data && data.createdAt && data.createdAt.toDate(),
+              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+            })
+          }
         })
         if (collection === this.collection) {
           this.items = items

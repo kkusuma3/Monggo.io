@@ -100,7 +100,7 @@ export default {
       },
       set(locale) {
         this.$cookies.set('i18n_redirected', locale)
-        window.location.reload(true)
+        this.$router.push(this.switchLocalePath(locale))
       }
     }
   }

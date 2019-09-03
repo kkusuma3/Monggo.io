@@ -4,6 +4,7 @@ export default {
   logout: 'Logout',
   hotel: 'Hotel',
   room: 'Room',
+  'qr-code': 'QR Code',
   category: 'Category',
   service: 'Service',
   order: 'Order',

@@ -1,12 +1,13 @@
 <template>
   <app-wrapper
     :title="title"
-    :is-add-active="false"
     :is-dialog="isDialog"
     :is-editing="isEditing"
     :is-confirming="isConfirming"
     :is-deleting="isDeleting"
     :is-previewing="isPreviewing"
+    :preview-width="500"
+    @trigger:add="onTriggerAdd"
     @dialog:close="onDialogClose"
     @dialog:action="onDialogAction"
     @delete:close="onDeleteClose"
@@ -24,38 +25,7 @@
       :loading="isLoading"
     >
       <template #item.image="{ item }">
-        <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
-          <app-img
-            v-if="item.avatar && item.avatar.length > 0"
-            :src="item.avatar"
-            :alt="item.name"
-          />
-          <span
-            v-else=""
-            :class="{
-              'white--text': isDarkColor(getMaterialColor(item.name, true))
-            }"
-          >
-            {{ getInitials(item.name) }}
-          </span>
-        </v-avatar>
-      </template>
-      <template #item.role="{ item }">
-        <v-chip
-          label=""
-          class="ma-1"
-          :color="getRoleColor(item.role)"
-          text-color="white"
-        >
-          <v-avatar left>
-            <v-icon>
-              {{ getRoleIcon(item.role) }}
-            </v-icon>
-          </v-avatar>
-          <span>
-            {{ getRoleText(item.role) }}
-          </span>
-        </v-chip>
+        <qr-code :value="item.uid" :options="{ scale: 1 }" />
       </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
@@ -71,7 +41,21 @@
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-edit-${slugify(item.name)}`"
+              :class="`trigger-qr-${slugify(item.refData.room.name)}`"
+              class="ma-1"
+              color="secondary"
+              @click="onTriggerPreview(item)"
+              v-on="on"
+            >
+              <v-icon>mdi-qrcode</v-icon>
+            </v-btn>
+          </template>
+          <span>See QR Code for {{ item.refData.room.name }}</span>
+        </v-tooltip>
+        <v-tooltip bottom="">
+          <template #activator="{ on }">
+            <v-btn
+              :class="`trigger-edit-${slugify(item.refData.room.name)}`"
               class="ma-1"
               color="secondary"
               @click="onTriggerEdit(item)"
@@ -80,12 +64,12 @@
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('edit') }} {{ item.name }}</span>
+          <span>{{ $t('edit') }} QR Code for {{ item.refData.room.name }}</span>
         </v-tooltip>
-        <!-- <v-tooltip bottom="">
+        <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-delete-${slugify(item.name)}`"
+              :class="`trigger-delete-${slugify(item.refData.room.name)}`"
               class="ma-1"
               color="error"
               @click="onTriggerDelete(item)"
@@ -94,86 +78,52 @@
               <v-icon>mdi-delete</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('delete') }} {{ item.name }}</span>
-        </v-tooltip> -->
+          <span>
+            {{ $t('delete') }} QR Code for {{ item.refData.room.name }}
+          </span>
+        </v-tooltip>
       </template>
     </v-data-table>
     <template #form="">
-      <v-text-field
-        v-model="item.name"
-        v-validate="'required'"
-        :error-messages="errors.collect('name')"
-        :disabled="isLoading"
-        data-vv-name="name"
-        :data-vv-as="$t('name')"
-        name="name"
-        clearable=""
-        data-vv-value-path="item.name"
-        required=""
-        :label="$t('name')"
-        outlined=""
-      />
-      <v-text-field
-        v-model="item.email"
-        v-validate="'required|email'"
-        :error-messages="errors.collect('email')"
-        :disabled="isLoading"
-        data-vv-name="email"
-        :data-vv-as="$t('email')"
-        name="email"
-        clearable=""
-        data-vv-value-path="item.email"
-        required=""
-        :label="$t('email')"
-        outlined=""
-      />
-      <v-text-field
-        v-model="item.phone"
-        :disabled="isLoading"
-        name="phone"
-        clearable=""
-        :label="$t('phone')"
-        outlined=""
-      />
       <v-autocomplete
-        v-model="item.role"
+        v-model="item.room"
         v-validate="'required'"
-        :items="roles"
-        :error-messages="errors.collect('role')"
+        :items="rooms"
+        :error-messages="errors.collect('room')"
         :disabled="isLoading"
-        data-vv-name="role"
-        :data-vv-as="$t('role')"
-        name="role"
+        item-text="name"
+        item-value="uid"
+        data-vv-name="room"
+        data-vv-as="Room"
+        name="room"
         clearable=""
-        data-vv-value-path="item.role"
+        data-vv-value-path="item.room"
         required=""
-        :label="$t('role')"
+        label="Room"
         outlined=""
       />
-      <v-row>
-        <v-col :key="item.avatar" cols="4" class="d-flex child-flex">
-          <v-card ripple="" flat="" @click="onTriggerPreview">
-            <app-img :src="item.avatar" :alt="item.name" :aspect-ratio="1" />
-          </v-card>
-        </v-col>
-      </v-row>
     </template>
     <template #preview="">
-      <app-img :src="item.avatar" :alt="item.name" />
+      <div class="d-flex justify-center align-center">
+        <qr-code
+          v-if="isPreviewing"
+          :value="item.uid"
+          :options="{ scale: 5 }"
+        />
+      </div>
     </template>
   </app-wrapper>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
 import _cloneDeep from 'lodash.clonedeep'
 import isEqual from 'fast-deep-equal'
-import isDarkColor from 'is-dark-color'
-import materialColorHash from 'material-color-hash'
-import initials from 'initials'
 import pluralize from 'pluralize'
 import paramCase from 'param-case'
+import QrCode from '@chenfengyuan/vue-qrcode'
 
 import { db } from '~/utils/firebase'
 
@@ -184,9 +134,12 @@ export default {
       title: `${this.$t(paramCase(this.title))} - Admin`
     }
   },
+  components: {
+    QrCode
+  },
   data() {
     return {
-      title: 'User',
+      title: 'QR Code',
       isDialog: false,
       isEditing: false,
       isConfirming: false,
@@ -200,8 +153,7 @@ export default {
           align: 'center',
           sortable: false
         },
-        { text: this.$t('name'), value: 'name' },
-        { text: this.$t('role'), value: 'role', align: 'center' },
+        { text: this.$t('room'), value: 'refData.room.name' },
         {
           text: this.$t('createdAt'),
           value: 'createdAt',
@@ -226,31 +178,19 @@ export default {
         }
       ],
       items: [],
+      rooms: [],
       item: {
-        uid: '',
-        name: '',
-        email: '',
-        phone: '',
-        avatar: '',
-        role: '',
+        uid: uuidv4(),
+        room: '',
         createdAt: null,
         updatedAt: null
       },
       itemOriginal: {
-        uid: '',
-        name: '',
-        email: '',
-        phone: '',
-        avatar: '',
-        role: '',
+        uid: uuidv4(),
+        room: '',
         createdAt: null,
         updatedAt: null
-      },
-      roles: [
-        { text: 'Guest', value: 'guest' },
-        { text: 'Operator', value: 'operator' },
-        { text: 'Admin', value: 'admin' }
-      ]
+      }
     }
   },
   computed: {
@@ -267,97 +207,26 @@ export default {
         return slugify(string)
       }
     },
-    isDarkColor() {
-      return color => {
-        if (!color) {
-          return
-        }
-        color = color.toString()
-        return isDarkColor(color)
-      }
-    },
-    getMaterialColor() {
-      return (string, isCode = false) => {
-        if (!string) {
-          return
-        }
-        string = string.toString()
-        const { backgroundColor, materialColorName } = materialColorHash(string)
-        return isCode ? backgroundColor : materialColorName.toLowerCase()
-      }
-    },
-    getInitials() {
-      return string => {
-        if (!string) {
-          return
-        }
-        string = string.toString()
-        return initials(string)
-      }
-    },
     isEdited() {
       return this.isEditing && !isEqual(this.item, this.itemOriginal)
-    },
-    getRoleColor() {
-      return string => {
-        if (!string) {
-          return
-        }
-        string.toString()
-        switch (string) {
-          case 'guest':
-            return 'info'
-          case 'operator':
-            return 'warning'
-          case 'admin':
-            return 'success'
-          default:
-            return 'error'
-        }
-      }
-    },
-    getRoleIcon() {
-      return string => {
-        if (!string) {
-          return
-        }
-        string.toString()
-        switch (string) {
-          case 'guest':
-            return 'mdi-account'
-          case 'operator':
-            return 'mdi-account-plus'
-          case 'admin':
-            return 'mdi-account-star'
-          default:
-            return 'error'
-        }
-      }
-    },
-    getRoleText() {
-      return string => {
-        if (!string) {
-          return
-        }
-        string.toString()
-        return `${string.charAt(0).toUpperCase()}${string
-          .slice(1)
-          .toLowerCase()}`
-      }
     }
   },
   mounted() {
-    this.getItems()
+    this.getItems(this.collection, async data => {
+      const roomRefDoc = await data.roomRef.get()
+      const roomRef = roomRefDoc.data()
+      delete data.roomRef
+      return {
+        room: roomRef
+      }
+    })
+    this.getItems('rooms')
   },
   methods: {
     reset() {
       const item = {
-        uid: '',
-        name: '',
-        email: '',
-        phone: '',
-        avatar: '',
-        role: '',
+        uid: uuidv4(),
+        room: '',
         createdAt: null,
         updatedAt: null
       }
@@ -407,29 +276,22 @@ export default {
       }
     },
 
+    onTriggerAdd() {
+      this.isDialog = true
+    },
     onTriggerEdit(_item) {
-      try {
-        this.$setLoading(true)
-        this.isDialog = true
-        this.isEditing = true
-
-        this.item = _cloneDeep(_item)
-        this.itemOriginal = _cloneDeep(_item)
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
-      }
+      this.isDialog = true
+      this.isEditing = true
+      this.item = _cloneDeep(_item)
+      this.itemOriginal = _cloneDeep(_item)
     },
     onTriggerDelete(item) {
       this.isDeleting = true
       this.item = _cloneDeep(item)
     },
-    onTriggerPreview() {
+    onTriggerPreview(item) {
       this.isPreviewing = true
+      this.item = _cloneDeep(item)
     },
 
     onDialogClose() {
@@ -456,6 +318,7 @@ export default {
             createdAt: this.isEditing ? this.item.createdAt : date,
             updatedAt: date
           }
+          payload.roomRef = db.collection('rooms').doc(payload.room)
           this.isSaved = true
           await db
             .collection(this.collection)
@@ -514,7 +377,7 @@ export default {
 
     onPreviewClose() {
       this.isPreviewing = false
-      this.image = ''
+      this.reset()
     },
     onPreviewAction() {
       this.onPreviewClose()

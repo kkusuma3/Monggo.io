@@ -41,6 +41,10 @@ export default {
           to: 'room'
         },
         {
+          icon: 'mdi-qrcode',
+          to: 'qr-code'
+        },
+        {
           icon: 'mdi-tag',
           to: 'category'
         },

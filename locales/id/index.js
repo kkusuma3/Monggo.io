@@ -4,6 +4,7 @@ export default {
   logout: 'Keluar',
   hotel: 'Hotel',
   room: 'Ruangan',
+  'qr-code': 'Kode QR',
   category: 'Kategori',
   service: 'Layanan',
   order: 'Pesanan',

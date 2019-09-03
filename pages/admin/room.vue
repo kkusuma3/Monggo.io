@@ -70,7 +70,7 @@
         </time>
       </template>
       <template #item.action="{ item }">
-        <v-tooltip bottom="">
+        <!-- <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
               :class="`trigger-qr-${slugify(item.name)}`"
@@ -83,7 +83,7 @@
             </v-btn>
           </template>
           <span>QR Code for {{ item.name }}</span>
-        </v-tooltip>
+        </v-tooltip> -->
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
@@ -114,47 +114,6 @@
         </v-tooltip>
       </template>
     </v-data-table>
-    <v-dialog v-model="isQr" persistent="" scrollable="" :width="500">
-      <v-card :loading="isLoading">
-        <v-app-bar flat="" color="grey lighten-3">
-          <v-toolbar-title>
-            <h2 class="title">QR Code for {{ qr.name }}</h2>
-          </v-toolbar-title>
-          <v-spacer />
-          <v-btn :disabled="isLoading" icon="" @click="onQrClose">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-app-bar>
-        <v-card-text style="padding: 24px 20px">
-          <div class="d-flex justify-center align-center">
-            <qr-code v-if="isQr" :value="qr.uid" :options="{ scale: 5 }" />
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            :loading="isLoading"
-            :disabled="isLoading"
-            class="preview-close"
-            depressed=""
-            @click="onQrClose"
-          >
-            <v-icon left="">mdi-cancel</v-icon>
-            <span>Cancel</span>
-          </v-btn>
-          <v-btn
-            :loading="isLoading"
-            :disabled="isLoading"
-            class="preview-action"
-            color="secondary"
-            @click="onQrAction"
-          >
-            <v-icon left="">mdi-check</v-icon>
-            <span>Yes</span>
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
     <template #form="">
       <v-autocomplete
         v-model="item.hotel"
@@ -274,7 +233,6 @@ import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
 import pluralize from 'pluralize'
-import QrCode from '@chenfengyuan/vue-qrcode'
 
 import { db, storage } from '~/utils/firebase'
 
@@ -285,9 +243,6 @@ export default {
       title: `${this.$t(this.title.toLowerCase())} - Admin`
     }
   },
-  components: {
-    QrCode
-  },
   data() {
     return {
       title: 'Room',
@@ -297,11 +252,6 @@ export default {
       isDeleting: false,
       isPreviewing: false,
       isSaved: false,
-      isQr: false,
-      qr: {
-        uid: '',
-        name: ''
-      },
       headers: [
         {
           text: this.$tc('image'),
@@ -489,19 +439,30 @@ export default {
       this.itemOriginal = _cloneDeep(item)
     },
 
-    async getItems(collection = this.collection) {
+    async getItems(collection = this.collection, cb) {
       try {
         this.$setLoading(true)
         const snaps = await db.collection(collection).get()
         const items = []
-        snaps.forEach(doc => {
+        snaps.forEach(async doc => {
           const data = doc.data()
-          items.push({
-            ...data,
-            images: [],
-            createdAt: data && data.createdAt && data.createdAt.toDate(),
-            updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-          })
+          if (cb) {
+            const refData = await cb(data)
+            items.push({
+              ...data,
+              refData,
+              images: [],
+              createdAt: data && data.createdAt && data.createdAt.toDate(),
+              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+            })
+          } else {
+            items.push({
+              ...data,
+              images: [],
+              createdAt: data && data.createdAt && data.createdAt.toDate(),
+              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+            })
+          }
         })
         if (collection === this.collection) {
           this.items = items
@@ -556,13 +517,6 @@ export default {
     onTriggerPreview(item) {
       this.isPreviewing = true
       this.image = _cloneDeep(item)
-    },
-    onTriggerQr(item) {
-      this.isQr = true
-      this.qr = {
-        uid: item.uid,
-        name: item.name
-      }
     },
 
     onDialogClose() {
@@ -683,17 +637,6 @@ export default {
     },
     onPreviewAction() {
       this.onPreviewClose()
-    },
-
-    onQrClose() {
-      this.isQr = false
-      this.qr = {
-        uid: '',
-        name: ''
-      }
-    },
-    onQrAction() {
-      this.onQrClose()
     }
   }
 }

@@ -55,6 +55,7 @@
     "material-color-hash": "^0.1.6",
     "nuxt": "^2.3.4",
     "nuxt-i18n": "^6.0.1",
+    "param-case": "^2.1.1",
     "pluralize": "^8.0.0",
     "uuid": "^3.3.3",
     "vee-validate": "^2.1.5",
