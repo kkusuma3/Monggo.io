@@ -324,7 +324,14 @@ export default {
             .collection(this.collection)
             .doc(payload.uid)
             .set(payload, { merge: true })
-          await this.getItems()
+          await this.getItems(this.collection, async data => {
+            const roomRefDoc = await data.roomRef.get()
+            const roomRef = roomRefDoc.data()
+            delete data.roomRef
+            return {
+              room: roomRef
+            }
+          })
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: 'Data is saved' })
         }
@@ -351,7 +358,14 @@ export default {
           .collection(this.collection)
           .doc(item.uid)
           .delete()
-        await this.getItems()
+        await this.getItems(this.collection, async data => {
+          const roomRefDoc = await data.roomRef.get()
+          const roomRef = roomRefDoc.data()
+          delete data.roomRef
+          return {
+            room: roomRef
+          }
+        })
         await this.onDeleteClose()
         await this.$notify({ kind: 'success', message: 'Data is deleted' })
       } catch (error) {
