@@ -124,12 +124,12 @@
         item-text="name"
         item-value="uid"
         data-vv-name="hotel"
-        data-vv-as="Hotel"
+        :data-vv-as="$t('hotel')"
         name="hotel"
         clearable=""
         data-vv-value-path="item.hotel"
         required=""
-        label="Hotel"
+        :label="$t('hotel')"
         outlined=""
       />
       <v-text-field

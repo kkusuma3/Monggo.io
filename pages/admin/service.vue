@@ -40,6 +40,9 @@
           </span>
         </v-avatar>
       </template>
+      <template #item.price="{ item }">
+        <span>{{ item.price }} {{ item.currency }}</span>
+      </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
           {{ $moment(item.createdAt).format('llll') }}
@@ -110,6 +113,71 @@
         :label="$t('description')"
         outlined=""
         auto-grow=""
+      />
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-autocomplete
+            v-model="item.currency"
+            v-validate="'required'"
+            :items="currencies"
+            :error-messages="errors.collect('currency')"
+            :disabled="isLoading"
+            data-vv-name="currency"
+            :data-vv-as="$t('currency')"
+            name="currency"
+            clearable=""
+            data-vv-value-path="item.currency"
+            required=""
+            :label="$t('currency')"
+            outlined=""
+          >
+            <template #item="{ item: currencyItem }">
+              <v-list-item-avatar color="grey lighten-3">
+                {{ currencyItem.symbol }}
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title>{{ currencyItem.text }}</v-list-item-title>
+                <v-list-item-subtitle>
+                  {{ currencyItem.value }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </template>
+          </v-autocomplete>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model.number="item.price"
+            v-validate="'required|numeric'"
+            :error-messages="errors.collect('price')"
+            :disabled="isLoading"
+            data-vv-name="price"
+            :data-vv-as="$t('price')"
+            name="price"
+            clearable=""
+            data-vv-value-path="item.price"
+            required=""
+            :label="$t('price')"
+            outlined=""
+            type="number"
+            min="0"
+          />
+        </v-col>
+      </v-row>
+      <v-text-field
+        v-model.number="item.count"
+        v-validate="'required|numeric'"
+        :error-messages="errors.collect('count')"
+        :disabled="isLoading"
+        data-vv-name="count"
+        :data-vv-as="$t('count')"
+        name="count"
+        clearable=""
+        data-vv-value-path="item.count"
+        required=""
+        :label="$t('count')"
+        outlined=""
+        type="number"
+        min="0"
       />
       <v-file-input
         v-model="item.images"
@@ -198,6 +266,8 @@ export default {
         },
         { text: this.$t('name'), value: 'name' },
         { text: this.$t('description'), value: 'description' },
+        { text: this.$t('count'), value: 'count' },
+        { text: this.$t('price'), value: 'price' },
         {
           text: this.$t('createdAt'),
           value: 'createdAt',
@@ -222,13 +292,20 @@ export default {
         }
       ],
       items: [],
+      currencies: [
+        { text: 'United States Dollar', value: 'USD', symbol: '$' },
+        { text: 'Pound Sterling', value: 'GBP', symbol: '£' },
+        { text: 'Indonesian Rupiah', value: 'IDR', symbol: 'Rp' }
+      ],
       item: {
         uid: uuidv4(),
         name: '',
         images: [],
         imagesMeta: [],
         description: '',
-        status: '',
+        currency: '',
+        price: '',
+        count: 0,
         createdAt: null,
         updatedAt: null
       },
@@ -238,7 +315,9 @@ export default {
         images: [],
         imagesMeta: [],
         description: '',
-        status: '',
+        currency: '',
+        price: '',
+        count: 0,
         createdAt: null,
         updatedAt: null
       },
@@ -358,7 +437,9 @@ export default {
         images: [],
         imagesMeta: [],
         description: '',
-        status: '',
+        currency: '',
+        price: '',
+        count: 0,
         createdAt: null,
         updatedAt: null
       }

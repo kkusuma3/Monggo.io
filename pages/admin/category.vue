@@ -191,14 +191,12 @@ export default {
             items.push({
               ...data,
               refData,
-              images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
             })
           } else {
             items.push({
               ...data,
-              images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
             })
