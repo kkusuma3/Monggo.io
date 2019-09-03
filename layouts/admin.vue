@@ -321,7 +321,6 @@ export default {
     },
     onLocaleChange(locale) {
       this.$vuetify.lang.current = locale
-      this.$validator.localize(locale)
       this.$cookies.set('i18n_redirected', locale)
       this.$router.push(this.switchLocalePath(locale))
     }
