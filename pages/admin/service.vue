@@ -85,6 +85,23 @@
       </template>
     </v-data-table>
     <template #form="">
+      <v-autocomplete
+        v-model="item.category"
+        v-validate="'required'"
+        :items="categories"
+        :error-messages="errors.collect('category')"
+        :disabled="isLoading"
+        item-text="name"
+        item-value="uid"
+        data-vv-name="category"
+        :data-vv-as="$t('category')"
+        name="category"
+        clearable=""
+        data-vv-value-path="item.category"
+        required=""
+        :label="$t('category')"
+        outlined=""
+      />
       <v-text-field
         v-model="item.name"
         v-validate="'required'"
@@ -292,6 +309,7 @@ export default {
         }
       ],
       items: [],
+      categories: [],
       currencies: [
         { text: 'United States Dollar', value: 'USD', symbol: '$' },
         { text: 'Pound Sterling', value: 'GBP', symbol: '£' },
@@ -299,6 +317,7 @@ export default {
       ],
       item: {
         uid: uuidv4(),
+        category: '',
         name: '',
         images: [],
         imagesMeta: [],
@@ -311,6 +330,7 @@ export default {
       },
       itemOriginal: {
         uid: uuidv4(),
+        category: '',
         name: '',
         images: [],
         imagesMeta: [],
@@ -394,7 +414,8 @@ export default {
     }
   },
   mounted() {
-    this.getItems()
+    this.getItems(this.collection, this.itemsCallback)
+    this.getItems('categories')
   },
   methods: {
     async getFileFromUrl(url, name) {
@@ -429,10 +450,29 @@ export default {
         })
       })
     },
+    async itemsCallback(data) {
+      try {
+        this.$setLoading(true)
+        const categoryRefDoc = await data.categoryRef.get()
+        const categoryRef = categoryRefDoc.data()
+        delete data.categoryRef
+        return {
+          category: categoryRef
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
 
     reset() {
       const item = {
         uid: uuidv4(),
+        category: '',
         name: '',
         images: [],
         imagesMeta: [],
@@ -575,12 +615,16 @@ export default {
           )
           payload.imagesMeta = imagesMeta
           delete payload.images
+          payload.categoryRef = db
+            .collection('categories')
+            .doc(payload.category)
+
           this.isSaved = true
           await db
             .collection(this.collection)
             .doc(payload.uid)
             .set(payload, { merge: true })
-          await this.getItems()
+          await this.getItems(this.collection, this.itemsCallback)
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: 'Data is saved' })
         }
@@ -610,7 +654,7 @@ export default {
         await Promise.all(
           item.imagesMeta.map(meta => storage.ref(meta.fullPath).delete())
         )
-        await this.getItems()
+        await this.getItems(this.collection, this.itemsCallback)
         await this.onDeleteClose()
         await this.$notify({ kind: 'success', message: 'Data is deleted' })
       } catch (error) {

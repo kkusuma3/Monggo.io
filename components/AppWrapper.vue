@@ -46,7 +46,7 @@
           </v-card-text>
         </v-card>
         <v-dialog
-          v-model="isDialog"
+          :value="isDialog"
           persistent=""
           scrollable=""
           :width="dialogWidth"
@@ -96,7 +96,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="isDeleting" persistent="" scrollable="" width="500">
+        <v-dialog :value="isDeleting" persistent="" scrollable="" width="500">
           <v-card :loading="isLoading">
             <v-app-bar flat="" color="grey lighten-3">
               <v-toolbar-title>
@@ -143,12 +143,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-dialog
-          v-model="isConfirming"
-          persistent=""
-          scrollable=""
-          width="500"
-        >
+        <v-dialog :value="isConfirming" persistent="" scrollable="" width="500">
           <v-card :loading="isLoading">
             <v-app-bar flat="" color="grey lighten-3">
               <v-toolbar-title>
@@ -197,7 +192,7 @@
           </v-card>
         </v-dialog>
         <v-dialog
-          v-model="isPreviewing"
+          :value="isPreviewing"
           persistent=""
           scrollable=""
           :width="previewWidth"

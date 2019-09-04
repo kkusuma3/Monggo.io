@@ -70,20 +70,6 @@
         </time>
       </template>
       <template #item.action="{ item }">
-        <!-- <v-tooltip bottom="">
-          <template #activator="{ on }">
-            <v-btn
-              :class="`trigger-qr-${slugify(item.name)}`"
-              class="ma-1"
-              color="secondary"
-              @click="onTriggerQr(item)"
-              v-on="on"
-            >
-              <v-icon>mdi-qrcode</v-icon>
-            </v-btn>
-          </template>
-          <span>QR Code for {{ item.name }}</span>
-        </v-tooltip> -->
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
