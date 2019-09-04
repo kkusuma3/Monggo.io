@@ -525,6 +525,9 @@ export default {
             createdAt: this.isEditing ? this.item.createdAt : date,
             updatedAt: date
           }
+          if (this.isEdited) {
+            delete payload.refData
+          }
           payload.userRef = db.collection('users').doc(payload.user)
           payload.serviceRef = db.collection('services').doc(payload.service)
           this.isSaved = true

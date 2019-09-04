@@ -575,6 +575,7 @@ export default {
                 storage.ref(meta.fullPath).delete()
               )
             )
+            delete payload.refData
           }
           const imagesMeta = await Promise.all(
             payload.images.map(async image => {

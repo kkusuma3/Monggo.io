@@ -474,6 +474,7 @@ export default {
               .collection('rooms')
               .doc(payload.room)
               .set({ hasQr: false }, { merge: true })
+            delete payload.refData
           }
           await this.getItems(this.collection, this.itemsCallback)
           await this.getItems('rooms')
