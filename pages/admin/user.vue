@@ -477,6 +477,7 @@ export default {
     },
 
     onDeleteClose() {
+      this.$validator.reset()
       this.isDeleting = false
       this.reset()
     },
