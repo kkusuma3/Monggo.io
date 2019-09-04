@@ -123,29 +123,24 @@
       >
         <template #item="{ item }">
           <v-list-item-avatar>
-            <v-avatar
-              :color="getMaterialColor(item.refData.user.name)"
-              class="ma-1"
-            >
+            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
               <app-img
                 v-if="item.avatar && item.avatar.length > 0"
                 :src="item.avatar"
-                :alt="item.refData.user.name"
+                :alt="item.name"
               />
               <span
                 v-else=""
                 :class="{
-                  'white--text': isDarkColor(
-                    getMaterialColor(item.refData.user.name, true)
-                  )
+                  'white--text': isDarkColor(getMaterialColor(item.name, true))
                 }"
               >
-                {{ getInitials(item.refData.user.name) }}
+                {{ getInitials(item.name) }}
               </span>
             </v-avatar>
           </v-list-item-avatar>
           <v-list-item-content>
-            <v-list-item-title>{{ item.refData.user.name }}</v-list-item-title>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
           </v-list-item-content>
         </template>
       </v-autocomplete>
@@ -168,10 +163,7 @@
       >
         <template #item="{ item }">
           <v-list-item-avatar>
-            <v-avatar
-              :color="getMaterialColor(item.refData.user.name)"
-              class="ma-1"
-            >
+            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
               <app-img
                 v-if="item.imagesMeta && item.imagesMeta.length > 0"
                 :src="item.imagesMeta[0].url"
@@ -180,17 +172,15 @@
               <span
                 v-else=""
                 :class="{
-                  'white--text': isDarkColor(
-                    getMaterialColor(item.refData.user.name, true)
-                  )
+                  'white--text': isDarkColor(getMaterialColor(item.name, true))
                 }"
               >
-                {{ getInitials(item.refData.user.name) }}
+                {{ getInitials(item.name) }}
               </span>
             </v-avatar>
           </v-list-item-avatar>
           <v-list-item-content>
-            <v-list-item-title>{{ item.refData.user.name }}</v-list-item-title>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
           </v-list-item-content>
         </template>
       </v-autocomplete>
