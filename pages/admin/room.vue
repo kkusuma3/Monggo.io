@@ -56,17 +56,27 @@
               }}
             </v-icon>
           </v-avatar>
-          <span>{{ item.status === 'empty' ? 'Empty' : 'Reserved' }}</span>
+          <span>
+            {{ item.status === 'empty' ? $t('empty') : $t('reserved') }}
+          </span>
         </v-chip>
       </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
-          {{ $moment(item.createdAt).format('llll') }}
+          {{
+            $moment(item.createdAt)
+              .locale($i18n.locale)
+              .format('llll')
+          }}
         </time>
       </template>
       <template #item.updatedAt="{ item }">
         <time :datetime="item.updatedAt">
-          {{ $moment(item.updatedAt).format('llll') }}
+          {{
+            $moment(item.updatedAt)
+              .locale($i18n.locale)
+              .format('llll')
+          }}
         </time>
       </template>
       <template #item.action="{ item }">
@@ -117,7 +127,30 @@
         required=""
         :label="$t('hotel')"
         outlined=""
-      />
+      >
+        <template #item="{ item }">
+          <v-list-item-avatar>
+            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+              <app-img
+                v-if="item.imagesMeta && item.imagesMeta.length > 0"
+                :src="item.imagesMeta[0].url"
+                :alt="item.imagesMeta[0].name"
+              />
+              <span
+                v-else=""
+                :class="{
+                  'white--text': isDarkColor(getMaterialColor(item.name, true))
+                }"
+              >
+                {{ getInitials(item.name) }}
+              </span>
+            </v-avatar>
+          </v-list-item-avatar>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
+          </v-list-item-content>
+        </template>
+      </v-autocomplete>
       <v-text-field
         v-model="item.name"
         v-validate="'required'"
@@ -304,8 +337,8 @@ export default {
       },
       hotels: [],
       statuses: [
-        { text: 'Empty', value: 'empty' },
-        { text: 'Reserved', value: 'reserved' }
+        { text: this.$t('empty'), value: 'empty' },
+        { text: this.$t('reserved'), value: 'reserved' }
       ]
     }
   },
@@ -352,7 +385,11 @@ export default {
       }
     },
     isEdited() {
-      return this.isEditing && !isEqual(this.item, this.itemOriginal)
+      const item = _cloneDeep(this.item)
+      delete item.refData
+      const itemOriginal = _cloneDeep(this.itemOriginal)
+      delete itemOriginal.refData
+      return this.isEditing && !isEqual(item, itemOriginal)
     }
   },
   watch: {

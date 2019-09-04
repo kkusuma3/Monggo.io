@@ -17,6 +17,11 @@ export default {
   price: 'Harga',
   count: 'Jumlah',
   currency: 'Mata Uang',
+  empty: 'Kosong',
+  reserved: 'Dipesan',
+  received: 'Diterima',
+  processed: 'Diproses',
+  delivered: 'Dikirim',
   add: 'Tambah',
   see: 'Lihat',
   edit: 'Edit',
@@ -31,5 +36,8 @@ export default {
   action: 'Aksi',
   role: 'Peran',
   status: 'Status',
-  file: 'Berkas'
+  file: 'Berkas',
+  admin: 'Admin',
+  operator: 'Operator',
+  guest: 'Tamu'
 }

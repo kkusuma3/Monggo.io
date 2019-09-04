@@ -17,6 +17,11 @@ export default {
   price: 'Price',
   count: 'Count',
   currency: 'Currency',
+  empty: 'Empty',
+  reserved: 'Reserved',
+  received: 'Received',
+  processed: 'Processed',
+  delivered: 'Delivered',
   add: 'Add',
   see: 'See',
   edit: 'Edit',
@@ -31,5 +36,8 @@ export default {
   action: 'Action',
   role: 'Role',
   status: 'Status',
-  file: 'File | File | Files'
+  file: 'File | File | Files',
+  admin: 'Admin',
+  operator: 'Operator',
+  guest: 'Guest'
 }

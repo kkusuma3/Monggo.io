@@ -53,18 +53,26 @@
             </v-icon>
           </v-avatar>
           <span>
-            {{ getRoleText(item.role) }}
+            {{ $t(item.role) }}
           </span>
         </v-chip>
       </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
-          {{ $moment(item.createdAt).format('llll') }}
+          {{
+            $moment(item.createdAt)
+              .locale($i18n.locale)
+              .format('llll')
+          }}
         </time>
       </template>
       <template #item.updatedAt="{ item }">
         <time :datetime="item.updatedAt">
-          {{ $moment(item.updatedAt).format('llll') }}
+          {{
+            $moment(item.updatedAt)
+              .locale($i18n.locale)
+              .format('llll')
+          }}
         </time>
       </template>
       <template #item.action="{ item }">
@@ -296,7 +304,11 @@ export default {
       }
     },
     isEdited() {
-      return this.isEditing && !isEqual(this.item, this.itemOriginal)
+      const item = _cloneDeep(this.item)
+      delete item.refData
+      const itemOriginal = _cloneDeep(this.itemOriginal)
+      delete itemOriginal.refData
+      return this.isEditing && !isEqual(item, itemOriginal)
     },
     getRoleColor() {
       return string => {
@@ -332,17 +344,6 @@ export default {
           default:
             return 'error'
         }
-      }
-    },
-    getRoleText() {
-      return string => {
-        if (!string) {
-          return
-        }
-        string.toString()
-        return `${string.charAt(0).toUpperCase()}${string
-          .slice(1)
-          .toLowerCase()}`
       }
     }
   },

@@ -61,12 +61,20 @@
       </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
-          {{ $moment(item.createdAt).format('llll') }}
+          {{
+            $moment(item.createdAt)
+              .locale($i18n.locale)
+              .format('llll')
+          }}
         </time>
       </template>
       <template #item.updatedAt="{ item }">
         <time :datetime="item.updatedAt">
-          {{ $moment(item.updatedAt).format('llll') }}
+          {{
+            $moment(item.updatedAt)
+              .locale($i18n.locale)
+              .format('llll')
+          }}
         </time>
       </template>
       <template #item.action="{ item }">
@@ -134,22 +142,44 @@
         label="Room"
         outlined=""
       >
-        <template #item="{ item: roomItem }">
+        <template #item="{ item }">
+          <v-list-item-avatar>
+            <v-avatar
+              :color="getMaterialColor(item.refData.room.name)"
+              class="ma-1"
+            >
+              <app-img
+                v-if="item.imagesMeta && item.imagesMeta.length > 0"
+                :src="item.imagesMeta[0].url"
+                :alt="item.imagesMeta[0].name"
+              />
+              <span
+                v-else=""
+                :class="{
+                  'white--text': isDarkColor(
+                    getMaterialColor(item.refData.room.name, true)
+                  )
+                }"
+              >
+                {{ getInitials(item.refData.room.name) }}
+              </span>
+            </v-avatar>
+          </v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title>
-              {{ roomItem.name }}
+              {{ item.refData.room.name }}
             </v-list-item-title>
           </v-list-item-content>
           <v-tooltip bottom="">
             <template #activator="{ on }">
               <v-list-item-action v-on="on">
                 <v-icon>
-                  {{ roomItem.hasQr ? 'mdi-check' : 'mdi-close' }}
+                  {{ item.hasQr ? 'mdi-check' : 'mdi-close' }}
                 </v-icon>
               </v-list-item-action>
             </template>
             <span>
-              {{ roomItem.hasQr ? $t('alreadyHasQr') : $t('notHasQr') }}
+              {{ item.hasQr ? $t('alreadyHasQr') : $t('notHasQr') }}
             </span>
           </v-tooltip>
         </template>
@@ -173,6 +203,9 @@ import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
 import _cloneDeep from 'lodash.clonedeep'
 import isEqual from 'fast-deep-equal'
+import isDarkColor from 'is-dark-color'
+import materialColorHash from 'material-color-hash'
+import initials from 'initials'
 import pluralize from 'pluralize'
 import paramCase from 'param-case'
 import QrCode from '@chenfengyuan/vue-qrcode'
@@ -259,8 +292,40 @@ export default {
         return slugify(string)
       }
     },
+    isDarkColor() {
+      return color => {
+        if (!color) {
+          return
+        }
+        color = color.toString()
+        return isDarkColor(color)
+      }
+    },
+    getMaterialColor() {
+      return (string, isCode = false) => {
+        if (!string) {
+          return
+        }
+        string = string.toString()
+        const { backgroundColor, materialColorName } = materialColorHash(string)
+        return isCode ? backgroundColor : materialColorName.toLowerCase()
+      }
+    },
+    getInitials() {
+      return string => {
+        if (!string) {
+          return
+        }
+        string = string.toString()
+        return initials(string)
+      }
+    },
     isEdited() {
-      return this.isEditing && !isEqual(this.item, this.itemOriginal)
+      const item = _cloneDeep(this.item)
+      delete item.refData
+      const itemOriginal = _cloneDeep(this.itemOriginal)
+      delete itemOriginal.refData
+      return this.isEditing && !isEqual(item, itemOriginal)
     }
   },
   watch: {
