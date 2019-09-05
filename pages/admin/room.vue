@@ -243,10 +243,11 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
 import _cloneDeep from 'lodash.clonedeep'
+import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
@@ -278,6 +279,7 @@ export default {
           align: 'center',
           sortable: false
         },
+        { text: this.$t('hotel'), value: 'refData.hotel.name' },
         { text: this.$t('name'), value: 'name' },
         { text: this.$t('description'), value: 'description' },
         { text: this.$t('status'), value: 'status', align: 'center' },
@@ -307,11 +309,11 @@ export default {
       items: [],
       item: {
         uid: uuidv4(),
-        hotel: '',
-        name: '',
+        hotel: null,
+        name: null,
         images: [],
         imagesMeta: [],
-        description: '',
+        description: null,
         hasQr: false,
         status: 'empty',
         createdAt: null,
@@ -319,21 +321,21 @@ export default {
       },
       itemOriginal: {
         uid: uuidv4(),
-        hotel: '',
-        name: '',
+        hotel: null,
+        name: null,
         images: [],
         imagesMeta: [],
-        description: '',
+        description: null,
         hasQr: false,
         status: 'empty',
         createdAt: null,
         updatedAt: null
       },
       image: {
-        name: '',
-        url: '',
-        fullPath: '',
-        createdAt: ''
+        name: null,
+        url: null,
+        fullPath: null,
+        createdAt: null
       },
       hotels: [],
       statuses: [
@@ -344,6 +346,8 @@ export default {
   },
   computed: {
     ...mapState(['isLoading']),
+    ...mapState('user', ['user']),
+    ...mapGetters('user', ['role']),
     collection() {
       return pluralize(this.title.toLowerCase())
     },
@@ -387,8 +391,11 @@ export default {
     isEdited() {
       const item = _cloneDeep(this.item)
       delete item.refData
+      delete item.hotelRef
+
       const itemOriginal = _cloneDeep(this.itemOriginal)
       delete itemOriginal.refData
+      delete itemOriginal.hotelRef
       return this.isEditing && !isEqual(item, itemOriginal)
     }
   },
@@ -411,10 +418,59 @@ export default {
     }
   },
   mounted() {
-    this.getItems()
-    this.getItems('hotels')
+    this.initData()
   },
   methods: {
+    async initData() {
+      try {
+        this.$setLoading(true)
+        if (this.role === 'operator') {
+          await Promise.all([
+            this.getItems(
+              db
+                .collection(this.collection)
+                .where('hotel', '==', this.user.hotel),
+              'items',
+              this.itemsCallback
+            ),
+            this.getItems(
+              db.collection('hotels').where('uid', '==', this.user.hotel),
+              'hotels'
+            )
+          ])
+        } else {
+          await Promise.all([
+            this.getItems(this.collection, 'items', this.itemsCallback),
+            this.getItems('hotels')
+          ])
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    async itemsCallback(data) {
+      try {
+        this.$setLoading(true)
+        const hotelRefDoc = await data.hotelRef.get()
+        const hotelRef = hotelRefDoc.data()
+        delete data.hotelRef
+        return {
+          hotel: hotelRef
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     async getFileFromUrl(url, name) {
       try {
         // Taken from: https://stackoverflow.com/questions/44070437/how-to-get-a-file-or-blob-from-an-url-in-javascript
@@ -451,11 +507,11 @@ export default {
     reset() {
       const item = {
         uid: uuidv4(),
-        hotel: '',
-        name: '',
+        hotel: null,
+        name: null,
         images: [],
         imagesMeta: [],
-        description: '',
+        description: null,
         hasQr: false,
         status: 'empty',
         createdAt: null,
@@ -465,10 +521,15 @@ export default {
       this.itemOriginal = _cloneDeep(item)
     },
 
-    async getItems(collection = this.collection, cb) {
+    async getItems(collection = this.collection, location, cb) {
       try {
         this.$setLoading(true)
-        const snaps = await db.collection(collection).get()
+        let snaps = null
+        if (typeof collection === 'string') {
+          snaps = await db.collection(collection).get()
+        } else {
+          snaps = await collection.get()
+        }
         const items = []
         snaps.forEach(async doc => {
           const data = doc.data()
@@ -490,10 +551,16 @@ export default {
             })
           }
         })
-        if (collection === this.collection) {
-          this.items = items
-        } else if (this[collection]) {
-          this[collection] = items
+        if (typeof collection === 'string') {
+          if (collection === this.collection) {
+            this.items = items
+          } else if (this[collection]) {
+            this[collection] = items
+          } else {
+            throw new Error('Collection must be defined in the data.')
+          }
+        } else if (this[location]) {
+          this[location] = items
         } else {
           throw new Error('Collection must be defined in the data.')
         }
@@ -594,12 +661,21 @@ export default {
           )
           payload.imagesMeta = imagesMeta
           delete payload.images
+          payload.hotelRef = db.collection('hotels').doc(payload.hotel)
           this.isSaved = true
           await db
             .collection(this.collection)
             .doc(payload.uid)
-            .set(payload, { merge: true })
-          await this.getItems()
+            .set(
+              cleanDeep(payload, {
+                emptyArrays: false,
+                emptyObjects: false,
+                emptyStrings: false,
+                nullValues: false
+              }),
+              { merge: true }
+            )
+          await this.initData()
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: 'Data is saved' })
         }
@@ -630,7 +706,7 @@ export default {
         await Promise.all(
           item.imagesMeta.map(meta => storage.ref(meta.fullPath).delete())
         )
-        await this.getItems()
+        await this.initData()
         await this.onDeleteClose()
         await this.$notify({ kind: 'success', message: 'Data is deleted' })
       } catch (error) {
@@ -657,10 +733,10 @@ export default {
     onPreviewClose() {
       this.isPreviewing = false
       this.image = {
-        name: '',
-        url: '',
-        fullPath: '',
-        createdAt: ''
+        name: null,
+        url: null,
+        fullPath: null,
+        createdAt: null
       }
     },
     onPreviewAction() {

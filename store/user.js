@@ -7,7 +7,8 @@ export const state = () => ({
 })
 
 export const getters = {
-  isAuth: state => state.user !== null
+  isAuth: state => state.user !== null,
+  role: (state, getters) => (getters.isAuth ? state.user.role : null)
 }
 
 export const mutations = {

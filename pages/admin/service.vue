@@ -1,3 +1,20 @@
+<i18n>
+{
+  "en-us": {
+    "editService": "@:(edit) {name} for {hotel}",
+    "deleteService": "@:(delete) {name} for {hotel}"
+  },
+  "en-uk": {
+    "editService": "@:(edit) {name} for {hotel}",
+    "deleteService": "@:(delete) {name} for {hotel}"
+  },
+  "id": {
+    "editService": "@:(edit) {name} untuk {hotel}",
+    "deleteService": "@:(delete) {name} untuk {hotel}"
+  }
+}
+</i18n>
+
 <template>
   <app-wrapper
     :title="title"
@@ -74,7 +91,14 @@
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('edit') }} {{ item.name }}</span>
+          <span>
+            {{
+              $t('editService', {
+                name: item.name,
+                hotel: item.refData.hotel.name
+              })
+            }}
+          </span>
         </v-tooltip>
         <v-tooltip bottom="">
           <template #activator="{ on }">
@@ -88,11 +112,58 @@
               <v-icon>mdi-delete</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('delete') }} {{ item.name }}</span>
+          <span>
+            {{
+              $t('deleteService', {
+                name: item.name,
+                hotel: item.refData.hotel.name
+              })
+            }}
+          </span>
         </v-tooltip>
       </template>
     </v-data-table>
     <template #form="">
+      <v-autocomplete
+        v-model="item.hotel"
+        v-validate="'required'"
+        :items="hotels"
+        :error-messages="errors.collect('hotel')"
+        :disabled="isLoading"
+        item-text="name"
+        item-value="uid"
+        data-vv-name="hotel"
+        :data-vv-as="$t('hotel')"
+        name="hotel"
+        clearable=""
+        data-vv-value-path="item.hotel"
+        required=""
+        :label="$t('hotel')"
+        outlined=""
+      >
+        <template #item="{ item }">
+          <v-list-item-avatar>
+            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+              <app-img
+                v-if="item.imagesMeta && item.imagesMeta.length > 0"
+                :src="item.imagesMeta[0].url"
+                :alt="item.imagesMeta[0].name"
+              />
+              <span
+                v-else=""
+                :class="{
+                  'white--text': isDarkColor(getMaterialColor(item.name, true))
+                }"
+              >
+                {{ getInitials(item.name) }}
+              </span>
+            </v-avatar>
+          </v-list-item-avatar>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
+          </v-list-item-content>
+        </template>
+      </v-autocomplete>
       <v-autocomplete
         v-model="item.category"
         v-validate="'required'"
@@ -253,10 +324,11 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
 import _cloneDeep from 'lodash.clonedeep'
+import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
@@ -289,8 +361,8 @@ export default {
           align: 'center',
           sortable: false
         },
+        { text: this.$t('hotel'), value: 'refData.hotel.name' },
         { text: this.$t('name'), value: 'name' },
-        { text: this.$t('description'), value: 'description' },
         { text: this.$t('count'), value: 'count' },
         { text: this.$t('price'), value: 'price' },
         {
@@ -317,7 +389,6 @@ export default {
         }
       ],
       items: [],
-      categories: [],
       currencies: [
         { text: 'United States Dollar', value: 'USD', symbol: '$' },
         { text: 'Pound Sterling', value: 'GBP', symbol: '£' },
@@ -325,40 +396,46 @@ export default {
       ],
       item: {
         uid: uuidv4(),
-        category: '',
-        name: '',
+        hotel: null,
+        category: null,
+        name: null,
         images: [],
         imagesMeta: [],
-        description: '',
-        currency: '',
-        price: '',
+        description: null,
+        currency: null,
+        price: null,
         count: 0,
         createdAt: null,
         updatedAt: null
       },
       itemOriginal: {
         uid: uuidv4(),
-        category: '',
-        name: '',
+        hotel: null,
+        category: null,
+        name: null,
         images: [],
         imagesMeta: [],
-        description: '',
-        currency: '',
-        price: '',
+        description: null,
+        currency: null,
+        price: null,
         count: 0,
         createdAt: null,
         updatedAt: null
       },
       image: {
-        name: '',
-        url: '',
-        fullPath: '',
-        createdAt: ''
-      }
+        name: null,
+        url: null,
+        fullPath: null,
+        createdAt: null
+      },
+      hotels: [],
+      categories: []
     }
   },
   computed: {
     ...mapState(['isLoading']),
+    ...mapState('user', ['user']),
+    ...mapGetters('user', ['role']),
     collection() {
       return pluralize(paramCase(this.title))
     },
@@ -402,8 +479,12 @@ export default {
     isEdited() {
       const item = _cloneDeep(this.item)
       delete item.refData
+      delete item.categoryRef
+      delete item.hotelRef
       const itemOriginal = _cloneDeep(this.itemOriginal)
       delete itemOriginal.refData
+      delete itemOriginal.categoryRef
+      delete itemOriginal.hotelRef
       return this.isEditing && !isEqual(item, itemOriginal)
     }
   },
@@ -426,10 +507,36 @@ export default {
     }
   },
   mounted() {
-    this.getItems(this.collection, this.itemsCallback)
-    this.getItems('categories')
+    this.initData()
   },
   methods: {
+    async initData() {
+      try {
+        this.$setLoading(true)
+        if (this.role === 'operator') {
+          await this.getItems(
+            db
+              .collection(this.collection)
+              .where('hotel', '==', this.user.hotel),
+            'items',
+            this.itemsCallback
+          )
+        } else {
+          await this.getItems(this.collection, 'items', this.itemsCallback)
+        }
+        await Promise.all([
+          this.getItems('hotels'),
+          this.getItems('categories')
+        ])
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     async getFileFromUrl(url, name) {
       try {
         // Taken from: https://stackoverflow.com/questions/44070437/how-to-get-a-file-or-blob-from-an-url-in-javascript
@@ -465,10 +572,18 @@ export default {
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
-        const categoryRefDoc = await data.categoryRef.get()
-        const categoryRef = categoryRefDoc.data()
+        const [hotelRefDoc, categoryRefDoc] = await Promise.all([
+          data.hotelRef.get(),
+          data.categoryRef.get()
+        ])
+        const [hotelRef, categoryRef] = await Promise.all([
+          hotelRefDoc.data(),
+          categoryRefDoc.data()
+        ])
+        delete data.hotelRef
         delete data.categoryRef
         return {
+          hotel: hotelRef,
           category: categoryRef
         }
       } catch (error) {
@@ -484,13 +599,14 @@ export default {
     reset() {
       const item = {
         uid: uuidv4(),
-        category: '',
-        name: '',
+        hotel: null,
+        category: null,
+        name: null,
         images: [],
         imagesMeta: [],
-        description: '',
-        currency: '',
-        price: '',
+        description: null,
+        currency: null,
+        price: null,
         count: 0,
         createdAt: null,
         updatedAt: null
@@ -499,10 +615,15 @@ export default {
       this.itemOriginal = _cloneDeep(item)
     },
 
-    async getItems(collection = this.collection, cb) {
+    async getItems(collection = this.collection, location, cb) {
       try {
         this.$setLoading(true)
-        const snaps = await db.collection(collection).get()
+        let snaps = null
+        if (typeof collection === 'string') {
+          snaps = await db.collection(collection).get()
+        } else {
+          snaps = await collection.get()
+        }
         const items = []
         snaps.forEach(async doc => {
           const data = doc.data()
@@ -524,10 +645,16 @@ export default {
             })
           }
         })
-        if (collection === this.collection) {
-          this.items = items
-        } else if (this[collection]) {
-          this[collection] = items
+        if (typeof collection === 'string') {
+          if (collection === this.collection) {
+            this.items = items
+          } else if (this[collection]) {
+            this[collection] = items
+          } else {
+            throw new Error('Collection must be defined in the data.')
+          }
+        } else if (this[location]) {
+          this[location] = items
         } else {
           throw new Error('Collection must be defined in the data.')
         }
@@ -628,6 +755,7 @@ export default {
           )
           payload.imagesMeta = imagesMeta
           delete payload.images
+          payload.hotelRef = db.collection('hotels').doc(payload.hotel)
           payload.categoryRef = db
             .collection('categories')
             .doc(payload.category)
@@ -636,8 +764,16 @@ export default {
           await db
             .collection(this.collection)
             .doc(payload.uid)
-            .set(payload, { merge: true })
-          await this.getItems(this.collection, this.itemsCallback)
+            .set(
+              cleanDeep(payload, {
+                emptyArrays: false,
+                emptyObjects: false,
+                emptyStrings: false,
+                nullValues: false
+              }),
+              { merge: true }
+            )
+          await this.initData()
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: 'Data is saved' })
         }
@@ -668,7 +804,7 @@ export default {
         await Promise.all(
           item.imagesMeta.map(meta => storage.ref(meta.fullPath).delete())
         )
-        await this.getItems(this.collection, this.itemsCallback)
+        await this.initData()
         await this.onDeleteClose()
         await this.$notify({ kind: 'success', message: 'Data is deleted' })
       } catch (error) {
@@ -695,10 +831,10 @@ export default {
     onPreviewClose() {
       this.isPreviewing = false
       this.image = {
-        name: '',
-        url: '',
-        fullPath: '',
-        createdAt: ''
+        name: null,
+        url: null,
+        fullPath: null,
+        createdAt: null
       }
     },
     onPreviewAction() {

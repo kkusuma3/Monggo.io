@@ -158,6 +158,46 @@
         :label="$t('role')"
         outlined=""
       />
+      <v-autocomplete
+        v-model="item.hotel"
+        v-validate="{ required: item.role === 'operator' }"
+        :items="hotels"
+        :error-messages="errors.collect('hotel')"
+        :disabled="isLoading || item.role !== 'operator'"
+        item-text="name"
+        item-value="uid"
+        data-vv-name="hotel"
+        :data-vv-as="$t('hotel')"
+        name="hotel"
+        clearable=""
+        data-vv-value-path="item.hotel"
+        :required="item.role === 'operator'"
+        :label="$t('hotel')"
+        outlined=""
+      >
+        <template #item="{ item }">
+          <v-list-item-avatar>
+            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+              <app-img
+                v-if="item.imagesMeta && item.imagesMeta.length > 0"
+                :src="item.imagesMeta[0].url"
+                :alt="item.imagesMeta[0].name"
+              />
+              <span
+                v-else=""
+                :class="{
+                  'white--text': isDarkColor(getMaterialColor(item.name, true))
+                }"
+              >
+                {{ getInitials(item.name) }}
+              </span>
+            </v-avatar>
+          </v-list-item-avatar>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
+          </v-list-item-content>
+        </template>
+      </v-autocomplete>
       <v-row>
         <v-col :key="item.avatar" cols="4" class="d-flex child-flex">
           <v-card ripple="" flat="" @click="onTriggerPreview">
@@ -176,6 +216,7 @@
 import { mapState } from 'vuex'
 import slugify from '@sindresorhus/slugify'
 import _cloneDeep from 'lodash.clonedeep'
+import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
@@ -235,22 +276,24 @@ export default {
       ],
       items: [],
       item: {
-        uid: '',
-        name: '',
-        email: '',
-        phone: '',
-        avatar: '',
-        role: '',
+        uid: null,
+        name: null,
+        email: null,
+        phone: null,
+        avatar: null,
+        role: null,
+        hotel: null,
         createdAt: null,
         updatedAt: null
       },
       itemOriginal: {
-        uid: '',
-        name: '',
-        email: '',
-        phone: '',
-        avatar: '',
-        role: '',
+        uid: null,
+        name: null,
+        email: null,
+        phone: null,
+        avatar: null,
+        role: null,
+        hotel: null,
         createdAt: null,
         updatedAt: null
       },
@@ -258,11 +301,15 @@ export default {
         { text: 'Guest', value: 'guest' },
         { text: 'Operator', value: 'operator' },
         { text: 'Admin', value: 'admin' }
-      ]
+      ],
+      hotels: []
     }
   },
   computed: {
     ...mapState(['isLoading']),
+    isOperator() {
+      return this.item.role === 'operator'
+    },
     collection() {
       return pluralize(paramCase(this.title))
     },
@@ -347,18 +394,28 @@ export default {
       }
     }
   },
+  watch: {
+    'item.role': function(role) {
+      if (role !== 'operator') {
+        this.item.hotel = null
+        this.itemOriginal.hotel = null
+      }
+    }
+  },
   mounted() {
     this.getItems()
+    this.getItems('hotels')
   },
   methods: {
     reset() {
       const item = {
-        uid: '',
-        name: '',
-        email: '',
-        phone: '',
-        avatar: '',
-        role: '',
+        uid: null,
+        name: null,
+        email: null,
+        phone: null,
+        avatar: null,
+        role: null,
+        hotel: null,
         createdAt: null,
         updatedAt: null
       }
@@ -366,10 +423,15 @@ export default {
       this.itemOriginal = _cloneDeep(item)
     },
 
-    async getItems(collection = this.collection, cb) {
+    async getItems(collection = this.collection, location, cb) {
       try {
         this.$setLoading(true)
-        const snaps = await db.collection(collection).get()
+        let snaps = null
+        if (typeof collection === 'string') {
+          snaps = await db.collection(collection).get()
+        } else {
+          snaps = await collection.get()
+        }
         const items = []
         snaps.forEach(async doc => {
           const data = doc.data()
@@ -391,10 +453,16 @@ export default {
             })
           }
         })
-        if (collection === this.collection) {
-          this.items = items
-        } else if (this[collection]) {
-          this[collection] = items
+        if (typeof collection === 'string') {
+          if (collection === this.collection) {
+            this.items = items
+          } else if (this[collection]) {
+            this[collection] = items
+          } else {
+            throw new Error('Collection must be defined in the data.')
+          }
+        } else if (this[location]) {
+          this[location] = items
         } else {
           throw new Error('Collection must be defined in the data.')
         }
@@ -461,7 +529,15 @@ export default {
           await db
             .collection(this.collection)
             .doc(payload.uid)
-            .set(payload, { merge: true })
+            .set(
+              cleanDeep(payload, {
+                emptyArrays: false,
+                emptyObjects: false,
+                emptyStrings: false,
+                nullValues: false
+              }),
+              { merge: true }
+            )
           await this.getItems()
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: 'Data is saved' })
@@ -516,7 +592,7 @@ export default {
 
     onPreviewClose() {
       this.isPreviewing = false
-      this.image = ''
+      this.image = null
     },
     onPreviewAction() {
       this.onPreviewClose()

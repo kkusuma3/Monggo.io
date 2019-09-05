@@ -22,6 +22,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   layout: 'admin',
   head() {
@@ -30,12 +32,12 @@ export default {
     }
   },
   data() {
-    return {
-      menus: [
-        {
-          icon: 'mdi-office-building',
-          to: 'hotel'
-        },
+    return {}
+  },
+  computed: {
+    ...mapGetters('user', ['role']),
+    menus() {
+      const menus = [
         {
           icon: 'mdi-hotel',
           to: 'room'
@@ -45,22 +47,36 @@ export default {
           to: 'qr-code'
         },
         {
-          icon: 'mdi-tag',
-          to: 'category'
-        },
-        {
           icon: 'mdi-room-service',
           to: 'service'
         },
         {
           icon: 'mdi-cart',
           to: 'order'
-        },
-        {
-          icon: 'mdi-account-group',
-          to: 'user'
         }
       ]
+      switch (this.role) {
+        case 'admin':
+          return [
+            {
+              icon: 'mdi-office-building',
+              to: 'hotel'
+            },
+            ...menus,
+            {
+              icon: 'mdi-tag',
+              to: 'category'
+            },
+            {
+              icon: 'mdi-account-group',
+              to: 'user'
+            }
+          ]
+        case 'operator':
+          return menus
+        default:
+          return []
+      }
     }
   }
 }

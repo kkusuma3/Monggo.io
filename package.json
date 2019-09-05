@@ -46,6 +46,7 @@
     "@nuxtjs/pwa": "^3.0.0-beta.16",
     "@nuxtjs/sentry": "^3.0.0",
     "@sindresorhus/slugify": "^0.9.1",
+    "clean-deep": "^3.0.4",
     "cookie-universal-nuxt": "^2.0.17",
     "fast-deep-equal": "^2.0.1",
     "firebase": "^6.4.2",

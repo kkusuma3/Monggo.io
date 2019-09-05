@@ -172,6 +172,7 @@ import { mapState } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
 import _cloneDeep from 'lodash.clonedeep'
+import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
@@ -232,29 +233,29 @@ export default {
       items: [],
       item: {
         uid: uuidv4(),
-        name: '',
+        name: null,
         images: [],
         imagesMeta: [],
-        description: '',
-        status: '',
+        description: null,
+        status: null,
         createdAt: null,
         updatedAt: null
       },
       itemOriginal: {
         uid: uuidv4(),
-        name: '',
+        name: null,
         images: [],
         imagesMeta: [],
-        description: '',
-        status: '',
+        description: null,
+        status: null,
         createdAt: null,
         updatedAt: null
       },
       image: {
-        name: '',
-        url: '',
-        fullPath: '',
-        createdAt: ''
+        name: null,
+        url: null,
+        fullPath: null,
+        createdAt: null
       }
     }
   },
@@ -366,11 +367,11 @@ export default {
     reset() {
       const item = {
         uid: uuidv4(),
-        name: '',
+        name: null,
         images: [],
         imagesMeta: [],
-        description: '',
-        status: '',
+        description: null,
+        status: null,
         createdAt: null,
         updatedAt: null
       }
@@ -378,10 +379,15 @@ export default {
       this.itemOriginal = _cloneDeep(item)
     },
 
-    async getItems(collection = this.collection, cb) {
+    async getItems(collection = this.collection, location, cb) {
       try {
         this.$setLoading(true)
-        const snaps = await db.collection(collection).get()
+        let snaps = null
+        if (typeof collection === 'string') {
+          snaps = await db.collection(collection).get()
+        } else {
+          snaps = await collection.get()
+        }
         const items = []
         snaps.forEach(async doc => {
           const data = doc.data()
@@ -403,10 +409,16 @@ export default {
             })
           }
         })
-        if (collection === this.collection) {
-          this.items = items
-        } else if (this[collection]) {
-          this[collection] = items
+        if (typeof collection === 'string') {
+          if (collection === this.collection) {
+            this.items = items
+          } else if (this[collection]) {
+            this[collection] = items
+          } else {
+            throw new Error('Collection must be defined in the data.')
+          }
+        } else if (this[location]) {
+          this[location] = items
         } else {
           throw new Error('Collection must be defined in the data.')
         }
@@ -510,7 +522,15 @@ export default {
           await db
             .collection(this.collection)
             .doc(payload.uid)
-            .set(payload, { merge: true })
+            .set(
+              cleanDeep(payload, {
+                emptyArrays: false,
+                emptyObjects: false,
+                emptyStrings: false,
+                nullValues: false
+              }),
+              { merge: true }
+            )
           await this.getItems()
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: 'Data is saved' })
@@ -569,10 +589,10 @@ export default {
     onPreviewClose() {
       this.isPreviewing = false
       this.image = {
-        name: '',
-        url: '',
-        fullPath: '',
-        createdAt: ''
+        name: null,
+        url: null,
+        fullPath: null,
+        createdAt: null
       }
     },
     onPreviewAction() {

@@ -130,6 +130,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import pluralize from 'pluralize'
 import { auth, db } from '~/utils/firebase'
 import AppNotification from '~/components/AppNotification'
 import { types as userTypes } from '~/store/user'
@@ -145,12 +146,14 @@ export default {
     return {
       isSidebar: false,
       admins: [],
-      locales: [...locales],
-      menus: [
-        {
-          icon: 'mdi-office-building',
-          to: 'hotel'
-        },
+      operators: [],
+      locales: [...locales]
+    }
+  },
+  computed: {
+    ...mapGetters('user', ['isAuth', 'role']),
+    menus() {
+      const menus = [
         {
           icon: 'mdi-hotel',
           to: 'room'
@@ -160,26 +163,37 @@ export default {
           to: 'qr-code'
         },
         {
-          icon: 'mdi-tag',
-          to: 'category'
-        },
-        {
           icon: 'mdi-room-service',
           to: 'service'
         },
         {
           icon: 'mdi-cart',
           to: 'order'
-        },
-        {
-          icon: 'mdi-account-group',
-          to: 'user'
         }
       ]
+      switch (this.role) {
+        case 'admin':
+          return [
+            {
+              icon: 'mdi-office-building',
+              to: 'hotel'
+            },
+            ...menus,
+            {
+              icon: 'mdi-tag',
+              to: 'category'
+            },
+            {
+              icon: 'mdi-account-group',
+              to: 'user'
+            }
+          ]
+        case 'operator':
+          return menus
+        default:
+          return []
+      }
     }
-  },
-  computed: {
-    ...mapGetters('user', ['isAuth'])
   },
   watch: {
     '$vuetify.breakpoint.name': function(value) {
@@ -198,7 +212,7 @@ export default {
     async init() {
       await this.initLocale()
       await this.initAuth()
-      await this.getAdmin()
+      await Promise.all([this.getUser('admin'), this.getUser('operator')])
       await this.onAuthStateChanged()
     },
     initLocale() {
@@ -209,10 +223,10 @@ export default {
         this.$router.push(this.switchLocalePath(currLocale))
       }
     },
-    async getAdmin() {
+    async getUser(role) {
       try {
         this.$setLoading(true)
-        const snaps = await usersRef.where('role', '==', 'admin').get()
+        const snaps = await usersRef.where('role', '==', role).get()
         const admins = []
         snaps.forEach(doc => {
           const data = doc.data()
@@ -222,7 +236,11 @@ export default {
             updatedAt: data && data.updatedAt && data.updatedAt.toDate()
           })
         })
-        this.admins = admins
+        if (this[pluralize(role)]) {
+          this[pluralize(role)] = admins
+        } else {
+          throw new Error('Collection must be defined in the data.')
+        }
       } catch (error) {
         this.$notify({
           isError: true,
@@ -241,7 +259,33 @@ export default {
           (acc, curr) => acc || curr.email === user.email,
           false
         )
-        if (!isAdmin) {
+        const isOperator = this.operators.reduce(
+          (acc, curr) => acc || curr.email === user.email,
+          false
+        )
+        if (isAdmin || isOperator) {
+          try {
+            this.$setLoading(true)
+            const snap = await usersRef.doc(user.uid).get()
+            const data = await snap.data()
+            await this.$store.commit(`user/${userTypes.SET_USER}`, {
+              ...data,
+              createdAt: data && data.createdAt && data.createdAt.toDate(),
+              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+            })
+            await this.$notify({
+              kind: 'success',
+              message: 'Login successfully'
+            })
+          } catch (error) {
+            this.$notify({
+              isError: true,
+              message: error.message
+            })
+          } finally {
+            this.$setLoading(false)
+          }
+        } else {
           try {
             this.$setLoading(true)
             const payload = {
@@ -258,28 +302,6 @@ export default {
             await auth.signOut()
             await this.$notify({
               message: `You're not the admin`
-            })
-          } catch (error) {
-            this.$notify({
-              isError: true,
-              message: error.message
-            })
-          } finally {
-            this.$setLoading(false)
-          }
-        } else {
-          try {
-            this.$setLoading(true)
-            const snap = await usersRef.doc(user.uid).get()
-            const data = await snap.data()
-            await this.$store.commit(`user/${userTypes.SET_USER}`, {
-              ...data,
-              createdAt: data && data.createdAt && data.createdAt.toDate(),
-              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-            })
-            await this.$notify({
-              kind: 'success',
-              message: 'Login successfully'
             })
           } catch (error) {
             this.$notify({

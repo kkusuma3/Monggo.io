@@ -18,7 +18,7 @@
   },
   "id": {
     "alreadyHasQR": "Telah memiliki @:(qr-code)",
-    "notHasQr": "Doesn't has @:(qr-code)",
+    "notHasQr": "Belum memiliki @:(qr-code)",
     "uniqueQR": "Silakan pilih kamar lain, kamar ini sudah memiliki @:(qr-code)",
     "seeQr": "@:(see) @:(qr-code) untuk {name}",
     "editQr": "@:(edit) @:(qr-code) untuk {name}",
@@ -144,10 +144,7 @@
       >
         <template #item="{ item }">
           <v-list-item-avatar>
-            <v-avatar
-              :color="getMaterialColor(item.refData.room.name)"
-              class="ma-1"
-            >
+            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
               <app-img
                 v-if="item.imagesMeta && item.imagesMeta.length > 0"
                 :src="item.imagesMeta[0].url"
@@ -156,18 +153,16 @@
               <span
                 v-else=""
                 :class="{
-                  'white--text': isDarkColor(
-                    getMaterialColor(item.refData.room.name, true)
-                  )
+                  'white--text': isDarkColor(getMaterialColor(item.name, true))
                 }"
               >
-                {{ getInitials(item.refData.room.name) }}
+                {{ getInitials(item.name) }}
               </span>
             </v-avatar>
           </v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title>
-              {{ item.refData.room.name }}
+              {{ item.name }}
             </v-list-item-title>
           </v-list-item-content>
           <v-tooltip bottom="">
@@ -198,10 +193,11 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
 import _cloneDeep from 'lodash.clonedeep'
+import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
@@ -266,13 +262,15 @@ export default {
       rooms: [],
       item: {
         uid: uuidv4(),
-        room: '',
+        room: null,
+        hotel: null,
         createdAt: null,
         updatedAt: null
       },
       itemOriginal: {
         uid: uuidv4(),
-        room: '',
+        room: null,
+        hotel: null,
         createdAt: null,
         updatedAt: null
       }
@@ -280,6 +278,8 @@ export default {
   },
   computed: {
     ...mapState(['isLoading']),
+    ...mapState('user', ['user']),
+    ...mapGetters('user', ['role']),
     collection() {
       return pluralize(paramCase(this.title))
     },
@@ -323,29 +323,72 @@ export default {
     isEdited() {
       const item = _cloneDeep(this.item)
       delete item.refData
+      delete item.hotelRef
+      delete item.roomRef
+
       const itemOriginal = _cloneDeep(this.itemOriginal)
       delete itemOriginal.refData
+      delete itemOriginal.hotelRef
+      delete itemOriginal.roomRef
       return this.isEditing && !isEqual(item, itemOriginal)
     }
   },
   watch: {
     'item.room': function(id) {
-      const room = this.rooms.find(({ uid }) => uid === id)
-      console.log(id, room)
-      if (room && room.hasQr && this.isEdited) {
-        this.$notify({
-          isError: true,
-          message: this.$t('uniqueQR')
-        })
-        this.item.room = ''
+      if (id) {
+        const room = this.rooms.find(({ uid }) => uid === id)
+        if (id !== this.itemOriginal.room) {
+          if (room && room.hasQr && !this.isDeleting) {
+            this.$notify({
+              isError: true,
+              message: this.$t('uniqueQR')
+            })
+            this.item.room = null
+          }
+        }
+        this.item.hotel = room.hotel
+      } else {
+        this.item.hotel = null
       }
     }
   },
   mounted() {
-    this.getItems(this.collection, this.itemsCallback)
-    this.getItems('rooms')
+    this.initData()
   },
   methods: {
+    async initData() {
+      try {
+        this.$setLoading(true)
+        if (this.role === 'operator') {
+          await Promise.all([
+            this.getItems(
+              db
+                .collection(this.collection)
+                .where('hotel', '==', this.user.hotel),
+              'items',
+              this.itemsCallback
+            ),
+            this.getItems(
+              db.collection('rooms').where('hotel', '==', this.user.hotel),
+              'rooms',
+              this.roomsCallback
+            )
+          ])
+        } else {
+          await Promise.all([
+            this.getItems(this.collection, 'items', this.itemsCallback),
+            this.getItems('rooms', null, this.roomsCallback)
+          ])
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
@@ -364,10 +407,29 @@ export default {
         this.$setLoading(false)
       }
     },
+    async roomsCallback(data) {
+      try {
+        this.$setLoading(true)
+        const hotelRefDoc = await data.hotelRef.get()
+        const hotelRef = hotelRefDoc.data()
+        delete data.hotelRef
+        return {
+          hotel: hotelRef
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     reset() {
       const item = {
         uid: uuidv4(),
-        room: '',
+        room: null,
+        hotel: null,
         createdAt: null,
         updatedAt: null
       }
@@ -375,10 +437,15 @@ export default {
       this.itemOriginal = _cloneDeep(item)
     },
 
-    async getItems(collection = this.collection, cb) {
+    async getItems(collection = this.collection, location, cb) {
       try {
         this.$setLoading(true)
-        const snaps = await db.collection(collection).get()
+        let snaps = null
+        if (typeof collection === 'string') {
+          snaps = await db.collection(collection).get()
+        } else {
+          snaps = await collection.get()
+        }
         const items = []
         snaps.forEach(async doc => {
           const data = doc.data()
@@ -400,10 +467,16 @@ export default {
             })
           }
         })
-        if (collection === this.collection) {
-          this.items = items
-        } else if (this[collection]) {
-          this[collection] = items
+        if (typeof collection === 'string') {
+          if (collection === this.collection) {
+            this.items = items
+          } else if (this[collection]) {
+            this[collection] = items
+          } else {
+            throw new Error('Collection must be defined in the data.')
+          }
+        } else if (this[location]) {
+          this[location] = items
         } else {
           throw new Error('Collection must be defined in the data.')
         }
@@ -459,12 +532,24 @@ export default {
             createdAt: this.isEditing ? this.item.createdAt : date,
             updatedAt: date
           }
+          const room = this.rooms.find(({ uid }) => uid === payload.room)
+          console.log(room)
+
           payload.roomRef = db.collection('rooms').doc(payload.room)
+          payload.hotelRef = db.collection('hotels').doc(room.hotel)
           this.isSaved = true
           await db
             .collection(this.collection)
             .doc(payload.uid)
-            .set(payload, { merge: true })
+            .set(
+              cleanDeep(payload, {
+                emptyArrays: false,
+                emptyObjects: false,
+                emptyStrings: false,
+                nullValues: false
+              }),
+              { merge: true }
+            )
           await db
             .collection('rooms')
             .doc(payload.room)
@@ -476,8 +561,7 @@ export default {
               .set({ hasQr: false }, { merge: true })
             delete payload.refData
           }
-          await this.getItems(this.collection, this.itemsCallback)
-          await this.getItems('rooms')
+          await this.initData()
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: 'Data is saved' })
         }
@@ -509,8 +593,7 @@ export default {
           .collection('rooms')
           .doc(item.room)
           .set({ hasQr: false }, { merge: true })
-        await this.getItems(this.collection, this.itemsCallback)
-        await this.getItems('rooms')
+        await this.initData()
         await this.onDeleteClose()
         await this.$notify({ kind: 'success', message: 'Data is deleted' })
       } catch (error) {
