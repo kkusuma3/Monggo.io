@@ -39,5 +39,8 @@ export default {
   file: 'File | File | Files',
   admin: 'Admin',
   operator: 'Operator',
-  guest: 'Guest'
+  guest: 'Guest',
+  close: 'Close',
+  dataSaved: 'Data is saved',
+  dataDeleted: 'Data is deleted'
 }

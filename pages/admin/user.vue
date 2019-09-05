@@ -181,7 +181,7 @@
               <app-img
                 v-if="item.imagesMeta && item.imagesMeta.length > 0"
                 :src="item.imagesMeta[0].url"
-                :alt="item.imagesMeta[0].name"
+                :alt="item.name"
               />
               <span
                 v-else=""
@@ -201,13 +201,32 @@
       <v-row>
         <v-col :key="item.avatar" cols="4" class="d-flex child-flex">
           <v-card ripple="" flat="" @click="onTriggerPreview">
-            <app-img :src="item.avatar" :alt="item.name" :aspect-ratio="1" />
+            <app-img
+              v-if="
+                item.avatar &&
+                  item.avatar.length > 0 &&
+                  item.name &&
+                  item.name.length > 0
+              "
+              :src="item.avatar"
+              :alt="item.name"
+              :aspect-ratio="1"
+            />
           </v-card>
         </v-col>
       </v-row>
     </template>
     <template #preview="">
-      <app-img :src="item.avatar" :alt="item.name" />
+      <app-img
+        v-if="
+          item.avatar &&
+            item.avatar.length > 0 &&
+            item.name &&
+            item.name.length > 0
+        "
+        :src="item.avatar"
+        :alt="item.name"
+      />
     </template>
   </app-wrapper>
 </template>
@@ -251,6 +270,7 @@ export default {
         },
         { text: this.$t('name'), value: 'name' },
         { text: this.$t('role'), value: 'role', align: 'center' },
+        { text: this.$t('hotel'), value: 'refData.hotel.name' },
         {
           text: this.$t('createdAt'),
           value: 'createdAt',
@@ -280,7 +300,7 @@ export default {
         name: null,
         email: null,
         phone: null,
-        avatar: null,
+        avatar: '',
         role: null,
         hotel: null,
         createdAt: null,
@@ -291,7 +311,7 @@ export default {
         name: null,
         email: null,
         phone: null,
-        avatar: null,
+        avatar: '',
         role: null,
         hotel: null,
         createdAt: null,
@@ -353,8 +373,11 @@ export default {
     isEdited() {
       const item = _cloneDeep(this.item)
       delete item.refData
+      delete item.hotelRef
+
       const itemOriginal = _cloneDeep(this.itemOriginal)
       delete itemOriginal.refData
+      delete itemOriginal.hotelRef
       return this.isEditing && !isEqual(item, itemOriginal)
     },
     getRoleColor() {
@@ -403,17 +426,32 @@ export default {
     }
   },
   mounted() {
-    this.getItems()
-    this.getItems('hotels')
+    this.initData()
   },
   methods: {
+    async initData() {
+      try {
+        this.$setLoading(true)
+        await Promise.all([
+          this.getItems(this.collection, 'items', this.itemsCallback),
+          this.getItems('hotels')
+        ])
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     reset() {
       const item = {
         uid: null,
         name: null,
         email: null,
         phone: null,
-        avatar: null,
+        avatar: '',
         role: null,
         hotel: null,
         createdAt: null,
@@ -423,6 +461,27 @@ export default {
       this.itemOriginal = _cloneDeep(item)
     },
 
+    async itemsCallback(data) {
+      try {
+        this.$setLoading(true)
+        if (data.hotelRef) {
+          const hotelRefDoc = await data.hotelRef.get()
+          const hotelRef = hotelRefDoc.data()
+          delete data.hotelRef
+          return {
+            hotel: hotelRef
+          }
+        }
+        return null
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     async getItems(collection = this.collection, location, cb) {
       try {
         this.$setLoading(true)
@@ -437,17 +496,15 @@ export default {
           const data = doc.data()
           if (cb) {
             const refData = await cb(data)
-            items.push({
+            await items.push({
               ...data,
               refData,
-              images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
             })
           } else {
-            items.push({
+            await items.push({
               ...data,
-              images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
             })
@@ -525,6 +582,10 @@ export default {
             createdAt: this.isEditing ? this.item.createdAt : date,
             updatedAt: date
           }
+          if (payload.hotel) {
+            payload.hotelRef = db.collection('hotels').doc(payload.hotel)
+          }
+          delete payload.refData
           this.isSaved = true
           await db
             .collection(this.collection)
@@ -538,9 +599,9 @@ export default {
               }),
               { merge: true }
             )
-          await this.getItems()
+          await this.getItems(this.collection, 'items', this.itemsCallback)
           await this.onDialogClose()
-          await this.$notify({ kind: 'success', message: 'Data is saved' })
+          await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
         }
       } catch (error) {
         this.$notify({
@@ -566,9 +627,9 @@ export default {
           .collection(this.collection)
           .doc(item.uid)
           .delete()
-        await this.getItems()
+        await this.getItems(this.collection, 'items', this.itemsCallback)
         await this.onDeleteClose()
-        await this.$notify({ kind: 'success', message: 'Data is deleted' })
+        await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })
       } catch (error) {
         this.$notify({
           isError: true,

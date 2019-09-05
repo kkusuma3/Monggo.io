@@ -1,13 +1,19 @@
 <i18n>
 {
   "en-us": {
-    "logout": "Logout"
+    "loginSuccess": "@:(login) successfully",
+    "logoutSuccess": "@:(logout) successfully",
+    "notAdminNorOperator": "You're not the admin nor the operator"
   },
   "en-uk": {
-    "logout": "Logout"
+    "loginSuccess": "@:(login) successfully",
+    "logoutSuccess": "@:(logout) successfully",
+    "notAdminNorOperator": "You're not the admin nor the operator"
   },
   "id": {
-    "logout": "Keluar"
+    "loginSuccess": "Berhasil @:(login)",
+    "logoutSuccess": "Berhasil @:(logout)",
+    "notAdminNorOperator": "Anda bukan admin maupun operator"
   }
 }
 </i18n>
@@ -125,11 +131,24 @@
       <nuxt />
       <app-notification />
     </v-content>
+    <v-footer v-if="isAuth" app="" color="primary" dark="" fixed="">
+      <div class="d-flex align-center justify-end" style="width: 100%">
+        <div class="subtitle-1">
+          {{ user.name }} - {{ $t(user.role) }}
+          {{
+            user.refData && user.refData.hotel && user.refData.hotel.name
+              ? `- ${user.refData.hotel.name}`
+              : ''
+          }}
+        </div>
+      </div>
+    </v-footer>
   </v-app>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
+import _cloneDeep from 'lodash.clonedeep'
 import pluralize from 'pluralize'
 import { auth, db } from '~/utils/firebase'
 import AppNotification from '~/components/AppNotification'
@@ -151,6 +170,7 @@ export default {
     }
   },
   computed: {
+    ...mapState('user', ['user']),
     ...mapGetters('user', ['isAuth', 'role']),
     menus() {
       const menus = [
@@ -268,14 +288,23 @@ export default {
             this.$setLoading(true)
             const snap = await usersRef.doc(user.uid).get()
             const data = await snap.data()
-            await this.$store.commit(`user/${userTypes.SET_USER}`, {
-              ...data,
+            let hotel = null
+            if (isOperator && data.hotelRef) {
+              const hotelDoc = await data.hotelRef.get()
+              hotel = hotelDoc.data()
+            }
+            const payload = {
+              ..._cloneDeep(data),
+              refData: {
+                hotel
+              },
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-            })
+            }
+            await this.$store.commit(`user/${userTypes.SET_USER}`, payload)
             await this.$notify({
               kind: 'success',
-              message: 'Login successfully'
+              message: this.$t('loginSuccess')
             })
           } catch (error) {
             this.$notify({
@@ -301,7 +330,7 @@ export default {
             await usersRef.doc(payload.uid).set(payload, { merge: true })
             await auth.signOut()
             await this.$notify({
-              message: `You're not the admin`
+              message: this.$t('notAdminNorOperator')
             })
           } catch (error) {
             this.$notify({
@@ -330,7 +359,7 @@ export default {
         await this.$store.commit(`user/${userTypes.SET_USER}`)
         await this.$notify({
           kind: 'success',
-          message: 'Logout successfully'
+          message: this.$t('logoutSuccess')
         })
       } catch (error) {
         this.$notify({

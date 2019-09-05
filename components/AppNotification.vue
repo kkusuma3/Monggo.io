@@ -2,7 +2,7 @@
   <v-snackbar :value="message !== null" :color="kind" @input="$notify">
     {{ message }}
     <v-btn text="" @click="$notify">
-      Close
+      {{ $t('close') }}
     </v-btn>
   </v-snackbar>
 </template>

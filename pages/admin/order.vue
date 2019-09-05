@@ -105,6 +105,46 @@
     </v-data-table>
     <template #form="">
       <v-autocomplete
+        v-model="item.hotel"
+        v-validate="'required'"
+        :items="hotels"
+        :error-messages="errors.collect('hotel')"
+        :disabled="isLoading || role === 'operator'"
+        item-text="name"
+        item-value="uid"
+        data-vv-name="hotel"
+        :data-vv-as="$t('hotel')"
+        name="hotel"
+        clearable=""
+        data-vv-value-path="item.hotel"
+        required=""
+        :label="$t('hotel')"
+        outlined=""
+      >
+        <template #item="{ item }">
+          <v-list-item-avatar>
+            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+              <app-img
+                v-if="item.imagesMeta && item.imagesMeta.length > 0"
+                :src="item.imagesMeta[0].url"
+                :alt="item.imagesMeta[0].name"
+              />
+              <span
+                v-else=""
+                :class="{
+                  'white--text': isDarkColor(getMaterialColor(item.name, true))
+                }"
+              >
+                {{ getInitials(item.name) }}
+              </span>
+            </v-avatar>
+          </v-list-item-avatar>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
+          </v-list-item-content>
+        </template>
+      </v-autocomplete>
+      <v-autocomplete
         v-model="item.user"
         v-validate="'required'"
         :items="users"
@@ -220,7 +260,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
 import _cloneDeep from 'lodash.clonedeep'
@@ -250,6 +290,7 @@ export default {
       isDeleting: false,
       isSaved: false,
       headers: [
+        { text: this.$t('hotel'), value: 'refData.hotel.name' },
         { text: this.$t('user'), value: 'refData.user.name' },
         { text: this.$t('service'), value: 'refData.service.name' },
         { text: this.$t('status'), value: 'status', align: 'center' },
@@ -279,6 +320,7 @@ export default {
       items: [],
       item: {
         uid: uuidv4(),
+        hotel: null,
         user: null,
         service: null,
         count: null,
@@ -288,6 +330,7 @@ export default {
       },
       itemOriginal: {
         uid: uuidv4(),
+        hotel: null,
         user: null,
         service: null,
         count: null,
@@ -295,6 +338,7 @@ export default {
         createdAt: null,
         updatedAt: null
       },
+      hotels: [],
       users: [],
       services: [],
       statuses: [
@@ -306,6 +350,8 @@ export default {
   },
   computed: {
     ...mapState(['isLoading']),
+    ...mapState('user', ['user']),
+    ...mapGetters('user', ['role']),
     collection() {
       return pluralize(paramCase(this.title))
     },
@@ -349,8 +395,15 @@ export default {
     isEdited() {
       const item = _cloneDeep(this.item)
       delete item.refData
+      delete item.hotelRef
+      delete item.userRef
+      delete item.serviceRef
+
       const itemOriginal = _cloneDeep(this.itemOriginal)
       delete itemOriginal.refData
+      delete itemOriginal.hotelRef
+      delete itemOriginal.userRef
+      delete itemOriginal.serviceRef
       return this.isEditing && !isEqual(item, itemOriginal)
     },
     getStatusColor() {
@@ -401,29 +454,79 @@ export default {
       }
     }
   },
+  watch: {
+    'item.hotel': async function(hotel) {
+      if (hotel) {
+        await this.getItems(
+          db.collection('services').where('hotel', '==', hotel),
+          'services'
+        )
+      } else {
+        this.services = []
+      }
+    }
+  },
   mounted() {
-    this.getItems(this.collection, 'items', this.itemsCallback)
-    this.getItems('users')
-    this.getItems('services')
+    this.initData()
   },
   methods: {
+    async initData() {
+      try {
+        this.$setLoading(true)
+        if (this.role === 'operator') {
+          this.item.hotel = this.user.hotel
+          this.itemOriginal.hotel = this.itemOriginal.hotel
+
+          await this.getItems(
+            db
+              .collection(this.collection)
+              .where('hotel', '==', this.user.hotel),
+            'items',
+            this.itemsCallback
+          )
+        } else {
+          await this.getItems(this.collection, 'items', this.itemsCallback)
+        }
+        await Promise.all([
+          this.getItems('hotels'),
+          this.getItems(
+            db.collection('users').where('role', '==', 'guest'),
+            'users'
+          )
+        ])
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
-        const [userRefDoc, serviceRefDoc] = await Promise.all([
-          data.userRef.get(),
-          data.serviceRef.get()
-        ])
-        const [userRef, serviceRef] = await Promise.all([
-          userRefDoc.data(),
-          serviceRefDoc.data()
-        ])
-        delete data.userRef
-        delete data.serviceRef
-        return {
-          user: userRef,
-          service: serviceRef
+        if (data.hotelRef && data.userRef && data.serviceRef) {
+          const [hotelRefDoc, userRefDoc, serviceRefDoc] = await Promise.all([
+            data.hotelRef.get(),
+            data.userRef.get(),
+            data.serviceRef.get()
+          ])
+          const [hotelRef, userRef, serviceRef] = await Promise.all([
+            hotelRefDoc.data(),
+            userRefDoc.data(),
+            serviceRefDoc.data()
+          ])
+          delete data.hotelRef
+          delete data.userRef
+          delete data.serviceRef
+          return {
+            hotel: hotelRef,
+            user: userRef,
+            service: serviceRef
+          }
         }
+        return null
       } catch (error) {
         this.$notify({
           isError: true,
@@ -436,6 +539,7 @@ export default {
     reset() {
       const item = {
         uid: uuidv4(),
+        hotel: null,
         user: null,
         service: null,
         count: null,
@@ -461,7 +565,7 @@ export default {
           const data = doc.data()
           if (cb) {
             const refData = await cb(data)
-            items.push({
+            await items.push({
               ...data,
               refData,
               images: [],
@@ -469,7 +573,7 @@ export default {
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
             })
           } else {
-            items.push({
+            await items.push({
               ...data,
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
@@ -542,8 +646,10 @@ export default {
           if (this.isEdited) {
             delete payload.refData
           }
+          payload.hotelRef = db.collection('hotels').doc(payload.hotel)
           payload.userRef = db.collection('users').doc(payload.user)
           payload.serviceRef = db.collection('services').doc(payload.service)
+          delete payload.refData
           this.isSaved = true
           await db
             .collection(this.collection)
@@ -559,7 +665,7 @@ export default {
             )
           await this.getItems(this.collection, 'items', this.itemsCallback)
           await this.onDialogClose()
-          await this.$notify({ kind: 'success', message: 'Data is saved' })
+          await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
         }
       } catch (error) {
         this.$notify({
@@ -587,7 +693,7 @@ export default {
           .delete()
         await this.getItems(this.collection, 'items', this.itemsCallback)
         await this.onDeleteClose()
-        await this.$notify({ kind: 'success', message: 'Data is deleted' })
+        await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })
       } catch (error) {
         this.$notify({
           isError: true,

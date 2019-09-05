@@ -360,6 +360,9 @@ export default {
       try {
         this.$setLoading(true)
         if (this.role === 'operator') {
+          this.item.hotel = this.user.hotel
+          this.itemOriginal.hotel = this.itemOriginal.hotel
+
           await Promise.all([
             this.getItems(
               db
@@ -392,12 +395,15 @@ export default {
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
-        const roomRefDoc = await data.roomRef.get()
-        const roomRef = roomRefDoc.data()
-        delete data.roomRef
-        return {
-          room: roomRef
+        if (data.hotelRef) {
+          const roomRefDoc = await data.roomRef.get()
+          const roomRef = roomRefDoc.data()
+          delete data.roomRef
+          return {
+            room: roomRef
+          }
         }
+        return null
       } catch (error) {
         this.$notify({
           isError: true,
@@ -451,7 +457,7 @@ export default {
           const data = doc.data()
           if (cb) {
             const refData = await cb(data)
-            items.push({
+            await items.push({
               ...data,
               refData,
               images: [],
@@ -459,7 +465,7 @@ export default {
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
             })
           } else {
-            items.push({
+            await items.push({
               ...data,
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
@@ -533,10 +539,11 @@ export default {
             updatedAt: date
           }
           const room = this.rooms.find(({ uid }) => uid === payload.room)
-          console.log(room)
 
           payload.roomRef = db.collection('rooms').doc(payload.room)
           payload.hotelRef = db.collection('hotels').doc(room.hotel)
+          delete payload.refData
+
           this.isSaved = true
           await db
             .collection(this.collection)
@@ -563,7 +570,7 @@ export default {
           }
           await this.initData()
           await this.onDialogClose()
-          await this.$notify({ kind: 'success', message: 'Data is saved' })
+          await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
         }
       } catch (error) {
         this.$notify({
@@ -595,7 +602,7 @@ export default {
           .set({ hasQr: false }, { merge: true })
         await this.initData()
         await this.onDeleteClose()
-        await this.$notify({ kind: 'success', message: 'Data is deleted' })
+        await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })
       } catch (error) {
         this.$notify({
           isError: true,

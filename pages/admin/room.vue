@@ -116,7 +116,7 @@
         v-validate="'required'"
         :items="hotels"
         :error-messages="errors.collect('hotel')"
-        :disabled="isLoading"
+        :disabled="isLoading || role === 'operator'"
         item-text="name"
         item-value="uid"
         data-vv-name="hotel"
@@ -230,14 +230,33 @@
         <template v-for="meta in item.imagesMeta">
           <v-col :key="meta.url" cols="4" class="d-flex child-flex">
             <v-card ripple="" flat="" @click="onTriggerPreview(meta)">
-              <app-img :src="meta.url" :alt="meta.name" :aspect-ratio="1" />
+              <app-img
+                v-if="
+                  meta.url &&
+                    meta.url.length > 0 &&
+                    meta.name &&
+                    meta.name.length > 0
+                "
+                :src="meta.url"
+                :alt="meta.name"
+                :aspect-ratio="1"
+              />
             </v-card>
           </v-col>
         </template>
       </v-row>
     </template>
     <template #preview="">
-      <app-img :src="image.url" :alt="image.name" />
+      <app-img
+        v-if="
+          image.url &&
+            image.url.length > 0 &&
+            image.name &&
+            image.name.length > 0
+        "
+        :src="image.url"
+        :alt="image.name"
+      />
     </template>
   </app-wrapper>
 </template>
@@ -332,10 +351,10 @@ export default {
         updatedAt: null
       },
       image: {
-        name: null,
-        url: null,
-        fullPath: null,
-        createdAt: null
+        name: '',
+        url: '',
+        fullPath: '',
+        createdAt: ''
       },
       hotels: [],
       statuses: [
@@ -425,6 +444,9 @@ export default {
       try {
         this.$setLoading(true)
         if (this.role === 'operator') {
+          this.item.hotel = this.user.hotel
+          this.itemOriginal.hotel = this.itemOriginal.hotel
+
           await Promise.all([
             this.getItems(
               db
@@ -456,12 +478,15 @@ export default {
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
-        const hotelRefDoc = await data.hotelRef.get()
-        const hotelRef = hotelRefDoc.data()
-        delete data.hotelRef
-        return {
-          hotel: hotelRef
+        if (data.hotelRef) {
+          const hotelRefDoc = await data.hotelRef.get()
+          const hotelRef = hotelRefDoc.data()
+          delete data.hotelRef
+          return {
+            hotel: hotelRef
+          }
         }
+        return null
       } catch (error) {
         this.$notify({
           isError: true,
@@ -535,7 +560,7 @@ export default {
           const data = doc.data()
           if (cb) {
             const refData = await cb(data)
-            items.push({
+            await items.push({
               ...data,
               refData,
               images: [],
@@ -543,7 +568,7 @@ export default {
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
             })
           } else {
-            items.push({
+            await items.push({
               ...data,
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
@@ -662,6 +687,7 @@ export default {
           payload.imagesMeta = imagesMeta
           delete payload.images
           payload.hotelRef = db.collection('hotels').doc(payload.hotel)
+          delete payload.refData
           this.isSaved = true
           await db
             .collection(this.collection)
@@ -677,7 +703,7 @@ export default {
             )
           await this.initData()
           await this.onDialogClose()
-          await this.$notify({ kind: 'success', message: 'Data is saved' })
+          await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
         }
       } catch (error) {
         this.$notify({
@@ -708,7 +734,7 @@ export default {
         )
         await this.initData()
         await this.onDeleteClose()
-        await this.$notify({ kind: 'success', message: 'Data is deleted' })
+        await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })
       } catch (error) {
         this.$notify({
           isError: true,
@@ -733,10 +759,10 @@ export default {
     onPreviewClose() {
       this.isPreviewing = false
       this.image = {
-        name: null,
-        url: null,
-        fullPath: null,
-        createdAt: null
+        name: '',
+        url: '',
+        fullPath: '',
+        createdAt: ''
       }
     },
     onPreviewAction() {

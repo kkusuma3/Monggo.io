@@ -39,5 +39,8 @@ export default {
   file: 'Berkas',
   admin: 'Admin',
   operator: 'Operator',
-  guest: 'Tamu'
+  guest: 'Tamu',
+  close: 'Tutup',
+  dataSaved: 'Data tersimpan',
+  dataDeleted: 'Data terhapus'
 }

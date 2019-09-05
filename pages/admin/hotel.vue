@@ -155,14 +155,33 @@
         <template v-for="meta in item.imagesMeta">
           <v-col :key="meta.url" cols="4" class="d-flex child-flex">
             <v-card ripple="" flat="" @click="onTriggerPreview(meta)">
-              <app-img :src="meta.url" :alt="meta.name" :aspect-ratio="1" />
+              <app-img
+                v-if="
+                  meta.url &&
+                    meta.url.length > 0 &&
+                    meta.name &&
+                    meta.name.length > 0
+                "
+                :src="meta.url"
+                :alt="meta.name"
+                :aspect-ratio="1"
+              />
             </v-card>
           </v-col>
         </template>
       </v-row>
     </template>
     <template #preview="">
-      <app-img :src="image.url" :alt="image.name" />
+      <app-img
+        v-if="
+          image.url &&
+            image.url.length > 0 &&
+            image.name &&
+            image.name.length > 0
+        "
+        :src="image.url"
+        :alt="image.name"
+      />
     </template>
   </app-wrapper>
 </template>
@@ -252,10 +271,10 @@ export default {
         updatedAt: null
       },
       image: {
-        name: null,
-        url: null,
-        fullPath: null,
-        createdAt: null
+        name: '',
+        url: '',
+        fullPath: '',
+        createdAt: ''
       }
     }
   },
@@ -328,9 +347,22 @@ export default {
     }
   },
   mounted() {
-    this.getItems()
+    this.initData()
   },
   methods: {
+    async initData() {
+      try {
+        this.$setLoading(true)
+        await this.getItems()
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     async getFileFromUrl(url, name) {
       try {
         // Taken from: https://stackoverflow.com/questions/44070437/how-to-get-a-file-or-blob-from-an-url-in-javascript
@@ -393,7 +425,7 @@ export default {
           const data = doc.data()
           if (cb) {
             const refData = await cb(data)
-            items.push({
+            await items.push({
               ...data,
               refData,
               images: [],
@@ -401,7 +433,7 @@ export default {
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
             })
           } else {
-            items.push({
+            await items.push({
               ...data,
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
@@ -518,6 +550,7 @@ export default {
           )
           payload.imagesMeta = imagesMeta
           delete payload.images
+          delete payload.refData
           this.isSaved = true
           await db
             .collection(this.collection)
@@ -533,7 +566,7 @@ export default {
             )
           await this.getItems()
           await this.onDialogClose()
-          await this.$notify({ kind: 'success', message: 'Data is saved' })
+          await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
         }
       } catch (error) {
         this.$notify({
@@ -564,7 +597,7 @@ export default {
         )
         await this.getItems()
         await this.onDeleteClose()
-        await this.$notify({ kind: 'success', message: 'Data is deleted' })
+        await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })
       } catch (error) {
         this.$notify({
           isError: true,
@@ -589,10 +622,10 @@ export default {
     onPreviewClose() {
       this.isPreviewing = false
       this.image = {
-        name: null,
-        url: null,
-        fullPath: null,
-        createdAt: null
+        name: '',
+        url: '',
+        fullPath: '',
+        createdAt: ''
       }
     },
     onPreviewAction() {

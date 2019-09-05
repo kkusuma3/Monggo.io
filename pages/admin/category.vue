@@ -178,9 +178,22 @@ export default {
     }
   },
   mounted() {
-    this.getItems()
+    this.initData()
   },
   methods: {
+    async initData() {
+      try {
+        this.$setLoading(true)
+        await this.getItems()
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     reset() {
       const item = {
         uid: uuidv4(),
@@ -206,7 +219,7 @@ export default {
           const data = doc.data()
           if (cb) {
             const refData = await cb(data)
-            items.push({
+            await items.push({
               ...data,
               refData,
               images: [],
@@ -214,7 +227,7 @@ export default {
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
             })
           } else {
-            items.push({
+            await items.push({
               ...data,
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
@@ -284,6 +297,7 @@ export default {
             createdAt: this.isEditing ? this.item.createdAt : date,
             updatedAt: date
           }
+          delete payload.refData
           this.isSaved = true
           await db
             .collection(this.collection)
@@ -299,7 +313,10 @@ export default {
             )
           await this.getItems()
           await this.onDialogClose()
-          await this.$notify({ kind: 'success', message: 'Data is saved' })
+          await this.$notify({
+            kind: 'success',
+            message: this.$t('dataSaved')
+          })
         }
       } catch (error) {
         this.$notify({
@@ -327,7 +344,7 @@ export default {
           .delete()
         await this.getItems()
         await this.onDeleteClose()
-        await this.$notify({ kind: 'success', message: 'Data is deleted' })
+        await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })
       } catch (error) {
         this.$notify({
           isError: true,
