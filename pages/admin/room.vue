@@ -766,7 +766,9 @@ export default {
           )
           payload.imagesMeta = imagesMeta
           delete payload.images
-          payload.userRef = db.collection('users').doc(payload.user)
+          if (payload.user) {
+            payload.userRef = db.collection('users').doc(payload.user)
+          }
           payload.hotelRef = db.collection('hotels').doc(payload.hotel)
           delete payload.refData
           this.isSaved = true
