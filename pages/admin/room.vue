@@ -274,7 +274,12 @@
       <v-row>
         <template v-for="meta in item.imagesMeta">
           <v-col :key="meta.url" cols="4" class="d-flex child-flex">
-            <v-card ripple="" flat="" @click="onTriggerPreview(meta)">
+            <v-card
+              ripple=""
+              flat=""
+              color="grey lighten-3"
+              @click="onTriggerPreview(meta)"
+            >
               <app-img
                 v-if="
                   meta.url &&
