@@ -6,6 +6,7 @@
     :is-confirming="isConfirming"
     :is-deleting="isDeleting"
     :is-previewing="isPreviewing"
+    @trigger:refresh="initData"
     @trigger:add="onTriggerAdd"
     @dialog:close="onDialogClose"
     @dialog:action="onDialogAction"
@@ -84,6 +85,8 @@
           <template #activator="{ on }">
             <v-btn
               :class="`trigger-edit-${slugify(item.name)}`"
+              :disabled="isLoading"
+              :loading="isLoading"
               class="ma-1"
               color="secondary"
               @click="onTriggerEdit(item)"
@@ -98,6 +101,8 @@
           <template #activator="{ on }">
             <v-btn
               :class="`trigger-delete-${slugify(item.name)}`"
+              :disabled="isLoading"
+              :loading="isLoading"
               class="ma-1"
               color="error"
               @click="onTriggerDelete(item)"

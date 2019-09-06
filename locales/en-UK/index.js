@@ -44,5 +44,6 @@ export default {
   dataSaved: 'Data is saved',
   dataDeleted: 'Data is deleted',
   account: 'Account',
-  home: 'Home'
+  home: 'Home',
+  refresh: 'Refresh'
 }

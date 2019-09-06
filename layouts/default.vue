@@ -120,7 +120,14 @@ export default {
         await db
           .collection('rooms')
           .doc(room)
-          .set({ status: 'reserved', user: this.user.uid }, { merge: true })
+          .set(
+            {
+              status: 'reserved',
+              user: this.user.uid,
+              userRef: db.collection('users').doc(this.user.uid)
+            },
+            { merge: true }
+          )
       } catch (error) {
         this.$notify({
           isError: true,

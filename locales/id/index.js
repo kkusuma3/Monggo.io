@@ -44,5 +44,6 @@ export default {
   dataSaved: 'Data tersimpan',
   dataDeleted: 'Data terhapus',
   account: 'Akun',
-  home: 'Beranda'
+  home: 'Beranda',
+  refresh: 'Segarkan'
 }

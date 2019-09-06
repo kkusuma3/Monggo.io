@@ -226,10 +226,9 @@ export default {
   },
   methods: {
     async init() {
-      this.$setLoading(true)
       await this.initLocale()
-      await this.initAuth()
       await this.onAuthStateChanged()
+      await this.initAuth()
     },
     initLocale() {
       const currLocale = this.$cookies.get('i18n_redirected')

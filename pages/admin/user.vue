@@ -7,10 +7,9 @@
     :is-confirming="isConfirming"
     :is-deleting="isDeleting"
     :is-previewing="isPreviewing"
+    @trigger:refresh="initData"
     @dialog:close="onDialogClose"
     @dialog:action="onDialogAction"
-    @delete:close="onDeleteClose"
-    @delete:action="onDeleteAction"
     @confirm:close="onConfirmClose"
     @confirm:action="onConfirmAction"
     @preview:close="onPreviewClose"
@@ -80,6 +79,8 @@
           <template #activator="{ on }">
             <v-btn
               :class="`trigger-edit-${slugify(item.name)}`"
+              :disabled="isLoading"
+              :loading="isLoading"
               class="ma-1"
               color="secondary"
               @click="onTriggerEdit(item)"
@@ -90,20 +91,6 @@
           </template>
           <span>{{ $t('edit') }} {{ item.name }}</span>
         </v-tooltip>
-        <!-- <v-tooltip bottom="">
-          <template #activator="{ on }">
-            <v-btn
-              :class="`trigger-delete-${slugify(item.name)}`"
-              class="ma-1"
-              color="error"
-              @click="onTriggerDelete(item)"
-              v-on="on"
-            >
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-          </template>
-          <span>{{ $t('delete') }} {{ item.name }}</span>
-        </v-tooltip> -->
       </template>
     </v-data-table>
     <template #form="">
@@ -550,10 +537,6 @@ export default {
         this.$setLoading(false)
       }
     },
-    onTriggerDelete(item) {
-      this.isDeleting = true
-      this.item = _cloneDeep(item)
-    },
     onTriggerPreview() {
       this.isPreviewing = true
     },
@@ -603,33 +586,6 @@ export default {
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
         }
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
-      }
-    },
-
-    onDeleteClose() {
-      this.$validator.reset()
-      this.isDeleting = false
-      this.reset()
-    },
-    async onDeleteAction() {
-      try {
-        this.$setLoading(true)
-        const item = _cloneDeep(this.item)
-
-        await db
-          .collection(this.collection)
-          .doc(item.uid)
-          .delete()
-        await this.getItems(this.collection, 'items', this.itemsCallback)
-        await this.onDeleteClose()
-        await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })
       } catch (error) {
         this.$notify({
           isError: true,

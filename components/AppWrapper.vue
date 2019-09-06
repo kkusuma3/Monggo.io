@@ -1,12 +1,15 @@
 <i18n>
 {
   "en-us": {
+    "refreshData": "@:(refresh) {title} data",
     "deleteConfirmation": "@:delete @:confirmation"
   },
   "en-uk": {
+    "refreshData": "@:(refresh) {title} data",
     "deleteConfirmation": "@:delete @:confirmation"
   },
   "id": {
+    "refreshData": "@:(refresh) data {title}",
     "deleteConfirmation": "@:confirmation Penghapusan"
   }
 }
@@ -14,20 +17,39 @@
 
 <template>
   <v-container>
-    <v-row v-if="isAddActive">
+    <v-row>
       <v-col cols="12">
         <div class="d-flex justify-end align-center">
-          <v-btn
-            :disabled="isLoading"
-            :loading="isLoading"
-            class="trigger-add"
-            dark=""
-            color="secondary"
-            @click="$emit('trigger:add')"
-          >
-            <v-icon left="">mdi-plus</v-icon>
+          <v-tooltip bottom="">
+            <template #activator="{ on }">
+              <v-btn
+                :disabled="isLoading"
+                :loading="isLoading"
+                class="trigger-refresh ma-1"
+                color="secondary"
+                @click="$emit('trigger:refresh')"
+                v-on="on"
+              >
+                <v-icon>mdi-refresh</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ $t('refreshData', { title: $t(formattedTitle) }) }}</span>
+          </v-tooltip>
+          <v-tooltip v-if="isAddActive" bottom="">
+            <template #activator="{ on }">
+              <v-btn
+                :disabled="isLoading"
+                :loading="isLoading"
+                class="trigger-add ma-1"
+                color="secondary"
+                @click="$emit('trigger:add')"
+                v-on="on"
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </template>
             <span>{{ $t('add') }} {{ $t(formattedTitle) }}</span>
-          </v-btn>
+          </v-tooltip>
         </div>
       </v-col>
     </v-row>
