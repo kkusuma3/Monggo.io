@@ -24,18 +24,12 @@
             class="text-center headline primary--text d-flex align-center justify-center"
             aria-label="Monggo.IO"
           >
-            <v-img
+            <app-img
               src="/icons/icon-with-text.png"
               alt="Mongo.IO"
               max-width="150"
               contain=""
-            >
-              <template #placeholder="">
-                <v-row class="fill-height ma-0" align="center" justify="center">
-                  <v-progress-circular indeterminate="" color="grey" />
-                </v-row>
-              </template>
-            </v-img>
+            />
           </h1>
           <h2
             class="text-center subtitle-1 primary--text"
@@ -87,7 +81,6 @@
 import locales from '~/utils/locales'
 
 export default {
-  layout: 'onboarding',
   data() {
     return {
       locales: [...locales]

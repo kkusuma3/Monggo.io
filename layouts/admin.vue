@@ -148,8 +148,6 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex'
-import _cloneDeep from 'lodash.clonedeep'
-import pluralize from 'pluralize'
 import { auth, db } from '~/utils/firebase'
 import AppNotification from '~/components/AppNotification'
 import { types as userTypes } from '~/store/user'
@@ -164,8 +162,6 @@ export default {
   data() {
     return {
       isSidebar: false,
-      admins: [],
-      operators: [],
       locales: [...locales]
     }
   },
@@ -230,9 +226,9 @@ export default {
   },
   methods: {
     async init() {
+      this.$setLoading(true)
       await this.initLocale()
       await this.initAuth()
-      await Promise.all([this.getUser('admin'), this.getUser('operator')])
       await this.onAuthStateChanged()
     },
     initLocale() {
@@ -243,103 +239,69 @@ export default {
         this.$router.push(this.switchLocalePath(currLocale))
       }
     },
-    async getUser(role) {
-      try {
-        this.$setLoading(true)
-        const snaps = await usersRef.where('role', '==', role).get()
-        const admins = []
-        snaps.forEach(doc => {
-          const data = doc.data()
-          admins.push({
-            ...data,
-            createdAt: data && data.createdAt && data.createdAt.toDate(),
-            updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-          })
-        })
-        if (this[pluralize(role)]) {
-          this[pluralize(role)] = admins
-        } else {
-          throw new Error('Collection must be defined in the data.')
-        }
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
-      }
-    },
     onAuthStateChanged() {
       auth.onAuthStateChanged(async user => {
         if (user === null) {
           return
         }
-        const isAdmin = this.admins.reduce(
-          (acc, curr) => acc || curr.email === user.email,
-          false
-        )
-        const isOperator = this.operators.reduce(
-          (acc, curr) => acc || curr.email === user.email,
-          false
-        )
-        if (isAdmin || isOperator) {
-          try {
-            this.$setLoading(true)
-            const snap = await usersRef.doc(user.uid).get()
-            const data = await snap.data()
-            let hotel = null
-            if (isOperator && data.hotelRef) {
-              const hotelDoc = await data.hotelRef.get()
-              hotel = hotelDoc.data()
+        try {
+          this.$setLoading(true)
+          const userDoc = await db
+            .collection('users')
+            .doc(user.uid)
+            .get()
+          if (userDoc.exists) {
+            const userRef = userDoc.data()
+            if (
+              userRef &&
+              (userRef.role === 'admin' || userRef.role === 'operator')
+            ) {
+              const snap = await usersRef.doc(user.uid).get()
+              const data = await snap.data()
+              let hotel = null
+              if (userRef.role === 'operator' && data.hotelRef) {
+                const hotelDoc = await data.hotelRef.get()
+                hotel = hotelDoc.data()
+              }
+              delete data.hotelRef
+              const payload = {
+                ...data,
+                refData: {
+                  hotel
+                },
+                createdAt: data && data.createdAt && data.createdAt.toDate(),
+                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+              }
+              await this.$store.commit(`user/${userTypes.SET_USER}`, payload)
+              await this.$notify({
+                kind: 'success',
+                message: this.$t('loginSuccess')
+              })
+            } else {
+              const payload = {
+                uid: user.uid,
+                name: user.displayName,
+                email: user.email,
+                phone: user.phoneNumber,
+                avatar: user.photoURL,
+                role: 'guest',
+                createdAt: this.$moment().toDate(),
+                updatedAt: this.$moment().toDate()
+              }
+              await usersRef.doc(payload.uid).set(payload, { merge: true })
+              await auth.signOut()
+              await this.$notify({
+                message: this.$t('notAdminNorOperator')
+              })
             }
-            const payload = {
-              ..._cloneDeep(data),
-              refData: {
-                hotel
-              },
-              createdAt: data && data.createdAt && data.createdAt.toDate(),
-              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-            }
-            await this.$store.commit(`user/${userTypes.SET_USER}`, payload)
-            await this.$notify({
-              kind: 'success',
-              message: this.$t('loginSuccess')
-            })
-          } catch (error) {
-            this.$notify({
-              isError: true,
-              message: error.message
-            })
-          } finally {
-            this.$setLoading(false)
           }
-        } else {
-          try {
-            this.$setLoading(true)
-            const payload = {
-              uid: user.uid,
-              name: user.displayName,
-              email: user.email,
-              phone: user.phoneNumber,
-              avatar: user.photoURL,
-              role: 'guest',
-              createdAt: this.$moment().toDate(),
-              updatedAt: this.$moment().toDate()
-            }
-            await usersRef.doc(payload.uid).set(payload, { merge: true })
-            await auth.signOut()
-            await this.$notify({
-              message: this.$t('notAdminNorOperator')
-            })
-          } catch (error) {
-            this.$notify({
-              isError: true,
-              message: error.message
-            })
-          } finally {
-            this.$setLoading(false)
-          }
+        } catch (error) {
+          this.$notify({
+            isError: true,
+            message: error.message
+          })
+        } finally {
+          this.$setLoading(false)
         }
       })
     },

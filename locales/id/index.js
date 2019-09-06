@@ -42,5 +42,7 @@ export default {
   guest: 'Tamu',
   close: 'Tutup',
   dataSaved: 'Data tersimpan',
-  dataDeleted: 'Data terhapus'
+  dataDeleted: 'Data terhapus',
+  account: 'Akun',
+  home: 'Beranda'
 }

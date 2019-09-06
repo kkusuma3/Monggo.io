@@ -195,6 +195,46 @@
         :label="$t('status')"
         outlined=""
       />
+      <v-autocomplete
+        v-model="item.user"
+        v-validate="{ required: item.status === 'reserved' }"
+        :items="users"
+        :error-messages="errors.collect('user')"
+        :disabled="isLoading || item.status !== 'reserved'"
+        item-text="name"
+        item-value="uid"
+        data-vv-name="user"
+        :data-vv-as="$t('user')"
+        name="user"
+        clearable=""
+        data-vv-value-path="item.user"
+        :required="item.status === 'reserved'"
+        :label="$t('user')"
+        outlined=""
+      >
+        <template #item="{ item }">
+          <v-list-item-avatar>
+            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+              <app-img
+                v-if="item.avatar && item.avatar.length > 0"
+                :src="item.avatar"
+                :alt="item.name"
+              />
+              <span
+                v-else=""
+                :class="{
+                  'white--text': isDarkColor(getMaterialColor(item.name, true))
+                }"
+              >
+                {{ getInitials(item.name) }}
+              </span>
+            </v-avatar>
+          </v-list-item-avatar>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
+          </v-list-item-content>
+        </template>
+      </v-autocomplete>
       <v-file-input
         v-model="item.images"
         v-validate="'required'"
@@ -300,8 +340,8 @@ export default {
         },
         { text: this.$t('hotel'), value: 'refData.hotel.name' },
         { text: this.$t('name'), value: 'name' },
-        { text: this.$t('description'), value: 'description' },
         { text: this.$t('status'), value: 'status', align: 'center' },
+        { text: this.$t('user'), value: 'refData.user.name' },
         {
           text: this.$t('createdAt'),
           value: 'createdAt',
@@ -329,6 +369,7 @@ export default {
       item: {
         uid: uuidv4(),
         hotel: null,
+        user: null,
         name: null,
         images: [],
         imagesMeta: [],
@@ -341,6 +382,7 @@ export default {
       itemOriginal: {
         uid: uuidv4(),
         hotel: null,
+        user: null,
         name: null,
         images: [],
         imagesMeta: [],
@@ -360,7 +402,8 @@ export default {
       statuses: [
         { text: this.$t('empty'), value: 'empty' },
         { text: this.$t('reserved'), value: 'reserved' }
-      ]
+      ],
+      users: []
     }
   },
   computed: {
@@ -434,6 +477,27 @@ export default {
         this.item.imagesMeta = []
         this.itemOriginal.imagesMeta = []
       }
+    },
+    'item.status': async function(status) {
+      try {
+        this.$setLoading(true)
+        if (status === 'reserved') {
+          await this.getItems(
+            db.collection('users').where('role', '==', 'guest'),
+            'users'
+          )
+        } else {
+          this.users = []
+          this.item.user = null
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
     }
   },
   mounted() {
@@ -478,15 +542,25 @@ export default {
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
+        let refData = null
         if (data.hotelRef) {
           const hotelRefDoc = await data.hotelRef.get()
           const hotelRef = hotelRefDoc.data()
           delete data.hotelRef
-          return {
+          refData = {
             hotel: hotelRef
           }
         }
-        return null
+        if (data.userRef) {
+          const userRefDoc = await data.userRef.get()
+          const userRef = userRefDoc.data()
+          delete data.userRef
+          refData = {
+            ...refData,
+            user: userRef
+          }
+        }
+        return refData
       } catch (error) {
         this.$notify({
           isError: true,
@@ -533,6 +607,7 @@ export default {
       const item = {
         uid: uuidv4(),
         hotel: null,
+        user: null,
         name: null,
         images: [],
         imagesMeta: [],
@@ -686,6 +761,7 @@ export default {
           )
           payload.imagesMeta = imagesMeta
           delete payload.images
+          payload.userRef = db.collection('users').doc(payload.user)
           payload.hotelRef = db.collection('hotels').doc(payload.hotel)
           delete payload.refData
           this.isSaved = true

@@ -55,22 +55,12 @@
                 class="text-center headline primary--text d-flex align-center justify-center"
                 aria-label="Monggo.IO"
               >
-                <v-img
+                <app-img
                   src="/icons/icon-with-text.png"
                   alt="Mongo.IO"
                   max-width="150"
                   contain=""
-                >
-                  <template #placeholder="">
-                    <v-row
-                      class="fill-height ma-0"
-                      align="center"
-                      justify="center"
-                    >
-                      <v-progress-circular indeterminate="" color="grey" />
-                    </v-row>
-                  </template>
-                </v-img>
+                />
               </h1>
             </v-col>
             <v-spacer />
@@ -134,6 +124,8 @@
           </v-card-text>
         </v-card>
         <v-btn
+          :disabled="isLoading"
+          :loading="isLoading"
           color="secondary"
           block=""
           rounded=""
@@ -150,6 +142,10 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import { auth } from '~/utils/firebase'
+import { types as qrTypes } from '~/store/qr'
+
 export default {
   head() {
     return {
@@ -158,17 +154,19 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       qr: {
         hotelCode: null,
         roomCode: null
       }
     }
   },
+  computed: {
+    ...mapState(['isLoading'])
+  },
   methods: {
     async onInit(promise) {
       try {
-        this.isLoading = true
+        this.$setLoading(true)
         await promise
       } catch (error) {
         if (error.name === 'NotAllowedError') {
@@ -185,11 +183,24 @@ export default {
           console.log('ERROR: Stream API is not supported in this browser')
         }
       } finally {
-        this.isLoading = false
+        this.$setLoading(false)
       }
     },
-    onDecode(string) {
-      console.log(string)
+    async onDecode(uid) {
+      try {
+        this.$setLoading(true)
+        await auth.signInAnonymously()
+        this.$store.commit(`qr/${qrTypes.SET_UID}`, uid)
+        this.$cookies.set('uid', uid)
+        this.$router.replace(this.localePath({ name: 'guest' }))
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(true)
+      }
     }
   }
 }

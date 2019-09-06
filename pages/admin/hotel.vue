@@ -225,7 +225,6 @@ export default {
           sortable: false
         },
         { text: this.$t('name'), value: 'name' },
-        { text: this.$t('description'), value: 'description' },
         {
           text: this.$t('createdAt'),
           value: 'createdAt',

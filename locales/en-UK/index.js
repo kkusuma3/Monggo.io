@@ -42,5 +42,7 @@ export default {
   guest: 'Guest',
   close: 'Close',
   dataSaved: 'Data is saved',
-  dataDeleted: 'Data is deleted'
+  dataDeleted: 'Data is deleted',
+  account: 'Account',
+  home: 'Home'
 }

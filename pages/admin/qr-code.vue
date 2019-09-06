@@ -3,7 +3,7 @@
   "en-us": {
     "alreadyHasQR": "Already has @:(qr-code)",
     "notHasQr": "Doesn't has @:(qr-code)",
-    "uniqueQR": "Please choose another room, this room already has @:(qr-code)",
+    "uniqueQr": "Please choose another room, this room already has @:(qr-code)",
     "seeQr": "@:(see) @:(qr-code) for {name}",
     "editQr": "@:(edit) @:(qr-code) for {name}",
     "deleteQr": "@:(delete) @:(qr-code) for {name}"
@@ -11,7 +11,7 @@
   "en-uk": {
     "alreadyHasQR": "Already has @:(qr-code)",
     "notHasQr": "Doesn't has @:(qr-code)",
-    "uniqueQR": "Please choose another room, this room already has @:(qr-code)",
+    "uniqueQr": "Please choose another room, this room already has @:(qr-code)",
     "seeQr": "@:(see) @:(qr-code) for {name}",
     "editQr": "@:(edit) @:(qr-code) for {name}",
     "deleteQr": "@:(delete) @:(qr-code) for {name}"
@@ -19,7 +19,7 @@
   "id": {
     "alreadyHasQR": "Telah memiliki @:(qr-code)",
     "notHasQr": "Belum memiliki @:(qr-code)",
-    "uniqueQR": "Silakan pilih kamar lain, kamar ini sudah memiliki @:(qr-code)",
+    "uniqueQr": "Silakan pilih kamar lain, kamar ini sudah memiliki @:(qr-code)",
     "seeQr": "@:(see) @:(qr-code) untuk {name}",
     "editQr": "@:(edit) @:(qr-code) untuk {name}",
     "deleteQr": "@:(delete) @:(qr-code) untuk {name}"
@@ -338,10 +338,10 @@ export default {
       if (id) {
         const room = this.rooms.find(({ uid }) => uid === id)
         if (id !== this.itemOriginal.room) {
-          if (room && room.hasQr && !this.isDeleting) {
+          if (room && room.hasQr && !this.isDeleting && !this.isPreviewing) {
             this.$notify({
               isError: true,
-              message: this.$t('uniqueQR')
+              message: this.$t('uniqueQr')
             })
             this.item.room = null
           }
@@ -395,7 +395,7 @@ export default {
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
-        if (data.hotelRef) {
+        if (data.roomRef) {
           const roomRefDoc = await data.roomRef.get()
           const roomRef = roomRefDoc.data()
           delete data.roomRef
