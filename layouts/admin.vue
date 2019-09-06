@@ -117,7 +117,7 @@
             </v-list-item>
           </template>
         </v-list-group>
-        <v-list-item nuxt="" exact="" ripple="">
+        <v-list-item nuxt="" exact="" ripple="" @click="onLogout">
           <v-list-item-icon>
             <v-icon>mdi-logout-variant</v-icon>
           </v-list-item-icon>
