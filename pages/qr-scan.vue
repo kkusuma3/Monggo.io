@@ -142,7 +142,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import { auth } from '~/utils/firebase'
 import { types as qrTypes } from '~/store/qr'
 
@@ -161,6 +161,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters('user', ['isAuth']),
     ...mapState(['isLoading'])
   },
   methods: {
@@ -189,9 +190,11 @@ export default {
     async onDecode(uid) {
       try {
         this.$setLoading(true)
-        await auth.signInAnonymously()
+        if (!this.isAuth) {
+          await auth.signInAnonymously()
+        }
         this.$store.commit(`qr/${qrTypes.SET_UID}`, uid)
-        this.$cookies.set('uid', uid)
+        this.$cookies.set('qr', uid)
         this.$router.replace(this.localePath({ name: 'guest' }))
       } catch (error) {
         this.$notify({

@@ -8,7 +8,6 @@
     :height="height"
     :max-width="maxWidth"
     :max-height="maxHeight"
-    class="grey lighten-2"
     contain=""
   >
     <template #placeholder="">

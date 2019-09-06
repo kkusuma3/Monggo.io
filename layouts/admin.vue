@@ -242,6 +242,8 @@ export default {
     onAuthStateChanged() {
       auth.onAuthStateChanged(async user => {
         if (user === null) {
+          this.$cookies.remove('qr')
+          this.$router.replace(this.localePath({ name: 'admin-login' }))
           return
         }
         try {
@@ -284,6 +286,7 @@ export default {
                 email: user.email,
                 phone: user.phoneNumber,
                 avatar: user.photoURL,
+                isAnonymous: user.isAnonymous,
                 role: 'guest',
                 createdAt: this.$moment().toDate(),
                 updatedAt: this.$moment().toDate()
