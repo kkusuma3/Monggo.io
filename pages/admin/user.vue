@@ -451,7 +451,7 @@ export default {
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
-        if (data.hotelRef) {
+        if (data.hotel && data.hotelRef) {
           const hotelRefDoc = await data.hotelRef.get()
           const hotelRef = hotelRefDoc.data()
           delete data.hotelRef
