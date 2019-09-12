@@ -1,17 +1,14 @@
 <i18n>
 {
   "en-us": {
-    "requestStat": "Request @:(status)",
     "searchService": "@:(service) @:(search)",
     "hotelInfo": "@:(hotel) Information"
   },
   "en-uk": {
-    "requestStat": "Request @:(status)",
     "searchService": "@:(service) @:(search)",
     "hotelInfo": "@:(hotel) Information"
   },
   "id": {
-    "requestStat": "@:(status) Pemesanan",
     "searchService": "@:(search) @:(service)",
     "hotelInfo": "Informasi @:(hotel)"
   }
@@ -109,7 +106,7 @@
           </v-tooltip>
         </template>
         <v-card v-if="qr">
-          <v-carousel height="200">
+          <v-carousel height="200" cycle="">
             <v-carousel-item
               v-for="meta in qr.refData.hotel.imagesMeta"
               :key="meta.name"
@@ -124,9 +121,17 @@
           <v-card-actions>
             <v-spacer />
             <v-btn
-              v-if="qr.refData.hotel.phone"
+              v-if="
+                qr.refData.hotel.callingCodes &&
+                  qr.refData.hotel.callingCodes.length > 0 &&
+                  qr.refData.hotel.phone
+              "
               color="primary"
-              :href="`tel:${qr.refData.hotel.phone}`"
+              :href="
+                `tel:${qr.refData.hotel.callingCodes[0]}${
+                  qr.refData.hotel.phone
+                }`
+              "
             >
               <v-icon left="">mdi-phone</v-icon>
               <span>{{ $t('call') }}</span>
@@ -160,7 +165,7 @@
         exact=""
         :to="localePath({ name: 'guest-status' })"
       >
-        <span>{{ $t('requestStat') }}</span>
+        <span>{{ $t('order') }}</span>
         <v-icon>mdi-clipboard-check</v-icon>
       </v-btn>
       <v-btn
@@ -204,7 +209,6 @@ export default {
     return {
       isSearch: false,
       isHotelInfo: false,
-      service: null,
       services: []
     }
   },
@@ -239,6 +243,14 @@ export default {
         }
         string = string.toString()
         return initials(string)
+      }
+    },
+    service: {
+      get() {
+        return this.$store.state.guest.service
+      },
+      set(service) {
+        this.$store.commit(`guest/${guestTypes.SET_SERVICE}`, service)
       }
     }
   },
@@ -330,27 +342,29 @@ export default {
         this.$router.push(this.switchLocalePath(currLocale))
       }
     },
-    async setRoom(room, uid = this.user.uid) {
-      try {
-        this.$setLoading(true)
-        await db
-          .collection('rooms')
-          .doc(room)
-          .set(
-            {
-              status: 'reserved',
-              user: uid,
-              userRef: db.collection('users').doc(uid)
-            },
-            { merge: true }
-          )
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
+    async setRoom(room, uid = this.user && this.user.uid) {
+      if (room && uid) {
+        try {
+          this.$setLoading(true)
+          await db
+            .collection('rooms')
+            .doc(room)
+            .set(
+              {
+                status: 'reserved',
+                user: uid,
+                userRef: db.collection('users').doc(uid)
+              },
+              { merge: true }
+            )
+        } catch (error) {
+          this.$notify({
+            isError: true,
+            message: error.message
+          })
+        } finally {
+          this.$setLoading(false)
+        }
       }
     },
     async setQr(uid) {

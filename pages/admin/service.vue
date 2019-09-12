@@ -529,10 +529,8 @@ export default {
           }))
         )
         this.item.imagesMeta = _cloneDeep(imagesMeta)
-        this.itemOriginal.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.item.imagesMeta = []
-        this.itemOriginal.imagesMeta = []
       }
     }
   },
@@ -766,7 +764,11 @@ export default {
             createdAt: this.isEditing ? this.item.createdAt : date,
             updatedAt: date
           }
-          if (this.isEdited) {
+          if (
+            this.isEdited &&
+            this.itemOriginal.imagesMeta &&
+            this.itemOriginal.imagesMeta.length > 0
+          ) {
             await Promise.all(
               this.itemOriginal.imagesMeta.map(meta =>
                 storage.ref(meta.fullPath).delete()
@@ -838,9 +840,11 @@ export default {
           .collection(this.collection)
           .doc(item.uid)
           .delete()
-        await Promise.all(
-          item.imagesMeta.map(meta => storage.ref(meta.fullPath).delete())
-        )
+        if (item.imagesMeta && item.imagesMeta.length > 0) {
+          await Promise.all(
+            item.imagesMeta.map(meta => storage.ref(meta.fullPath).delete())
+          )
+        }
         await this.initData()
         await this.onDeleteClose()
         await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })
