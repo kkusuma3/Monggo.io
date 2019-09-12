@@ -29,6 +29,9 @@ export default {
     // https://github.com/nuxt-community/moment-module
     '@nuxtjs/moment',
 
+    // https://http.nuxtjs.org
+    '@nuxt/http',
+
     // https://github.com/nuxt-community/sentry-module
     '@nuxtjs/sentry',
 
@@ -89,7 +92,7 @@ export default {
       }
     },
     lang: {
-      locales: { 'en-us': en, 'en-uk': en, id },
+      locales: { 'en-us': en, 'en-uk': en, id: id },
       current: 'id'
     }
   },

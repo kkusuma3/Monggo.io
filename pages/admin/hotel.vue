@@ -41,6 +41,15 @@
           </span>
         </v-avatar>
       </template>
+      <template #item.phone="{ item }">
+        <span>
+          {{
+            item.callingCodes && item.callingCodes[0] && item.phone
+              ? `+${item.callingCodes[0]}${item.phone}`
+              : ''
+          }}
+        </span>
+      </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
           {{
@@ -109,6 +118,78 @@
         :label="$t('name')"
         outlined=""
       />
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-autocomplete
+            v-model="item.callingCodes"
+            v-validate="'required'"
+            :items="callingCodes"
+            :error-messages="errors.collect('callingCode')"
+            :disabled="isLoading"
+            item-text="name"
+            item-value="callingCodes"
+            data-vv-name="callingCode"
+            :data-vv-as="$t('callingCode')"
+            name="callingCode"
+            clearable=""
+            data-vv-value-path="item.callingCodes"
+            required=""
+            :label="$t('callingCode')"
+            outlined=""
+          >
+            <template #selection="data">
+              <v-chip
+                v-bind="data.attrs"
+                :input-value="data.selected"
+                label=""
+                @click="data.select"
+              >
+                <v-avatar left="" tile="">
+                  <app-img
+                    v-if="data.item.flag && data.item.flag.length > 0"
+                    :src="data.item.flag"
+                    :alt="data.item.name"
+                  />
+                </v-avatar>
+                <span>
+                  +{{ data.item.callingCodes && data.item.callingCodes[0] }}
+                </span>
+              </v-chip>
+            </template>
+            <template #item="{ item }">
+              <v-list-item-avatar tile="">
+                <app-img
+                  v-if="item.flag && item.flag.length > 0"
+                  :src="item.flag"
+                  :alt="item.name"
+                />
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title>{{ item.name }}</v-list-item-title>
+                <v-list-item-subtitle>
+                  +{{ item.callingCodes && item.callingCodes[0] }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </template>
+          </v-autocomplete>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="item.phone"
+            v-validate="'required|numeric'"
+            :error-messages="errors.collect('phone')"
+            :disabled="isLoading"
+            data-vv-name="phone"
+            :data-vv-as="$t('phone')"
+            name="phone"
+            clearable=""
+            data-vv-value-path="item.phone"
+            required=""
+            :label="$t('phone')"
+            outlined=""
+          />
+        </v-col>
+      </v-row>
       <v-textarea
         v-model="item.description"
         v-validate="'required'"
@@ -235,6 +316,7 @@ export default {
           sortable: false
         },
         { text: this.$t('name'), value: 'name' },
+        { text: this.$t('phone'), value: 'phone' },
         {
           text: this.$t('createdAt'),
           value: 'createdAt',
@@ -262,6 +344,8 @@ export default {
       item: {
         uid: uuidv4(),
         name: null,
+        callingCodes: [],
+        phone: null,
         images: [],
         imagesMeta: [],
         description: null,
@@ -272,6 +356,8 @@ export default {
       itemOriginal: {
         uid: uuidv4(),
         name: null,
+        callingCodes: [],
+        phone: null,
         images: [],
         imagesMeta: [],
         description: null,
@@ -284,7 +370,8 @@ export default {
         url: '',
         fullPath: '',
         createdAt: ''
-      }
+      },
+      callingCodes: []
     }
   },
   computed: {
@@ -359,10 +446,29 @@ export default {
     this.initData()
   },
   methods: {
+    async getCallingCodes() {
+      try {
+        this.$setLoading(true)
+        const codes = await this.$http.$get(
+          `https://restcountries.eu/rest/v2/all?fields=name;flag;callingCodes;alpha2Code`
+        )
+        this.callingCodes = codes.filter(
+          ({ callingCodes }) =>
+            callingCodes.length > 0 && callingCodes[0].length !== 0
+        )
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     async initData() {
       try {
         this.$setLoading(true)
-        await this.getItems()
+        await Promise.all([this.getItems(), this.getCallingCodes()])
       } catch (error) {
         this.$notify({
           isError: true,
@@ -409,6 +515,8 @@ export default {
       const item = {
         uid: uuidv4(),
         name: null,
+        callingCodes: [],
+        phone: null,
         images: [],
         imagesMeta: [],
         description: null,
@@ -558,6 +666,9 @@ export default {
             })
           )
           payload.imagesMeta = imagesMeta
+          if (payload.phone.charAt(0) === '0') {
+            payload.phone = payload.phone.substring(1)
+          }
           delete payload.images
           delete payload.refData
           this.isSaved = true

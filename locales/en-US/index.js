@@ -45,5 +45,9 @@ export default {
   dataDeleted: 'Data is deleted',
   account: 'Account',
   home: 'Home',
-  refresh: 'Refresh'
+  refresh: 'Refresh',
+  checkout: 'Checkout',
+  search: 'Search',
+  call: 'Call',
+  callingCode: 'Calling Code'
 }

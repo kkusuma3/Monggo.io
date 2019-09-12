@@ -8,7 +8,8 @@
     :height="height"
     :max-width="maxWidth"
     :max-height="maxHeight"
-    contain=""
+    :contain="contain"
+    :gradient="gradient"
   >
     <template #placeholder="">
       <v-row class="fill-height ma-0" align="center" justify="center">
@@ -54,6 +55,14 @@ export default {
     },
     maxHeight: {
       type: [String, Number],
+      default: ''
+    },
+    contain: {
+      type: Boolean,
+      default: true
+    },
+    gradient: {
+      type: String,
       default: ''
     }
   }

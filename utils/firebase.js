@@ -22,3 +22,5 @@ export const auth = firebase.auth()
 export const db = firebase.firestore()
 export const storage = firebase.storage()
 export const GoogleAuthProvider = new firebase.auth.GoogleAuthProvider()
+export const googleAuthProviderCredential =
+  firebase.auth.GoogleAuthProvider.credential

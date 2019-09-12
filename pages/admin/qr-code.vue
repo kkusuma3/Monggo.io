@@ -55,10 +55,7 @@
       :loading="isLoading"
     >
       <template #item.image="{ item }">
-        <qr-code
-          :value="item.uid"
-          :options="{ scale: 1, color: { dark: '#C54754' } }"
-        />
+        <qr-code :value="item.uid" :options="{ scale: 1 }" />
       </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
@@ -192,7 +189,7 @@
         <qr-code
           v-if="isPreviewing"
           :value="item.uid"
-          :options="{ scale: 5, color: { dark: '#C54754' } }"
+          :options="{ scale: 5 }"
         />
       </div>
     </template>

@@ -23,19 +23,24 @@
       :loading="isLoading"
     >
       <template #item.image="{ item }">
-        <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+        <v-avatar
+          :color="getMaterialColor(item.name || item.email)"
+          class="ma-1"
+        >
           <app-img
             v-if="item.avatar && item.avatar.length > 0"
             :src="item.avatar"
-            :alt="item.name"
+            :alt="item.name || item.email"
           />
           <span
             v-else=""
             :class="{
-              'white--text': isDarkColor(getMaterialColor(item.name, true))
+              'white--text': isDarkColor(
+                getMaterialColor(item.name || item.email, true)
+              )
             }"
           >
-            {{ getInitials(item.name) }}
+            {{ getInitials(item.name || item.email) }}
           </span>
         </v-avatar>
       </template>
@@ -164,56 +169,76 @@
       >
         <template #item="{ item }">
           <v-list-item-avatar>
-            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+            <v-avatar :color="getMaterialColor(item.name || item.email)">
               <app-img
                 v-if="item.imagesMeta && item.imagesMeta.length > 0"
                 :src="item.imagesMeta[0].url"
-                :alt="item.name"
+                :alt="item.name || item.email"
               />
               <span
                 v-else=""
                 :class="{
-                  'white--text': isDarkColor(getMaterialColor(item.name, true))
+                  'white--text': isDarkColor(
+                    getMaterialColor(item.name || item.email, true)
+                  )
                 }"
               >
-                {{ getInitials(item.name) }}
+                {{ getInitials(item.name || item.email) }}
               </span>
             </v-avatar>
           </v-list-item-avatar>
           <v-list-item-content>
-            <v-list-item-title>{{ item.name }}</v-list-item-title>
+            <v-list-item-title>{{ item.name || item.email }}</v-list-item-title>
           </v-list-item-content>
         </template>
       </v-autocomplete>
       <v-row>
         <v-col :key="item.avatar" cols="4" class="d-flex child-flex">
           <v-card ripple="" flat="" @click="onTriggerPreview">
-            <app-img
-              v-if="
-                item.avatar &&
-                  item.avatar.length > 0 &&
-                  item.name &&
-                  item.name.length > 0
-              "
-              :src="item.avatar"
-              :alt="item.name"
-              :aspect-ratio="1"
-            />
+            <v-avatar
+              :color="getMaterialColor(item.name || item.email)"
+              size="150"
+            >
+              <app-img
+                v-if="item.avatar && item.avatar.length > 0"
+                :src="item.avatar"
+                :alt="item.name || item.email"
+              />
+              <span
+                v-else=""
+                class="headline"
+                :class="{
+                  'white--text': isDarkColor(
+                    getMaterialColor(item.name || item.email, true)
+                  )
+                }"
+              >
+                {{ getInitials(item.name || item.email) }}
+              </span>
+            </v-avatar>
           </v-card>
         </v-col>
       </v-row>
     </template>
     <template #preview="">
-      <app-img
-        v-if="
-          item.avatar &&
-            item.avatar.length > 0 &&
-            item.name &&
-            item.name.length > 0
-        "
-        :src="item.avatar"
-        :alt="item.name"
-      />
+      <v-avatar :color="getMaterialColor(user.name || user.email)" size="512">
+        <app-img
+          v-if="user.avatar && user.avatar.length > 0"
+          :src="user.avatar"
+          :alt="user.name || user.email"
+        />
+        <span
+          v-else=""
+          class="display-1"
+          :class="{
+            'white--text': isDarkColor(
+              getMaterialColor(user.name || user.email, true)
+            )
+          }"
+        >
+          {{ getInitials(user.name || user.email) }}
+        </span>
+      </v-avatar>
     </template>
   </app-wrapper>
 </template>

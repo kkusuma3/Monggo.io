@@ -45,5 +45,9 @@ export default {
   dataDeleted: 'Data terhapus',
   account: 'Akun',
   home: 'Beranda',
-  refresh: 'Segarkan'
+  refresh: 'Segarkan',
+  checkout: 'Keluar',
+  search: 'Cari',
+  call: 'Hubungi',
+  callingCode: 'Kode Panggilan'
 }

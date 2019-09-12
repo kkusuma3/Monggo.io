@@ -8,7 +8,9 @@ export const state = () => ({
 
 export const getters = {
   isAuth: state => state.user !== null,
-  role: (state, getters) => (getters.isAuth ? state.user.role : null)
+  role: (state, getters) => (getters.isAuth ? state.user.role : null),
+  isAnonymous: (state, getters) =>
+    getters.isAuth ? state.user.isAnonymous : false
 }
 
 export const mutations = {

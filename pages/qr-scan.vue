@@ -8,7 +8,8 @@
     "roomCode": "Room Code",
     "hintHotelCode": "Ex: HIL1092",
     "hintRoomCode": "Ex: 4321",
-    "submit": "Submit"
+    "submit": "Submit",
+    "qrScan": "@:(qr) Scan"
   },
   "en-uk": {
     "scan": "Scan the QR Code in your room on the box below",
@@ -18,7 +19,8 @@
     "roomCode": "Room Code",
     "hintHotelCode": "Ex: HIL1092",
     "hintRoomCode": "Ex: 4321",
-    "submit": "Submit"
+    "submit": "Submit",
+    "qrScan": "@:(qr) Scan"
   },
   "id": {
     "scan": "Pindai kode QR pada ruangan di kotak di bawah ini",
@@ -28,7 +30,8 @@
     "roomCode": "Kode Ruangan",
     "hintHotelCode": "Contoh: HIL1092",
     "hintRoomCode": "Contoh: 4321",
-    "submit": "Kirim"
+    "submit": "Kirim",
+    "qrScan": "Pemindaian @:(qr)"
   }
 }
 </i18n>
@@ -143,13 +146,14 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
+import pDebounce from 'p-debounce'
 import { auth } from '~/utils/firebase'
-import { types as qrTypes } from '~/store/qr'
+import { types as guestTypes } from '~/store/guest'
 
 export default {
   head() {
     return {
-      title: 'QR Scan'
+      title: this.$t('qrScan')
     }
   },
   data() {
@@ -164,6 +168,9 @@ export default {
     ...mapGetters('user', ['isAuth']),
     ...mapState(['isLoading'])
   },
+  beforeDestroy() {
+    this.$setLoading(false)
+  },
   methods: {
     async onInit(promise) {
       try {
@@ -171,40 +178,60 @@ export default {
         await promise
       } catch (error) {
         if (error.name === 'NotAllowedError') {
-          console.log('ERROR: you need to grant camera access permisson')
+          this.$notify({
+            kind: 'error',
+            message: 'You need to grant camera access permisson'
+          })
         } else if (error.name === 'NotFoundError') {
-          console.log('ERROR: no camera on this device')
+          this.$notify({ kind: 'error', message: 'No camera on this device' })
         } else if (error.name === 'NotSupportedError') {
-          console.log('ERROR: secure context required (HTTPS, localhost)')
+          this.$notify({
+            kind: 'error',
+            message: 'Secure context required (HTTPS, localhost)'
+          })
         } else if (error.name === 'NotReadableError') {
-          console.log('ERROR: is the camera already in use?')
+          this.$notify({
+            kind: 'error',
+            message: 'Is the camera already in use?'
+          })
         } else if (error.name === 'OverconstrainedError') {
-          console.log('ERROR: installed cameras are not suitable')
+          this.$notify({
+            kind: 'error',
+            message: 'Installed cameras are not suitable'
+          })
         } else if (error.name === 'StreamApiNotSupportedError') {
-          console.log('ERROR: Stream API is not supported in this browser')
+          this.$notify({
+            kind: 'error',
+            message: 'Stream API is not supported in this browser'
+          })
         }
       } finally {
         this.$setLoading(false)
       }
     },
-    async onDecode(uid) {
-      try {
-        this.$setLoading(true)
-        if (!this.isAuth) {
-          await auth.signInAnonymously()
+    onDecode: pDebounce(
+      async function(uid) {
+        try {
+          this.$setLoading(true)
+          if (!this.isAuth) {
+            await auth.signInAnonymously()
+          }
+          this.$store.commit(`guest/${guestTypes.SET_UID}`, uid)
+          this.$cookies.set('qr', uid)
+          const path = this.localePath({ name: 'guest' })
+          this.$router.replace(path)
+        } catch (error) {
+          this.$notify({
+            kind: 'error',
+            message: error.message
+          })
+        } finally {
+          this.$setLoading(true)
         }
-        this.$store.commit(`qr/${qrTypes.SET_UID}`, uid)
-        this.$cookies.set('qr', uid)
-        this.$router.replace(this.localePath({ name: 'guest' }))
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(true)
-      }
-    }
+      },
+      1000,
+      { leading: true }
+    )
   }
 }
 </script>
