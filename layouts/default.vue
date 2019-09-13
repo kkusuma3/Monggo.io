@@ -621,7 +621,7 @@ export default {
               createdAt: this.$moment().toDate(),
               updatedAt: this.$moment().toDate()
             }
-            const userDoc = await db
+            let userDoc = await db
               .collection('users')
               .doc(user.uid)
               .get()
@@ -630,19 +630,25 @@ export default {
                 .collection('users')
                 .doc(user.uid)
                 .set(payload, { merge: true })
+              userDoc = await db
+                .collection('users')
+                .doc(user.uid)
+                .get()
             }
-            let userRef = userDoc.data()
-            userRef = {
-              ...userRef,
-              createdAt:
-                userRef && userRef.createdAt && userRef.createdAt.toDate(),
-              updatedAt:
-                userRef && userRef.updatedAt && userRef.updatedAt.toDate()
-            }
-            if (userRef) {
-              this.$store.commit(`user/${userTypes.SET_USER}`, userRef)
-              this.setQr(this.uid, userRef.uid)
-            }
+            await (() => {
+              let userRef = userDoc.data()
+              userRef = {
+                ...userRef,
+                createdAt:
+                  userRef && userRef.createdAt && userRef.createdAt.toDate(),
+                updatedAt:
+                  userRef && userRef.updatedAt && userRef.updatedAt.toDate()
+              }
+              if (userRef) {
+                this.$store.commit(`user/${userTypes.SET_USER}`, userRef)
+                this.setQr(this.uid, userRef.uid)
+              }
+            })()
           }
         } catch (error) {
           this.$notify({
