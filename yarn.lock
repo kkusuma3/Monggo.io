@@ -777,10 +777,10 @@
   dependencies:
     "@firebase/app-types" "0.x"
 
-"@firebase/database@0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@firebase/database/-/database-0.5.2.tgz#9f480c64f7a16569ae8cf18ed82b22acf0ea0885"
-  integrity sha512-LnXKRE1AmjlS+iRF7j8vx+Ni8x85CmLP5u5Pw5rDKhKLn2eTR1tJKD937mUeeGEtDHwR1rrrkLYOqRR2cSG3hQ==
+"@firebase/database@0.5.3":
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/@firebase/database/-/database-0.5.3.tgz#e731de97f2d12490df1614a86b993e9ab86ed7cb"
+  integrity sha512-TFjQ/M0T4jO24jAMU5cZAHNk3ndNfeNtGKe5PL4o/YrGYJHg3XaE2LKzU/vFrXUFLnLxqbETzXjFa4hTA6cDUg==
   dependencies:
     "@firebase/database-types" "0.4.3"
     "@firebase/logger" "0.1.24"
@@ -793,10 +793,10 @@
   resolved "https://registry.yarnpkg.com/@firebase/firestore-types/-/firestore-types-1.5.0.tgz#f05700220f882773ca01e818bf10b1dc456ee5be"
   integrity sha512-VhRHNbEbak+R2iK8e1ir2Lec7eaHMZpGTRy6LMtzATYthlkwNHF9tO8JU8l6d1/kYkI4+DWzX++i3HhTziHEWA==
 
-"@firebase/firestore@1.5.1":
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/@firebase/firestore/-/firestore-1.5.1.tgz#b494662a68d208d678449460f73437a378fe6167"
-  integrity sha512-W3XvAZQ1gwn6Sl1bJMUxzkF3qKIzyBKw8cQyGuYwo7ml6ME63tGvSScmEGjzFimvynrFhmSRJ16DPSVFe9LXmw==
+"@firebase/firestore@1.5.2":
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/@firebase/firestore/-/firestore-1.5.2.tgz#798c6ef541ee982d473d58d0df440bc0381c5f80"
+  integrity sha512-CPYLvkGZBKE47oQC9a0q13UMVRj3LvnSbB1nOerktE3CGRHKy44LxDumamN8Kj067hV/80mKK9FdbeUufwO/Rg==
   dependencies:
     "@firebase/firestore-types" "1.5.0"
     "@firebase/logger" "0.1.24"
@@ -4893,15 +4893,15 @@ find-up@^4.0.0:
     path-exists "^4.0.0"
 
 firebase@^6.6.0:
-  version "6.6.0"
-  resolved "https://registry.yarnpkg.com/firebase/-/firebase-6.6.0.tgz#4890fa40ef4757dec9cb8524b17a0ed19ceb894e"
-  integrity sha512-n6SiV0z7UF0cn2t/D+P0xQvnrwVXW41lRb1qw5GYgqc53FltIzPuFgv8yTx3q4Nt/vrFluyDqIbRnrAHGcPwjg==
+  version "6.6.1"
+  resolved "https://registry.yarnpkg.com/firebase/-/firebase-6.6.1.tgz#758beaba5e1729062279b2b288969df2af6f94f8"
+  integrity sha512-iXbHPIBRt04xYSjWffnARqZbc3vUc0RTnOHsMtAqaT7pqDWicaghEwj2WbCJ0+JLAiKnLNK7fTjW73zfKQSSoQ==
   dependencies:
     "@firebase/app" "0.4.16"
     "@firebase/app-types" "0.4.3"
     "@firebase/auth" "0.12.0"
-    "@firebase/database" "0.5.2"
-    "@firebase/firestore" "1.5.1"
+    "@firebase/database" "0.5.3"
+    "@firebase/firestore" "1.5.2"
     "@firebase/functions" "0.4.17"
     "@firebase/installations" "0.2.6"
     "@firebase/messaging" "0.4.10"
@@ -7378,9 +7378,9 @@ minipass@^2.2.1, minipass@^2.3.5:
     yallist "^3.0.0"
 
 minizlib@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/minizlib/-/minizlib-1.2.1.tgz#dd27ea6136243c7c880684e8672bb3a45fd9b614"
-  integrity sha512-7+4oTUOWKg7AuL3vloEWekXY2/D20cevzsrNT2kGWm+39J9hGTCBv8VI5Pm5lXZ/o3/mdR4f8rflAPhnQb8mPA==
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/minizlib/-/minizlib-1.2.2.tgz#6f0ccc82fa53e1bf2ff145f220d2da9fa6e3a166"
+  integrity sha512-hR3At21uSrsjjDTWrbu0IMLTpnkpv8IIMFDFaoz43Tmu4LkmAXfH44vNNzpTnf+OAQQCHrb91y/wc2J4x5XgSQ==
   dependencies:
     minipass "^2.2.1"
 
@@ -7769,9 +7769,9 @@ number-is-nan@^1.0.0:
   integrity sha1-CXtgK1NCKlIsGvuHkDGDNpQaAR0=
 
 nuxt-i18n@^6.1.3:
-  version "6.1.3"
-  resolved "https://registry.yarnpkg.com/nuxt-i18n/-/nuxt-i18n-6.1.3.tgz#1441583edeb0b8ba4a05d6fb14afd607982aaa9b"
-  integrity sha512-6+J0xstBUXmyDyYEo2xOob9FfwjUXY1h5kEMajEi41un6i39HedfLMRPhY02s+jSv1iqflfq3kdYxAkR53E9Hw==
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/nuxt-i18n/-/nuxt-i18n-6.2.0.tgz#1883ce32382d1085c44ac8a48535c961c950ee3a"
+  integrity sha512-0WxHezgPCRl7VTIfyw8Nz5Aoo7Rh2CJ54uDMFfgrO2I//5dHt9Fh59V/W49HHLPw1RwWeMkW9ZwDrvWC8MikTQ==
   dependencies:
     "@babel/parser" "^7.5.5"
     "@babel/traverse" "^7.5.5"
@@ -11045,9 +11045,9 @@ vue-i18n-extensions@^0.2.1:
   integrity sha512-xBrItI7bEwBnG7eAlnyUARP41JYYn2+ABMR8q1Yh5FM9hHCbs4XPZwG+4+FPeIZ6b5gYk4YUP//m+fWiuU9z9A==
 
 vue-i18n@^8.12.0:
-  version "8.14.0"
-  resolved "https://registry.yarnpkg.com/vue-i18n/-/vue-i18n-8.14.0.tgz#613cbbc21d71dc608cd085f8a94ea3a40badcd33"
-  integrity sha512-utI1Rvc8i+fmmUkkKRmHaf4QQ87s7rGVL5ZZLsKvvRzmgaIr1l+GfGxxxRmsZxHpPlgeB8OxoUZ4noqZgDL6xg==
+  version "8.14.1"
+  resolved "https://registry.yarnpkg.com/vue-i18n/-/vue-i18n-8.14.1.tgz#0ca0a2742c14e0144481655157fffcc7cc313e50"
+  integrity sha512-uHzw5GTFyf/TmjJXveSl3L4CG61KI4lvhKOQvx8W4Y8P2LZ3v3l/qw4KRs1C6pWyjkfY9p0rezYNFO5YzMEQ8A==
 
 vue-jest@^3.0.2:
   version "3.0.5"
