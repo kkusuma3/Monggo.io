@@ -695,48 +695,64 @@ export default {
         } else {
           snaps = await collection.get()
         }
-        const items = await Promise.all(
-          snaps.docs.map(async doc => {
-            const data = doc.data()
-            if (cb) {
-              const refData = await cb(data)
-              return {
-                ...data,
-                refData,
-                imagesMeta: data.imagesMeta.map(meta => ({
-                  ...meta,
-                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-                })),
-                images: [],
-                createdAt: data && data.createdAt && data.createdAt.toDate(),
-                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+        if (snaps && snaps.docs) {
+          const items = await Promise.all(
+            snaps.docs.map(async doc => {
+              const data = doc.data()
+              if (cb) {
+                const refData = await cb(data)
+                let result = {
+                  ...data,
+                  refData,
+                  createdAt: data && data.createdAt && data.createdAt.toDate(),
+                  updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+                }
+                if (data.imagesMeta) {
+                  result = {
+                    ...result,
+                    imagesMeta: data.imagesMeta.map(meta => ({
+                      ...meta,
+                      createdAt:
+                        meta && meta.createdAt && meta.createdAt.toDate()
+                    })),
+                    images: []
+                  }
+                }
+                return result
+              } else {
+                let result = {
+                  ...data,
+                  createdAt: data && data.createdAt && data.createdAt.toDate(),
+                  updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+                }
+                if (data.imagesMeta) {
+                  result = {
+                    ...result,
+                    imagesMeta: data.imagesMeta.map(meta => ({
+                      ...meta,
+                      createdAt:
+                        meta && meta.createdAt && meta.createdAt.toDate()
+                    })),
+                    images: []
+                  }
+                }
+                return result
               }
+            })
+          )
+          if (typeof collection === 'string') {
+            if (collection === this.collection) {
+              this.items = items
+            } else if (this[collection]) {
+              this[collection] = items
             } else {
-              return {
-                ...data,
-                imagesMeta: data.imagesMeta.map(meta => ({
-                  ...meta,
-                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-                })),
-                images: [],
-                createdAt: data && data.createdAt && data.createdAt.toDate(),
-                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-              }
+              throw new Error('Collection must be defined in the data.')
             }
-          })
-        )
-        if (typeof collection === 'string') {
-          if (collection === this.collection) {
-            this.items = items
-          } else if (this[collection]) {
-            this[collection] = items
+          } else if (this[location]) {
+            this[location] = items
           } else {
             throw new Error('Collection must be defined in the data.')
           }
-        } else if (this[location]) {
-          this[location] = items
-        } else {
-          throw new Error('Collection must be defined in the data.')
         }
       } catch (error) {
         this.$notify({

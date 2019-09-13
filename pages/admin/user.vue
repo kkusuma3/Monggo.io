@@ -24,25 +24,28 @@
     >
       <template #item.image="{ item }">
         <v-avatar
-          :color="getMaterialColor(item.name || item.email)"
+          :color="getMaterialColor(item.name || item.email || 'Anonim')"
           class="ma-1"
         >
           <app-img
             v-if="item.avatar && item.avatar.length > 0"
             :src="item.avatar"
-            :alt="item.name || item.email"
+            :alt="item.name || item.email || 'Anonim'"
           />
           <span
             v-else=""
             :class="{
               'white--text': isDarkColor(
-                getMaterialColor(item.name || item.email, true)
+                getMaterialColor(item.name || item.email || 'Anonim', true)
               )
             }"
           >
-            {{ getInitials(item.name || item.email) }}
+            {{ getInitials(item.name || item.email || 'Anonim') }}
           </span>
         </v-avatar>
+      </template>
+      <template #item.name="{ item }">
+        <span>{{ item.name || item.email || 'Anonim' }}</span>
       </template>
       <template #item.role="{ item }">
         <v-chip
@@ -83,7 +86,7 @@
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-edit-${slugify(item.name)}`"
+              :class="`trigger-edit-${slugify(item.name || 'Anonim')}`"
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"
@@ -94,7 +97,7 @@
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('edit') }} {{ item.name }}</span>
+          <span>{{ $t('edit') }} {{ item.name || 'Anonim' }}</span>
         </v-tooltip>
       </template>
     </v-data-table>
@@ -551,38 +554,40 @@ export default {
         } else {
           snaps = await collection.get()
         }
-        const items = await Promise.all(
-          snaps.docs.map(async doc => {
-            const data = doc.data()
-            if (cb) {
-              const refData = await cb(data)
-              return {
-                ...data,
-                refData,
-                createdAt: data && data.createdAt && data.createdAt.toDate(),
-                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+        if (snaps && snaps.docs) {
+          const items = await Promise.all(
+            snaps.docs.map(async doc => {
+              const data = doc.data()
+              if (cb) {
+                const refData = await cb(data)
+                return {
+                  ...data,
+                  refData,
+                  createdAt: data && data.createdAt && data.createdAt.toDate(),
+                  updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+                }
+              } else {
+                return {
+                  ...data,
+                  createdAt: data && data.createdAt && data.createdAt.toDate(),
+                  updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+                }
               }
+            })
+          )
+          if (typeof collection === 'string') {
+            if (collection === this.collection) {
+              this.items = items
+            } else if (this[collection]) {
+              this[collection] = items
             } else {
-              return {
-                ...data,
-                createdAt: data && data.createdAt && data.createdAt.toDate(),
-                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-              }
+              throw new Error('Collection must be defined in the data.')
             }
-          })
-        )
-        if (typeof collection === 'string') {
-          if (collection === this.collection) {
-            this.items = items
-          } else if (this[collection]) {
-            this[collection] = items
+          } else if (this[location]) {
+            this[location] = items
           } else {
             throw new Error('Collection must be defined in the data.')
           }
-        } else if (this[location]) {
-          this[location] = items
-        } else {
-          throw new Error('Collection must be defined in the data.')
         }
       } catch (error) {
         this.$notify({

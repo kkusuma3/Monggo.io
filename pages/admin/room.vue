@@ -575,7 +575,7 @@ export default {
           const hotelRefDoc = await data.hotelRef.get()
           let hotelRef = hotelRefDoc.data()
           hotelRef = {
-            hotelRef,
+            ...hotelRef,
             createdAt:
               hotelRef && hotelRef.createdAt && hotelRef.createdAt.toDate(),
             updatedAt:
@@ -590,7 +590,7 @@ export default {
           const userRefDoc = await data.userRef.get()
           let userRef = userRefDoc.data()
           userRef = {
-            userRef,
+            ...userRef,
             createdAt:
               userRef && userRef.createdAt && userRef.createdAt.toDate(),
             updatedAt:
@@ -672,48 +672,52 @@ export default {
         } else {
           snaps = await collection.get()
         }
-        const items = await Promise.all(
-          snaps.docs.map(async doc => {
-            const data = doc.data()
-            if (cb) {
-              const refData = await cb(data)
-              return {
-                ...data,
-                refData,
-                imagesMeta: data.imagesMeta.map(meta => ({
-                  ...meta,
-                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-                })),
-                images: [],
-                createdAt: data && data.createdAt && data.createdAt.toDate(),
-                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+        if (snaps && snaps.docs) {
+          const items = await Promise.all(
+            snaps.docs.map(async doc => {
+              const data = doc.data()
+              if (cb) {
+                const refData = await cb(data)
+                return {
+                  ...data,
+                  refData,
+                  imagesMeta: data.imagesMeta.map(meta => ({
+                    ...meta,
+                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                  })),
+                  images: [],
+                  createdAt: data && data.createdAt && data.createdAt.toDate(),
+                  updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+                }
+              } else {
+                return {
+                  ...data,
+                  imagesMeta: data.imagesMeta.map(meta => ({
+                    ...meta,
+                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                  })),
+                  images: [],
+                  createdAt: data && data.createdAt && data.createdAt.toDate(),
+                  updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+                }
               }
+            })
+          )
+          await (() => {
+            if (typeof collection === 'string') {
+              if (collection === this.collection) {
+                this.items = items
+              } else if (this[collection]) {
+                this[collection] = items
+              } else {
+                throw new Error('Collection must be defined in the data.')
+              }
+            } else if (this[location]) {
+              this[location] = items
             } else {
-              return {
-                ...data,
-                imagesMeta: data.imagesMeta.map(meta => ({
-                  ...meta,
-                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-                })),
-                images: [],
-                createdAt: data && data.createdAt && data.createdAt.toDate(),
-                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-              }
+              throw new Error('Collection must be defined in the data.')
             }
-          })
-        )
-        if (typeof collection === 'string') {
-          if (collection === this.collection) {
-            this.items = items
-          } else if (this[collection]) {
-            this[collection] = items
-          } else {
-            throw new Error('Collection must be defined in the data.')
-          }
-        } else if (this[location]) {
-          this[location] = items
-        } else {
-          throw new Error('Collection must be defined in the data.')
+          })()
         }
       } catch (error) {
         this.$notify({

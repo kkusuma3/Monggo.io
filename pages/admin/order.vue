@@ -77,7 +77,13 @@
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-edit-${slugify(item.refData.user.name)}`"
+              :class="
+                `trigger-edit-${slugify(
+                  item.refData && item.refData.user
+                    ? item.refData.user.name
+                    : 'Anonim'
+                )}`
+              "
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"
@@ -88,12 +94,25 @@
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('editOrder', { name: item.refData.user.name }) }}</span>
+          <span>{{
+            $t('editOrder', {
+              name:
+                item.refData && item.refData.user
+                  ? item.refData.user.name
+                  : 'Anonim'
+            })
+          }}</span>
         </v-tooltip>
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-delete-${slugify(item.refData.user.name)}`"
+              :class="
+                `trigger-delete-${slugify(
+                  item.refData && item.refData.user
+                    ? item.refData.user.name
+                    : 'Anonim'
+                )}`
+              "
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"
@@ -104,7 +123,14 @@
               <v-icon>mdi-delete</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('deleteOrder', { name: item.refData.user.name }) }}</span>
+          <span>{{
+            $t('deleteOrder', {
+              name:
+                item.refData && item.refData.user
+                  ? item.refData.user.name
+                  : 'Anonim'
+            })
+          }}</span>
         </v-tooltip>
       </template>
     </v-data-table>
@@ -585,6 +611,7 @@ export default {
             const data = doc.data()
             if (cb) {
               const refData = await cb(data)
+              console.log(refData)
               return {
                 ...data,
                 refData,
@@ -602,19 +629,21 @@ export default {
             }
           })
         )
-        if (typeof collection === 'string') {
-          if (collection === this.collection) {
-            this.items = items
-          } else if (this[collection]) {
-            this[collection] = items
+        await (() => {
+          if (typeof collection === 'string') {
+            if (collection === this.collection) {
+              this.items = items
+            } else if (this[collection]) {
+              this[collection] = items
+            } else {
+              throw new Error('Collection must be defined in the data.')
+            }
+          } else if (this[location]) {
+            this[location] = items
           } else {
             throw new Error('Collection must be defined in the data.')
           }
-        } else if (this[location]) {
-          this[location] = items
-        } else {
-          throw new Error('Collection must be defined in the data.')
-        }
+        })()
       } catch (error) {
         this.$notify({
           isError: true,
