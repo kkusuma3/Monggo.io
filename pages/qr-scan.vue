@@ -229,7 +229,7 @@ export default {
           this.$setLoading(true)
         }
       },
-      1000,
+      5000,
       { leading: true }
     )
   }
