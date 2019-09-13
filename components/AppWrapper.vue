@@ -2,15 +2,18 @@
 {
   "en-us": {
     "refreshData": "@:(refresh) {title} data",
-    "deleteConfirmation": "@:delete @:confirmation"
+    "deleteConfirmation": "@:delete @:confirmation",
+    "deleteConfirmationWarn": "Are you sure you want to delete this data?"
   },
   "en-uk": {
     "refreshData": "@:(refresh) {title} data",
-    "deleteConfirmation": "@:delete @:confirmation"
+    "deleteConfirmation": "@:delete @:confirmation",
+    "deleteConfirmationWarn": "Are you sure you want to delete this data?"
   },
   "id": {
     "refreshData": "@:(refresh) data {title}",
-    "deleteConfirmation": "@:confirmation Penghapusan"
+    "deleteConfirmation": "@:confirmation Penghapusan",
+    "deleteConfirmationWarn": "Apakah Anda yakin ingin menghapus data ini?"
   }
 }
 </i18n>
@@ -137,7 +140,7 @@
             </v-app-bar>
             <v-card-text style="padding: 24px 20px">
               <div class="subtitle-1">
-                Are you sure you want to delete this data?
+                {{ $t('deleteConfirmationWarn') }}
               </div>
             </v-card-text>
             <v-card-actions>

@@ -215,7 +215,10 @@ export default {
         this.$setLoading(true)
         let snaps = null
         if (typeof collection === 'string') {
-          snaps = await db.collection(collection).get()
+          snaps = await db
+            .collection(collection)
+            .orderBy('createdAt', 'desc')
+            .get()
         } else {
           snaps = await collection.get()
         }

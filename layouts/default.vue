@@ -16,7 +16,7 @@
 </i18n>
 
 <template>
-  <v-app>
+  <v-app v-scroll="onScroll">
     <v-app-bar
       v-if="$route.name.includes('guest') && qr"
       app=""
@@ -39,20 +39,51 @@
           gradient="to top right, rgba(17, 54, 142, .3), rgba(247, 63, 82, .7)"
         />
       </template>
-      <v-scroll-x-reverse-transition mode="out-in">
-        <v-toolbar-title v-if="!isSearch" class="mr-3">
+      <template
+        v-if="
+          !($route.name.includes('order') || $route.name.includes('account'))
+        "
+      >
+        <v-fade-transition mode="in-out">
+          <v-toolbar-title v-if="!isSearch" class="mr-3 text-center">
+            <h1 aria-label="Monggo.IO">
+              <app-img
+                src="/icon.png"
+                class="mx-auto"
+                alt="Monggo.IO"
+                :width="isScrolled ? 24 : 48"
+                :height="isScrolled ? 24 : 48"
+              />
+            </h1>
+            <h2 v-if="!isScrolled" class="title">
+              {{ qr.refData.hotel.name }}
+            </h2>
+            <h3 v-if="!isScrolled" class="subtitle-2">
+              {{ qr.refData.room.name }}
+            </h3>
+          </v-toolbar-title>
+        </v-fade-transition>
+      </template>
+      <template v-else="">
+        <v-toolbar-title class="mr-3 text-center">
           <h1 aria-label="Monggo.IO">
-            <app-img src="/icon.png" alt="Monggo.IO" width="24" height="24" />
+            <app-img
+              src="/icon.png"
+              class="mx-auto"
+              alt="Monggo.IO"
+              width="24"
+              height="24"
+            />
           </h1>
         </v-toolbar-title>
-      </v-scroll-x-reverse-transition>
+      </template>
       <v-spacer />
       <template
         v-if="
           !($route.name.includes('order') || $route.name.includes('account'))
         "
       >
-        <v-scroll-x-reverse-transition mode="out-in">
+        <v-fade-transition mode="out-in">
           <v-tooltip v-if="!isSearch" key="button-search" bottom="">
             <template #activator="{ on }">
               <v-btn icon="" v-on="on" @click="isSearch = !isSearch">
@@ -104,7 +135,7 @@
               </v-list-item-content>
             </template>
           </v-autocomplete>
-        </v-scroll-x-reverse-transition>
+        </v-fade-transition>
       </template>
       <v-dialog v-model="isHotelInfo" scrollable="">
         <template #activator="{ on: dialog }">
@@ -223,8 +254,8 @@ export default {
   data() {
     return {
       isSearch: false,
-      isHotelInfo: false,
-      uncategorizedServices: []
+      currentScroll: 0,
+      isHotelInfo: false
     }
   },
   computed: {
@@ -233,6 +264,10 @@ export default {
     ...mapState('user', ['user']),
     ...mapGetters('user', ['role', 'isAuth']),
     ...mapState('category', ['categories']),
+    ...mapState('service', ['uncategorizedServices']),
+    isScrolled() {
+      return this.currentScroll > 0
+    },
     isDarkColor() {
       return color => {
         if (!color) {
@@ -278,10 +313,14 @@ export default {
     },
     async qr(qr) {
       if (qr && this.isAuth) {
+        this.$setDataLoaded(false)
         await Promise.all([this.getCategories(), this.getRates()])
         await this.setRoom(qr.room)
-        await this.getServices(qr.hotel)
-        await this.getOrders(qr.hotel)
+        await Promise.all([
+          this.getServices(qr.hotel),
+          this.getOrders(qr.hotel)
+        ])
+        await this.$setDataLoaded(true)
       }
     }
   },
@@ -307,7 +346,10 @@ export default {
     async getCategories() {
       try {
         this.$setLoading(true)
-        const categoriesSnap = await db.collection('categories').get()
+        const categoriesSnap = await db
+          .collection('categories')
+          .orderBy('createdAt', 'desc')
+          .get()
         const categories = await Promise.all(
           categoriesSnap.docs.map(category => {
             const categoryRef = category.data()
@@ -347,6 +389,7 @@ export default {
                 .collection('services')
                 .where('hotel', '==', hotel)
                 .where('category', '==', category.uid)
+                .orderBy('createdAt', 'desc')
                 .get()
               const _services = await Promise.all(
                 serviceSnap.docs.map(service => {
@@ -375,8 +418,12 @@ export default {
               return [category, _services]
             })
           )
-          this.uncategorizedServices = _flatten(
+          const uncategorizedServices = _flatten(
             _flatten(services).filter(i => Array.isArray(i))
+          )
+          this.$store.commit(
+            `service/${serviceTypes.SET_UNCATEGORIZED_SERVICES}`,
+            uncategorizedServices
           )
           this.$store.commit(`service/${serviceTypes.SET_SERVICES}`, services)
         }
@@ -392,12 +439,13 @@ export default {
     async getOrders(hotel) {
       try {
         this.$setLoading(true)
-        if (this.user && this.user.uid && hotel && this.qr && this.qr.room) {
+        if (this.user && this.user.uid && this.qr && hotel && this.qr.room) {
           const ordersSnap = await db
             .collection('orders')
             .where('hotel', '==', hotel)
             .where('room', '==', this.qr.room)
             .where('user', '==', this.user.uid)
+            .orderBy('createdAt', 'desc')
             .get()
           const orders = await Promise.all(
             ordersSnap.docs.map(async order => {
@@ -625,7 +673,7 @@ export default {
               .collection('users')
               .doc(user.uid)
               .get()
-            if (!userDoc.exists) {
+            if (!userDoc.exists || !user.isAnonymous) {
               await db
                 .collection('users')
                 .doc(user.uid)
@@ -687,6 +735,9 @@ export default {
       } finally {
         this.$setLoading(false)
       }
+    },
+    onScroll() {
+      this.currentScroll = window.pageYOffset
     }
   }
 }

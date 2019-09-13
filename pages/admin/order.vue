@@ -378,7 +378,8 @@ export default {
       statuses: [
         { text: this.$t('ordered'), value: 'ordered' },
         { text: this.$t('processed'), value: 'processed' },
-        { text: this.$t('delivered'), value: 'delivered' }
+        { text: this.$t('delivered'), value: 'delivered' },
+        { text: this.$t('canceled'), value: 'canceled' }
       ]
     }
   },
@@ -455,8 +456,10 @@ export default {
             return 'warning'
           case 'delivered':
             return 'success'
-          default:
+          case 'canceled':
             return 'error'
+          default:
+            return ''
         }
       }
     },
@@ -473,8 +476,10 @@ export default {
             return 'mdi-cached'
           case 'delivered':
             return 'mdi-check'
+          case 'canceled':
+            return 'mdi-cancel'
           default:
-            return 'error'
+            return ''
         }
       }
     },
@@ -602,7 +607,10 @@ export default {
         this.$setLoading(true)
         let snaps = null
         if (typeof collection === 'string') {
-          snaps = await db.collection(collection).get()
+          snaps = await db
+            .collection(collection)
+            .orderBy('createdAt', 'desc')
+            .get()
         } else {
           snaps = await collection.get()
         }

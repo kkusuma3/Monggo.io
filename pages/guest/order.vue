@@ -1,56 +1,173 @@
+<i18n>
+{
+  "en-us": {
+    "orderEmpty": "You still don't have any order yet. You can order our service through home page.",
+    "cancelConfirmationWarn": "Are you sure you want to cancel this order?",
+    "cancelationSuccess": "Order cancelation success"
+  },
+  "en-uk": {
+    "orderEmpty": "You still don't have any order yet. You can order our service through home page.",
+    "cancelConfirmationWarn": "Are you sure you want to cancel this order?",
+    "cancelationSuccess": "Order cancelation success"
+  },
+  "id": {
+    "orderEmpty": "Anda masih belum memiliki pesanan. Anda dapat memesan layanan kami melalui halaman beranda.",
+    "cancelConfirmationWarn": "Apakah Anda yakin ingin membatalkan pesanan ini?",
+    "cancelationSuccess": "Pembatalan pesanan sukses"
+  }
+}
+</i18n>
+
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12">
-        <v-card
-          v-for="(order, i) in orders"
-          :key="order.uid"
-          :class="{ 'mb-5': i !== orders.length - 1 }"
-        >
-          <div class="d-flex">
-            <app-img
-              :src="order.refData.service.imagesMeta[0].url"
-              :alt="order.refData.service.imagesMeta[0].name"
-              :contain="false"
-              width="100"
-            />
-            <v-card-text>
-              <h3 class="subtitle-1">{{ order.refData.service.name }}</h3>
-              <div class="mb-2">
-                <time :datetime="order.createdAt" class="caption">
-                  {{ $moment(order.createdAt).format('llll') }}
-                </time>
-              </div>
-              <div>
-                <v-chip
-                  label=""
-                  :color="getStatusColor(order.status)"
-                  text-color="white"
-                  small=""
+  <v-container id="guest-order" :class="{ 'fill-height': !isDataLoaded }">
+    <v-fade-transition mode="out-in" hide-on-leave="">
+      <v-row
+        v-if="!isDataLoaded"
+        class="fill-height ma-0"
+        align="center"
+        justify="center"
+      >
+        <v-progress-circular indeterminate="" color="grey lighten-1" />
+      </v-row>
+      <v-row v-else="">
+        <v-col cols="12">
+          <div class="d-flex justify-end">
+            <v-tooltip bottom="">
+              <template #activator="{ on }">
+                <v-btn
+                  :disabled="isLoading"
+                  :loading="isLoading"
+                  color="primary"
+                  class="mb-5"
+                  v-on="on"
+                  @click="getOrders"
                 >
-                  <v-avatar left>
-                    <v-icon small="">
-                      {{ getStatusIcon(order.status) }}
-                    </v-icon>
-                  </v-avatar>
-                  <span>
-                    {{ $t(order.status) }}
-                  </span>
-                </v-chip>
-              </div>
-            </v-card-text>
+                  <v-icon>mdi-cached</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ $t('refresh') }}</span>
+            </v-tooltip>
           </div>
-          <v-card-actions>
-            <v-btn block="" depressed="" small="">Batalkan</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
+          <v-fade-transition mode="out-in" group="">
+            <v-alert
+              v-if="orders && orders.length === 0"
+              key="order-alert"
+              type="info"
+              prominent=""
+            >
+              <p>{{ $t('orderEmpty') }}</p>
+              <v-btn
+                light=""
+                nuxt=""
+                exact=""
+                :to="localePath({ name: 'guest' })"
+              >
+                {{ $t('home') }}
+              </v-btn>
+            </v-alert>
+            <v-card
+              v-for="(order, i) in orders"
+              v-else=""
+              :key="order.uid"
+              :class="{ 'mb-5': i !== orders.length - 1 }"
+            >
+              <div class="d-flex">
+                <app-img
+                  :src="order.refData.service.imagesMeta[0].url"
+                  :alt="order.refData.service.imagesMeta[0].name"
+                  :contain="false"
+                  width="100"
+                />
+                <v-card-text>
+                  <h3 class="subtitle-1">{{ order.refData.service.name }}</h3>
+                  <div class="mb-2">
+                    <time :datetime="order.createdAt" class="caption">
+                      {{ $moment(order.createdAt).format('llll') }}
+                    </time>
+                  </div>
+                  <div>
+                    <v-chip
+                      label=""
+                      :color="getStatusColor(order.status)"
+                      text-color="white"
+                      small=""
+                    >
+                      <v-avatar left>
+                        <v-icon small="">
+                          {{ getStatusIcon(order.status) }}
+                        </v-icon>
+                      </v-avatar>
+                      <span>
+                        {{ $t(order.status) }}
+                      </span>
+                    </v-chip>
+                  </div>
+                </v-card-text>
+              </div>
+              <v-card-actions>
+                <v-btn
+                  :disabled="isLoading || order.status === 'canceled'"
+                  :loading="isLoading"
+                  block=""
+                  depressed=""
+                  small=""
+                  color="error"
+                  @click="triggerCancel(order)"
+                >
+                  <v-icon left="" small="">mdi-cancel</v-icon>
+                  <span>{{ $t('cancel') }}</span>
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-fade-transition>
+          <v-dialog
+            :value="isCancelling"
+            scrollable=""
+            width="500"
+            @click:outside="onCancelCanceled"
+          >
+            <v-card :loading="isLoading">
+              <v-card-text style="padding: 24px 20px">
+                <div class="subtitle-2">
+                  {{ $t('cancelConfirmationWarn') }}
+                </div>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer />
+                <v-btn
+                  :loading="isLoading"
+                  :disabled="isLoading"
+                  color="secondary"
+                  @click="onCancelCanceled"
+                >
+                  <v-icon left="">mdi-cancel</v-icon>
+                  <span>{{ $t('cancel') }}</span>
+                </v-btn>
+                <v-btn
+                  :loading="isLoading"
+                  :disabled="isLoading"
+                  depressed=""
+                  @click="onCancelAction"
+                >
+                  <v-icon left="">mdi-check</v-icon>
+                  <span>{{ $t('yes') }}</span>
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-col>
+      </v-row>
+    </v-fade-transition>
   </v-container>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import _cloneDeep from 'lodash.clonedeep'
+import _flatten from 'lodash.flatten'
+import { db } from '~/utils/firebase'
+import { types as guestTypes } from '~/store/guest'
+import { types as serviceTypes } from '~/store/service'
 
 export default {
   head() {
@@ -59,10 +176,25 @@ export default {
     }
   },
   data() {
-    return {}
+    return {
+      isCancelling: false,
+      item: {
+        uid: null,
+        hotel: null,
+        room: null,
+        user: null,
+        service: null,
+        count: null,
+        status: null,
+        createdAt: null,
+        updatedAt: null
+      }
+    }
   },
   computed: {
+    ...mapState(['isLoading', 'isDataLoaded']),
     ...mapState('user', ['user']),
+    ...mapState('category', ['categories']),
     ...mapState('guest', ['qr', 'orders']),
     getStatusColor() {
       return string => {
@@ -77,8 +209,10 @@ export default {
             return 'warning'
           case 'delivered':
             return 'success'
-          default:
+          case 'canceled':
             return 'error'
+          default:
+            return ''
         }
       }
     },
@@ -95,8 +229,10 @@ export default {
             return 'mdi-cached'
           case 'delivered':
             return 'mdi-check'
+          case 'canceled':
+            return 'mdi-cancel'
           default:
-            return 'error'
+            return ''
         }
       }
     },
@@ -109,6 +245,179 @@ export default {
         return `${string.charAt(0).toUpperCase()}${string
           .slice(1)
           .toLowerCase()}`
+      }
+    }
+  },
+  methods: {
+    triggerCancel(item) {
+      this.isCancelling = true
+      this.item = _cloneDeep(item)
+    },
+    onCancelCanceled() {
+      this.isCancelling = false
+      this.item = {
+        uid: null,
+        hotel: null,
+        room: null,
+        user: null,
+        service: null,
+        count: null,
+        status: null,
+        createdAt: null,
+        updatedAt: null
+      }
+    },
+    async onCancelAction() {
+      try {
+        this.$setLoading(true)
+        await db
+          .collection('orders')
+          .doc(this.item.uid)
+          .set({ status: 'canceled' }, { merge: true })
+        await db
+          .collection('services')
+          .doc(this.item.service)
+          .set(
+            { count: this.item.refData.service.count + this.item.count },
+            { merge: true }
+          )
+        await Promise.all([this.getServices(), this.getOrders()])
+        await this.onCancelCanceled()
+        await this.$notify({
+          kind: 'success',
+          message: this.$t('cancelationSuccess')
+        })
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    async getServices() {
+      try {
+        this.$setLoading(true)
+        if (this.qr && this.qr.hotel && this.categories.length > 0) {
+          const services = await Promise.all(
+            this.categories.map(async category => {
+              const serviceSnap = await db
+                .collection('services')
+                .where('hotel', '==', this.qr.hotel)
+                .where('category', '==', category.uid)
+                .orderBy('createdAt', 'desc')
+                .get()
+              const _services = await Promise.all(
+                serviceSnap.docs.map(service => {
+                  let serviceRef = service.data()
+                  delete serviceRef.hotelRef
+                  delete serviceRef.categoryRef
+                  serviceRef = {
+                    ...serviceRef,
+                    imagesMeta: serviceRef.imagesMeta.map(meta => ({
+                      ...meta,
+                      createdAt:
+                        meta && meta.createdAt && meta.createdAt.toDate()
+                    })),
+                    createdAt:
+                      serviceRef &&
+                      serviceRef.createdAt &&
+                      serviceRef.createdAt.toDate(),
+                    updatedAt:
+                      serviceRef &&
+                      serviceRef.updatedAt &&
+                      serviceRef.updatedAt.toDate()
+                  }
+                  return serviceRef
+                })
+              )
+              return [category, _services]
+            })
+          )
+          const uncategorizedServices = _flatten(
+            _flatten(services).filter(i => Array.isArray(i))
+          )
+          this.$store.commit(
+            `service/${serviceTypes.SET_UNCATEGORIZED_SERVICES}`,
+            uncategorizedServices
+          )
+          this.$store.commit(`service/${serviceTypes.SET_SERVICES}`, services)
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    async getOrders() {
+      try {
+        this.$setLoading(true)
+        if (
+          this.user &&
+          this.user.uid &&
+          this.qr &&
+          this.qr.hotel &&
+          this.qr.room
+        ) {
+          const ordersSnap = await db
+            .collection('orders')
+            .where('hotel', '==', this.qr.hotel)
+            .where('room', '==', this.qr.room)
+            .where('user', '==', this.user.uid)
+            .orderBy('createdAt', 'desc')
+            .get()
+          const orders = await Promise.all(
+            ordersSnap.docs.map(async order => {
+              let orderRef = order.data()
+              const serviceSnap = await orderRef.serviceRef.get()
+              let serviceRef = serviceSnap.data()
+              serviceRef = {
+                ...serviceRef,
+                imagesMeta: serviceRef.imagesMeta.map(meta => ({
+                  ...meta,
+                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                })),
+                createdAt:
+                  serviceRef &&
+                  serviceRef.createdAt &&
+                  serviceRef.createdAt.toDate(),
+                updatedAt:
+                  serviceRef &&
+                  serviceRef.updatedAt &&
+                  serviceRef.updatedAt.toDate()
+              }
+              delete serviceRef.hotelRef
+              delete serviceRef.categoryRef
+              orderRef = {
+                ...orderRef,
+                refData: {
+                  service: serviceRef
+                },
+                createdAt:
+                  orderRef && orderRef.createdAt && orderRef.createdAt.toDate(),
+                updatedAt:
+                  orderRef && orderRef.updatedAt && orderRef.updatedAt.toDate()
+              }
+              delete orderRef.hotelRef
+              delete orderRef.roomRef
+              delete orderRef.userRef
+              delete orderRef.serviceRef
+              return orderRef
+            })
+          )
+          await this.$store.commit(`guest/${guestTypes.SET_ORDERS}`, orders)
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
       }
     }
   }

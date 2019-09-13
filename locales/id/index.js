@@ -22,6 +22,7 @@ export default {
   ordered: 'Dipesan',
   processed: 'Diproses',
   delivered: 'Dikirim',
+  canceled: 'Dibatalkan',
   add: 'Tambah',
   see: 'Lihat',
   edit: 'Edit',

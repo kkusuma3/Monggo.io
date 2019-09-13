@@ -585,7 +585,8 @@ export default {
           await this.getItems(
             db
               .collection(this.collection)
-              .where('hotel', '==', this.user.hotel),
+              .where('hotel', '==', this.user.hotel)
+              .orderBy('createdAt', 'desc'),
             'items',
             this.itemsCallback
           )
@@ -691,7 +692,10 @@ export default {
         this.$setLoading(true)
         let snaps = null
         if (typeof collection === 'string') {
-          snaps = await db.collection(collection).get()
+          snaps = await db
+            .collection(collection)
+            .orderBy('createdAt', 'desc')
+            .get()
         } else {
           snaps = await collection.get()
         }

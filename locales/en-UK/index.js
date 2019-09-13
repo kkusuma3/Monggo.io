@@ -22,6 +22,7 @@ export default {
   ordered: 'Ordered',
   processed: 'Processed',
   delivered: 'Delivered',
+  canceled: 'Canceled',
   add: 'Add',
   see: 'See',
   edit: 'Edit',
