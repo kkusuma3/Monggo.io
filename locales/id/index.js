@@ -49,5 +49,7 @@ export default {
   checkout: 'Keluar',
   search: 'Cari',
   call: 'Hubungi',
-  callingCode: 'Kode Panggilan'
+  callingCode: 'Kode Panggilan',
+  free: 'Gratis',
+  request: 'Pesan'
 }

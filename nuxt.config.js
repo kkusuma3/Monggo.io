@@ -14,7 +14,7 @@ export default {
   // https://nuxtjs.org/api/configuration-head
   head: {
     titleTemplate(title) {
-      if (title) {
+      if (title !== null && title !== undefined) {
         return `${title} - Monggo.IO`
       }
       return 'Monggo.IO'

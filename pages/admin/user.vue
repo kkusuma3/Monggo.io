@@ -101,7 +101,7 @@
     <template #form="">
       <v-text-field
         v-model="item.name"
-        v-validate="'required'"
+        v-validate="{ required: !item.isAnonymous }"
         :error-messages="errors.collect('name')"
         :disabled="isLoading"
         data-vv-name="name"
@@ -109,13 +109,13 @@
         name="name"
         clearable=""
         data-vv-value-path="item.name"
-        required=""
+        :required="!item.isAnonymous"
         :label="$t('name')"
         outlined=""
       />
       <v-text-field
         v-model="item.email"
-        v-validate="'required|email'"
+        v-validate="{ required: !item.isAnonymous, email: true }"
         :error-messages="errors.collect('email')"
         :disabled="isLoading"
         data-vv-name="email"
@@ -123,7 +123,7 @@
         name="email"
         clearable=""
         data-vv-value-path="item.email"
-        required=""
+        :required="!item.isAnonymous"
         :label="$t('email')"
         outlined=""
       />
@@ -136,8 +136,48 @@
         outlined=""
       />
       <v-autocomplete
+        v-model="item.currency"
+        v-validate="{ required: !item.isAnonymous }"
+        :items="currencies"
+        :error-messages="errors.collect('currency')"
+        :disabled="isLoading"
+        data-vv-name="currency"
+        :data-vv-as="$t('currency')"
+        name="currency"
+        clearable=""
+        data-vv-value-path="item.currency"
+        :required="!item.isAnonymous"
+        :label="$t('currency')"
+        outlined=""
+      >
+        <template #selection="data">
+          <v-chip
+            v-bind="data.attrs"
+            :input-value="data.selected"
+            label=""
+            @click="data.select"
+          >
+            <v-avatar left="" tile="">
+              <span>{{ data.item.symbol }}</span>
+            </v-avatar>
+            <span>{{ data.item.text }}</span>
+          </v-chip>
+        </template>
+        <template #item="{ item }">
+          <v-list-item-avatar color="grey lighten-3">
+            {{ item.symbol }}
+          </v-list-item-avatar>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.text }}</v-list-item-title>
+            <v-list-item-subtitle>
+              {{ item.value }}
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </template>
+      </v-autocomplete>
+      <v-autocomplete
         v-model="item.role"
-        v-validate="'required'"
+        v-validate="{ required: !item.isAnonymous }"
         :items="roles"
         :error-messages="errors.collect('role')"
         :disabled="isLoading"
@@ -146,7 +186,7 @@
         name="role"
         clearable=""
         data-vv-value-path="item.role"
-        required=""
+        :required="!item.isAnonymous"
         :label="$t('role')"
         outlined=""
       />
@@ -192,53 +232,53 @@
           </v-list-item-content>
         </template>
       </v-autocomplete>
-      <v-row>
-        <v-col :key="item.avatar" cols="4" class="d-flex child-flex">
-          <v-card ripple="" flat="" @click="onTriggerPreview">
-            <v-avatar
-              :color="getMaterialColor(item.name || item.email)"
-              size="150"
+      <v-card ripple="" flat="" width="182" @click="onTriggerPreview">
+        <v-card-text>
+          <v-avatar
+            :color="getMaterialColor(item.name || item.email)"
+            size="150"
+          >
+            <app-img
+              v-if="item.avatar && item.avatar.length > 0"
+              :src="item.avatar"
+              :alt="item.name || item.email"
+            />
+            <span
+              v-else=""
+              class="headline"
+              :class="{
+                'white--text': isDarkColor(
+                  getMaterialColor(item.name || item.email, true)
+                )
+              }"
             >
-              <app-img
-                v-if="item.avatar && item.avatar.length > 0"
-                :src="item.avatar"
-                :alt="item.name || item.email"
-              />
-              <span
-                v-else=""
-                class="headline"
-                :class="{
-                  'white--text': isDarkColor(
-                    getMaterialColor(item.name || item.email, true)
-                  )
-                }"
-              >
-                {{ getInitials(item.name || item.email) }}
-              </span>
-            </v-avatar>
-          </v-card>
-        </v-col>
-      </v-row>
+              {{ getInitials(item.name || item.email) }}
+            </span>
+          </v-avatar>
+        </v-card-text>
+      </v-card>
     </template>
     <template #preview="">
-      <v-avatar :color="getMaterialColor(user.name || user.email)" size="512">
-        <app-img
-          v-if="user.avatar && user.avatar.length > 0"
-          :src="user.avatar"
-          :alt="user.name || user.email"
-        />
-        <span
-          v-else=""
-          class="display-1"
-          :class="{
-            'white--text': isDarkColor(
-              getMaterialColor(user.name || user.email, true)
-            )
-          }"
-        >
-          {{ getInitials(user.name || user.email) }}
-        </span>
-      </v-avatar>
+      <v-row align="center" justify="center">
+        <v-avatar :color="getMaterialColor(item.name || item.email)" size="512">
+          <app-img
+            v-if="item.avatar && item.avatar.length > 0"
+            :src="item.avatar"
+            :alt="item.name || item.email"
+          />
+          <span
+            v-else=""
+            class="display-1"
+            :class="{
+              'white--text': isDarkColor(
+                getMaterialColor(item.name || item.email, true)
+              )
+            }"
+          >
+            {{ getInitials(item.name || item.email) }}
+          </span>
+        </v-avatar>
+      </v-row>
     </template>
   </app-wrapper>
 </template>
@@ -312,6 +352,7 @@ export default {
         name: null,
         email: null,
         phone: null,
+        currency: 'USD',
         avatar: '',
         role: null,
         hotel: null,
@@ -323,12 +364,18 @@ export default {
         name: null,
         email: null,
         phone: null,
+        currency: 'USD',
         avatar: '',
         role: null,
         hotel: null,
         createdAt: null,
         updatedAt: null
       },
+      currencies: [
+        { text: 'United States Dollar', value: 'USD', symbol: '$' },
+        { text: 'Pound Sterling', value: 'GBP', symbol: '£' },
+        { text: 'Indonesian Rupiah', value: 'IDR', symbol: 'Rp' }
+      ],
       roles: [
         { text: 'Guest', value: 'guest' },
         { text: 'Operator', value: 'operator' },
@@ -463,6 +510,7 @@ export default {
         name: null,
         email: null,
         phone: null,
+        currency: 'USD',
         avatar: '',
         role: null,
         hotel: null,

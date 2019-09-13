@@ -1,5 +1,6 @@
 <template>
   <v-img
+    class="grey lighten-5"
     :alt="alt"
     :src="src"
     :lazy-src="lazySrc"
@@ -16,6 +17,7 @@
         <v-progress-circular indeterminate="" color="grey lighten-3" />
       </v-row>
     </template>
+    <slot />
   </v-img>
 </template>
 

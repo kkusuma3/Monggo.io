@@ -2,15 +2,18 @@
 {
   "en-us": {
     "editService": "@:(edit) {name} for {hotel}",
-    "deleteService": "@:(delete) {name} for {hotel}"
+    "deleteService": "@:(delete) {name} for {hotel}",
+    "hintPrice": "Set price to 0 to make it free"
   },
   "en-uk": {
     "editService": "@:(edit) {name} for {hotel}",
-    "deleteService": "@:(delete) {name} for {hotel}"
+    "deleteService": "@:(delete) {name} for {hotel}",
+    "hintPrice": "Set price to 0 to make it free"
   },
   "id": {
     "editService": "@:(edit) {name} untuk {hotel}",
-    "deleteService": "@:(delete) {name} untuk {hotel}"
+    "deleteService": "@:(delete) {name} untuk {hotel}",
+    "hintPrice": "Atur harga menjadi 0 untuk membuatnya gratis"
   }
 }
 </i18n>
@@ -216,7 +219,7 @@
         auto-grow=""
       />
       <v-row>
-        <v-col cols="12" md="6">
+        <v-col cols="12" md="5">
           <v-autocomplete
             v-model="item.currency"
             v-validate="'required'"
@@ -232,6 +235,19 @@
             :label="$t('currency')"
             outlined=""
           >
+            <template #selection="data">
+              <v-chip
+                v-bind="data.attrs"
+                :input-value="data.selected"
+                label=""
+                @click="data.select"
+              >
+                <v-avatar v-if="data.item.symbol" tile="">
+                  <span>{{ data.item.symbol }}</span>
+                </v-avatar>
+                <span v-else="">{{ data.item.value }}</span>
+              </v-chip>
+            </template>
             <template #item="{ item }">
               <v-list-item-avatar color="grey lighten-3">
                 {{ item.symbol }}
@@ -245,7 +261,7 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col cols="12" md="6">
+        <v-col cols="12" md="7">
           <v-text-field
             v-model.number="item.price"
             v-validate="'required|numeric'"
@@ -261,6 +277,7 @@
             outlined=""
             type="number"
             min="0"
+            :hint="$t('hintPrice')"
           />
         </v-col>
       </v-row>
@@ -528,9 +545,29 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.item.imagesMeta = _cloneDeep(imagesMeta)
+        this.item = {
+          ...this.item,
+          imagesMeta: _cloneDeep(imagesMeta)
+        }
       } else {
         this.item.imagesMeta = []
+      }
+    },
+    'itemOriginal.images': async function(images) {
+      if (images && images.length > 0) {
+        const imagesMeta = await Promise.all(
+          images.map(async (image, i) => ({
+            ...this.itemOriginal.imagesMeta[i],
+            name: image.name,
+            url: await this.getUrlFromFile(image)
+          }))
+        )
+        this.itemOriginal = {
+          ...this.itemOriginal,
+          imagesMeta: _cloneDeep(imagesMeta)
+        }
+      } else {
+        this.itemOriginal.imagesMeta = []
       }
     }
   },
@@ -666,6 +703,10 @@ export default {
             await items.push({
               ...data,
               refData,
+              imagesMeta: data.imagesMeta.map(meta => ({
+                ...meta,
+                createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+              })),
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
@@ -673,6 +714,10 @@ export default {
           } else {
             await items.push({
               ...data,
+              imagesMeta: data.imagesMeta.map(meta => ({
+                ...meta,
+                createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+              })),
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()

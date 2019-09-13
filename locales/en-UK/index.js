@@ -49,5 +49,7 @@ export default {
   checkout: 'Checkout',
   search: 'Search',
   call: 'Call',
-  callingCode: 'Calling Code'
+  callingCode: 'Calling Code',
+  free: 'Free',
+  request: 'Request'
 }

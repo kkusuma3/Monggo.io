@@ -481,9 +481,29 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.item.imagesMeta = _cloneDeep(imagesMeta)
+        this.item = {
+          ...this.item,
+          imagesMeta: _cloneDeep(imagesMeta)
+        }
       } else {
         this.item.imagesMeta = []
+      }
+    },
+    'itemOriginal.images': async function(images) {
+      if (images && images.length > 0) {
+        const imagesMeta = await Promise.all(
+          images.map(async (image, i) => ({
+            ...this.itemOriginal.imagesMeta[i],
+            name: image.name,
+            url: await this.getUrlFromFile(image)
+          }))
+        )
+        this.itemOriginal = {
+          ...this.itemOriginal,
+          imagesMeta: _cloneDeep(imagesMeta)
+        }
+      } else {
+        this.itemOriginal.imagesMeta = []
       }
     },
     'item.status': async function(status) {
@@ -553,7 +573,14 @@ export default {
         let refData = null
         if (data.hotelRef) {
           const hotelRefDoc = await data.hotelRef.get()
-          const hotelRef = hotelRefDoc.data()
+          let hotelRef = hotelRefDoc.data()
+          hotelRef = {
+            hotelRef,
+            createdAt:
+              hotelRef && hotelRef.createdAt && hotelRef.createdAt.toDate(),
+            updatedAt:
+              hotelRef && hotelRef.updatedAt && hotelRef.updatedAt.toDate()
+          }
           delete data.hotelRef
           refData = {
             hotel: hotelRef
@@ -561,7 +588,14 @@ export default {
         }
         if (data.userRef) {
           const userRefDoc = await data.userRef.get()
-          const userRef = userRefDoc.data()
+          let userRef = userRefDoc.data()
+          userRef = {
+            userRef,
+            createdAt:
+              userRef && userRef.createdAt && userRef.createdAt.toDate(),
+            updatedAt:
+              userRef && userRef.updatedAt && userRef.updatedAt.toDate()
+          }
           delete data.userRef
           refData = {
             ...refData,
@@ -646,6 +680,10 @@ export default {
             await items.push({
               ...data,
               refData,
+              imagesMeta: data.imagesMeta.map(meta => ({
+                ...meta,
+                createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+              })),
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
@@ -653,6 +691,10 @@ export default {
           } else {
             await items.push({
               ...data,
+              imagesMeta: data.imagesMeta.map(meta => ({
+                ...meta,
+                createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+              })),
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()

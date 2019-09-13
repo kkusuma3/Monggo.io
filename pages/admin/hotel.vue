@@ -434,9 +434,29 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.item.imagesMeta = _cloneDeep(imagesMeta)
+        this.item = {
+          ...this.item,
+          imagesMeta: _cloneDeep(imagesMeta)
+        }
       } else {
         this.item.imagesMeta = []
+      }
+    },
+    'itemOriginal.images': async function(images) {
+      if (images && images.length > 0) {
+        const imagesMeta = await Promise.all(
+          images.map(async (image, i) => ({
+            ...this.itemOriginal.imagesMeta[i],
+            name: image.name,
+            url: await this.getUrlFromFile(image)
+          }))
+        )
+        this.itemOriginal = {
+          ...this.itemOriginal,
+          imagesMeta: _cloneDeep(imagesMeta)
+        }
+      } else {
+        this.itemOriginal.imagesMeta = []
       }
     }
   },
@@ -543,6 +563,10 @@ export default {
             await items.push({
               ...data,
               refData,
+              imagesMeta: data.imagesMeta.map(meta => ({
+                ...meta,
+                createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+              })),
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()
@@ -550,6 +574,10 @@ export default {
           } else {
             await items.push({
               ...data,
+              imagesMeta: data.imagesMeta.map(meta => ({
+                ...meta,
+                createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+              })),
               images: [],
               createdAt: data && data.createdAt && data.createdAt.toDate(),
               updatedAt: data && data.updatedAt && data.updatedAt.toDate()

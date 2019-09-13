@@ -54,7 +54,7 @@
           v-else=""
           key="input-search"
           v-model="service"
-          :items="services"
+          :items="uncategorizedServices"
           :loading="isLoading"
           :label="$t('searchService')"
           hide-details=""
@@ -110,8 +110,8 @@
             <v-carousel-item
               v-for="meta in qr.refData.hotel.imagesMeta"
               :key="meta.name"
-              :src="meta.url"
             >
+              <app-img :src="meta.url" :alt="meta.name" />
             </v-carousel-item>
           </v-carousel>
           <v-card-text class="pa-5 pa-4">
@@ -196,9 +196,12 @@ import { mapGetters, mapState } from 'vuex'
 import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
+import _flatten from 'lodash.flatten'
 import { auth, db } from '~/utils/firebase'
 import { types as userTypes } from '~/store/user'
 import { types as guestTypes } from '~/store/guest'
+import { types as categoryTypes } from '~/store/category'
+import { types as serviceTypes } from '~/store/service'
 import AppNotification from '~/components/AppNotification'
 
 export default {
@@ -209,7 +212,7 @@ export default {
     return {
       isSearch: false,
       isHotelInfo: false,
-      services: []
+      uncategorizedServices: []
     }
   },
   computed: {
@@ -217,6 +220,7 @@ export default {
     ...mapState('guest', ['qr', 'uid']),
     ...mapState('user', ['user']),
     ...mapGetters('user', ['role', 'isAuth']),
+    ...mapState('category', ['categories']),
     isDarkColor() {
       return color => {
         if (!color) {
@@ -260,10 +264,11 @@ export default {
         this.setQr(uid)
       }
     },
-    qr(qr) {
+    async qr(qr) {
       if (qr && this.isAuth) {
-        this.setRoom(qr.room)
-        this.getServices(qr.hotel)
+        await this.setRoom(qr.room)
+        await this.getCategories()
+        await this.getServices(qr.hotel)
       }
     }
   },
@@ -271,36 +276,12 @@ export default {
     this.init()
   },
   methods: {
-    async getServices(hotel) {
+    async init() {
       try {
         this.$setLoading(true)
-        const serviceSnap = await db
-          .collection('services')
-          .where('hotel', '==', hotel)
-          .get()
-        const services = []
-        serviceSnap.forEach(service => {
-          let serviceRef = service.data()
-          delete serviceRef.hotelRef
-          delete serviceRef.categoryRef
-          serviceRef = {
-            ...serviceRef,
-            imagesMeta: serviceRef.imagesMeta.map(meta => ({
-              ...meta,
-              createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-            })),
-            createdAt:
-              serviceRef &&
-              serviceRef.createdAt &&
-              serviceRef.createdAt.toDate(),
-            updatedAt:
-              serviceRef &&
-              serviceRef.updatedAt &&
-              serviceRef.updatedAt.toDate()
-          }
-          services.push(serviceRef)
-        })
-        this.services = services
+        await this.initLocale()
+        await this.onAuthStateChanged()
+        await this.initUid()
       } catch (error) {
         this.$notify({
           isError: true,
@@ -310,12 +291,79 @@ export default {
         this.$setLoading(false)
       }
     },
-    async init() {
+    async getCategories() {
       try {
         this.$setLoading(true)
-        await this.initLocale()
-        await this.onAuthStateChanged()
-        await this.initUid()
+        const categoriesSnap = await db.collection('categories').get()
+        await (() => {
+          const categories = []
+          categoriesSnap.forEach(category => {
+            const categoryRef = category.data()
+            categories.push({
+              ...categoryRef,
+              createdAt:
+                categoryRef &&
+                categoryRef.createdAt &&
+                categoryRef.createdAt.toDate(),
+              updatedAt:
+                categoryRef &&
+                categoryRef.updatedAt &&
+                categoryRef.updatedAt.toDate()
+            })
+          })
+          this.$store.commit(
+            `category/${categoryTypes.SET_CATEGORIES}`,
+            categories
+          )
+        })()
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    async getServices(hotel) {
+      try {
+        this.$setLoading(true)
+        const services = await Promise.all(
+          this.categories.map(async category => {
+            const serviceSnap = await db
+              .collection('services')
+              .where('hotel', '==', hotel)
+              .where('category', '==', category.uid)
+              .get()
+            const _services = []
+            serviceSnap.forEach(service => {
+              let serviceRef = service.data()
+              delete serviceRef.hotelRef
+              delete serviceRef.categoryRef
+              serviceRef = {
+                ...serviceRef,
+                imagesMeta: serviceRef.imagesMeta.map(meta => ({
+                  ...meta,
+                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                })),
+                createdAt:
+                  serviceRef &&
+                  serviceRef.createdAt &&
+                  serviceRef.createdAt.toDate(),
+                updatedAt:
+                  serviceRef &&
+                  serviceRef.updatedAt &&
+                  serviceRef.updatedAt.toDate()
+              }
+              _services.push(serviceRef)
+            })
+            return [category, _services]
+          })
+        )
+        this.uncategorizedServices = _flatten(
+          _flatten(services).filter(i => Array.isArray(i))
+        )
+        this.$store.commit(`service/${serviceTypes.SET_SERVICES}`, services)
       } catch (error) {
         this.$notify({
           isError: true,
@@ -467,20 +515,23 @@ export default {
               name: user.displayName,
               email: user.email,
               phone: user.phoneNumber,
+              currency: 'USD',
               avatar: user.photoURL,
               isAnonymous: user.isAnonymous,
               role: 'guest',
               createdAt: this.$moment().toDate(),
               updatedAt: this.$moment().toDate()
             }
-            await db
-              .collection('users')
-              .doc(payload.uid)
-              .set(payload, { merge: true })
             const userDoc = await db
               .collection('users')
-              .doc(payload.uid)
+              .doc(user.uid)
               .get()
+            if (!userDoc.exists) {
+              await db
+                .collection('users')
+                .doc(user.uid)
+                .set(payload, { merge: true })
+            }
             let userRef = userDoc.data()
             userRef = {
               ...userRef,
