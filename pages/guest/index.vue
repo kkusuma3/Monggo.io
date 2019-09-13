@@ -167,7 +167,7 @@ export default {
     rate() {
       return ({ currency, price }, count) => {
         if (!this.rates) {
-          return 0
+          return `${this.currencySymbols[currency]}0`
         }
         if (price === 0) {
           return this.$t('free')
@@ -177,18 +177,21 @@ export default {
           newPrice = price * count
         }
         if (this.isAuth) {
-          if (currency === this.user.currency) {
-            return `${this.currencySymbols[currency]}${newPrice}`
+          if (this.rates.length > 0) {
+            if (currency === this.user.currency) {
+              return `${this.currencySymbols[currency]}${newPrice}`
+            }
+            const rate = this.rates.find(({ base }) => base === currency)
+            if (rate) {
+              return `${this.currencySymbols[this.user.currency]}${(
+                newPrice * rate.rates[this.user.currency] || 1
+              ).toPrecision(4)}`
+            }
+            return `${this.currencySymbols[currency]}0`
           }
-          const rate = this.rates.find(({ base }) => base === currency)
-          if (rate) {
-            return `${this.currencySymbols[this.user.currency]}${(
-              newPrice * rate.rates[this.user.currency]
-            ).toPrecision(4)}`
-          }
-          return 0
+          return `${this.currencySymbols[currency]}0`
         }
-        return 0
+        return `${this.currencySymbols[currency]}0`
       }
     }
   },
