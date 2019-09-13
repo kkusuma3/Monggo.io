@@ -278,8 +278,8 @@ export default {
     },
     async qr(qr) {
       if (qr && this.isAuth) {
+        await Promise.all([this.getCategories(), this.getRates()])
         await this.setRoom(qr.room)
-        await this.getCategories()
         await this.getServices(qr.hotel)
         await this.getOrders(qr.hotel)
       }
@@ -392,7 +392,7 @@ export default {
     async getOrders(hotel) {
       try {
         this.$setLoading(true)
-        if (this.isAuth && hotel && this.qr && this.qr.room) {
+        if (this.user && this.user.uid && hotel && this.qr && this.qr.room) {
           const ordersSnap = await db
             .collection('orders')
             .where('hotel', '==', hotel)
@@ -440,6 +440,29 @@ export default {
           )
           await this.$store.commit(`guest/${guestTypes.SET_ORDERS}`, orders)
         }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    async getRates() {
+      try {
+        this.$setLoading(true)
+        const rates = ['USD', 'GBP', 'IDR']
+        const ratesConversion = await Promise.all(
+          rates.map(rate =>
+            this.$http.$get(
+              `https://api.exchangeratesapi.io/latest?base=${rate}&symbols=${rates
+                .filter(r => r !== rate)
+                .join(',')}`
+            )
+          )
+        )
+        this.$store.commit(`guest/${guestTypes.SET_RATES}`, ratesConversion)
       } catch (error) {
         this.$notify({
           isError: true,

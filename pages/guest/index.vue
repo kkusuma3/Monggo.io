@@ -141,7 +141,6 @@ export default {
   data() {
     return {
       isService: false,
-      rates: null,
       currencySymbols: {
         USD: '$',
         GBP: '£',
@@ -155,7 +154,7 @@ export default {
     ...mapState('service', ['services']),
     ...mapState('user', ['user']),
     ...mapGetters('user', ['isAuth']),
-    ...mapState('guest', ['qr', 'service']),
+    ...mapState('guest', ['qr', 'service', 'rates']),
     truncate() {
       return (str, length) => {
         if (!str) {
@@ -201,45 +200,21 @@ export default {
     }
   },
   mounted() {
-    this.init()
+    // this.init()
   },
   methods: {
-    async init() {
-      try {
-        this.$setLoading(true)
-        await this.getRates()
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
-      }
-    },
-    async getRates() {
-      try {
-        this.$setLoading(true)
-        const rates = ['USD', 'GBP', 'IDR']
-        const ratesConversion = await Promise.all(
-          rates.map(rate =>
-            this.$http.$get(
-              `https://api.exchangeratesapi.io/latest?base=${rate}&symbols=${rates
-                .filter(r => r !== rate)
-                .join(',')}`
-            )
-          )
-        )
-        this.rates = ratesConversion
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
-      }
-    },
+    // async init() {
+    //   try {
+    //     this.$setLoading(true)
+    //   } catch (error) {
+    //     this.$notify({
+    //       isError: true,
+    //       message: error.message
+    //     })
+    //   } finally {
+    //     this.$setLoading(false)
+    //   }
+    // },
     onTriggerService(service) {
       this.isService = true
       this.$store.commit(`guest/${guestTypes.SET_SERVICE}`, service)
