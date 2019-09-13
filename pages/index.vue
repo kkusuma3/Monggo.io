@@ -81,6 +81,11 @@
 import locales from '~/utils/locales'
 
 export default {
+  head() {
+    return {
+      title: this.$t('home')
+    }
+  },
   data() {
     return {
       locales: [...locales]
