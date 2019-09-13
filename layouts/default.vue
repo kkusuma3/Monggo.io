@@ -340,43 +340,46 @@ export default {
     async getServices(hotel) {
       try {
         this.$setLoading(true)
-        const services = await Promise.all(
-          this.categories.map(async category => {
-            const serviceSnap = await db
-              .collection('services')
-              .where('hotel', '==', hotel)
-              .where('category', '==', category.uid)
-              .get()
-            const _services = await Promise.all(
-              serviceSnap.docs.map(service => {
-                let serviceRef = service.data()
-                delete serviceRef.hotelRef
-                delete serviceRef.categoryRef
-                serviceRef = {
-                  ...serviceRef,
-                  imagesMeta: serviceRef.imagesMeta.map(meta => ({
-                    ...meta,
-                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-                  })),
-                  createdAt:
-                    serviceRef &&
-                    serviceRef.createdAt &&
-                    serviceRef.createdAt.toDate(),
-                  updatedAt:
-                    serviceRef &&
-                    serviceRef.updatedAt &&
-                    serviceRef.updatedAt.toDate()
-                }
-                return serviceRef
-              })
-            )
-            return [category, _services]
-          })
-        )
-        this.uncategorizedServices = _flatten(
-          _flatten(services).filter(i => Array.isArray(i))
-        )
-        this.$store.commit(`service/${serviceTypes.SET_SERVICES}`, services)
+        if (hotel && this.categories.length > 0) {
+          const services = await Promise.all(
+            this.categories.map(async category => {
+              const serviceSnap = await db
+                .collection('services')
+                .where('hotel', '==', hotel)
+                .where('category', '==', category.uid)
+                .get()
+              const _services = await Promise.all(
+                serviceSnap.docs.map(service => {
+                  let serviceRef = service.data()
+                  delete serviceRef.hotelRef
+                  delete serviceRef.categoryRef
+                  serviceRef = {
+                    ...serviceRef,
+                    imagesMeta: serviceRef.imagesMeta.map(meta => ({
+                      ...meta,
+                      createdAt:
+                        meta && meta.createdAt && meta.createdAt.toDate()
+                    })),
+                    createdAt:
+                      serviceRef &&
+                      serviceRef.createdAt &&
+                      serviceRef.createdAt.toDate(),
+                    updatedAt:
+                      serviceRef &&
+                      serviceRef.updatedAt &&
+                      serviceRef.updatedAt.toDate()
+                  }
+                  return serviceRef
+                })
+              )
+              return [category, _services]
+            })
+          )
+          this.uncategorizedServices = _flatten(
+            _flatten(services).filter(i => Array.isArray(i))
+          )
+          this.$store.commit(`service/${serviceTypes.SET_SERVICES}`, services)
+        }
       } catch (error) {
         this.$notify({
           isError: true,
@@ -389,52 +392,54 @@ export default {
     async getOrders(hotel) {
       try {
         this.$setLoading(true)
-        const ordersSnap = await db
-          .collection('orders')
-          .where('hotel', '==', hotel)
-          .where('room', '==', this.qr.room)
-          .where('user', '==', this.user.uid)
-          .get()
-        const orders = await Promise.all(
-          ordersSnap.docs.map(async order => {
-            let orderRef = order.data()
-            const serviceSnap = await orderRef.serviceRef.get()
-            let serviceRef = serviceSnap.data()
-            serviceRef = {
-              ...serviceRef,
-              imagesMeta: serviceRef.imagesMeta.map(meta => ({
-                ...meta,
-                createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-              })),
-              createdAt:
-                serviceRef &&
-                serviceRef.createdAt &&
-                serviceRef.createdAt.toDate(),
-              updatedAt:
-                serviceRef &&
-                serviceRef.updatedAt &&
-                serviceRef.updatedAt.toDate()
-            }
-            delete serviceRef.hotelRef
-            delete serviceRef.categoryRef
-            orderRef = {
-              ...orderRef,
-              refData: {
-                service: serviceRef
-              },
-              createdAt:
-                orderRef && orderRef.createdAt && orderRef.createdAt.toDate(),
-              updatedAt:
-                orderRef && orderRef.updatedAt && orderRef.updatedAt.toDate()
-            }
-            delete orderRef.hotelRef
-            delete orderRef.roomRef
-            delete orderRef.userRef
-            delete orderRef.serviceRef
-            return orderRef
-          })
-        )
-        await this.$store.commit(`guest/${guestTypes.SET_ORDERS}`, orders)
+        if (this.isAuth && hotel && this.qr && this.qr.room) {
+          const ordersSnap = await db
+            .collection('orders')
+            .where('hotel', '==', hotel)
+            .where('room', '==', this.qr.room)
+            .where('user', '==', this.user.uid)
+            .get()
+          const orders = await Promise.all(
+            ordersSnap.docs.map(async order => {
+              let orderRef = order.data()
+              const serviceSnap = await orderRef.serviceRef.get()
+              let serviceRef = serviceSnap.data()
+              serviceRef = {
+                ...serviceRef,
+                imagesMeta: serviceRef.imagesMeta.map(meta => ({
+                  ...meta,
+                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                })),
+                createdAt:
+                  serviceRef &&
+                  serviceRef.createdAt &&
+                  serviceRef.createdAt.toDate(),
+                updatedAt:
+                  serviceRef &&
+                  serviceRef.updatedAt &&
+                  serviceRef.updatedAt.toDate()
+              }
+              delete serviceRef.hotelRef
+              delete serviceRef.categoryRef
+              orderRef = {
+                ...orderRef,
+                refData: {
+                  service: serviceRef
+                },
+                createdAt:
+                  orderRef && orderRef.createdAt && orderRef.createdAt.toDate(),
+                updatedAt:
+                  orderRef && orderRef.updatedAt && orderRef.updatedAt.toDate()
+              }
+              delete orderRef.hotelRef
+              delete orderRef.roomRef
+              delete orderRef.userRef
+              delete orderRef.serviceRef
+              return orderRef
+            })
+          )
+          await this.$store.commit(`guest/${guestTypes.SET_ORDERS}`, orders)
+        }
       } catch (error) {
         this.$notify({
           isError: true,
