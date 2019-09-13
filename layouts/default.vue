@@ -22,8 +22,12 @@
       app=""
       fixed=""
       dark=""
-      shrink-on-scroll=""
-      elevate-on-scroll=""
+      :shrink-on-scroll="
+        !($route.name.includes('order') || $route.name.includes('account'))
+      "
+      :elevate-on-scroll="
+        !($route.name.includes('order') || $route.name.includes('account'))
+      "
       :src="qr.refData.hotel.imagesMeta[0].url"
       color="primary"
     >
@@ -35,65 +39,73 @@
           gradient="to top right, rgba(17, 54, 142, .3), rgba(247, 63, 82, .7)"
         />
       </template>
-      <v-toolbar-title class="mr-3">
-        <h1 aria-label="Monggo.IO">
-          <app-img src="/icon.png" alt="Monggo.IO" width="24" height="24" />
-        </h1>
-      </v-toolbar-title>
-      <v-spacer />
       <v-scroll-x-reverse-transition mode="out-in">
-        <v-tooltip v-if="!isSearch" key="button-search" bottom="">
-          <template #activator="{ on }">
-            <v-btn icon="" v-on="on" @click="isSearch = !isSearch">
-              <v-icon>mdi-magnify</v-icon>
-            </v-btn>
-          </template>
-          <span>{{ $t('search') }}</span>
-        </v-tooltip>
-        <v-autocomplete
-          v-else=""
-          key="input-search"
-          v-model="service"
-          :items="uncategorizedServices"
-          :loading="isLoading"
-          :label="$t('searchService')"
-          hide-details=""
-          item-text="name"
-          return-object=""
-          light=""
-          solo=""
-          flat=""
-          prepend-inner-icon="mdi-magnify"
-          clearable=""
-          autofocus=""
-          @blur="isSearch = !isSearch"
-        >
-          <template #item="{ item }">
-            <v-list-item-avatar>
-              <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
-                <app-img
-                  v-if="item.imagesMeta && item.imagesMeta.length > 0"
-                  :src="item.imagesMeta[0].url"
-                  :alt="item.imagesMeta[0].name"
-                />
-                <span
-                  v-else=""
-                  :class="{
-                    'white--text': isDarkColor(
-                      getMaterialColor(item.name, true)
-                    )
-                  }"
-                >
-                  {{ getInitials(item.name) }}
-                </span>
-              </v-avatar>
-            </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title>{{ item.name }}</v-list-item-title>
-            </v-list-item-content>
-          </template>
-        </v-autocomplete>
+        <v-toolbar-title v-if="!isSearch" class="mr-3">
+          <h1 aria-label="Monggo.IO">
+            <app-img src="/icon.png" alt="Monggo.IO" width="24" height="24" />
+          </h1>
+        </v-toolbar-title>
       </v-scroll-x-reverse-transition>
+      <v-spacer />
+      <template
+        v-if="
+          !($route.name.includes('order') || $route.name.includes('account'))
+        "
+      >
+        <v-scroll-x-reverse-transition mode="out-in">
+          <v-tooltip v-if="!isSearch" key="button-search" bottom="">
+            <template #activator="{ on }">
+              <v-btn icon="" v-on="on" @click="isSearch = !isSearch">
+                <v-icon>mdi-magnify</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ $t('search') }}</span>
+          </v-tooltip>
+          <v-autocomplete
+            v-else=""
+            key="input-search"
+            v-model="service"
+            :items="uncategorizedServices"
+            :loading="isLoading"
+            :label="$t('searchService')"
+            hide-details=""
+            item-text="name"
+            return-object=""
+            light=""
+            solo=""
+            flat=""
+            prepend-inner-icon="mdi-magnify"
+            clearable=""
+            autofocus=""
+            @blur="isSearch = !isSearch"
+          >
+            <template #item="{ item }">
+              <v-list-item-avatar>
+                <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+                  <app-img
+                    v-if="item.imagesMeta && item.imagesMeta.length > 0"
+                    :src="item.imagesMeta[0].url"
+                    :alt="item.imagesMeta[0].name"
+                  />
+                  <span
+                    v-else=""
+                    :class="{
+                      'white--text': isDarkColor(
+                        getMaterialColor(item.name, true)
+                      )
+                    }"
+                  >
+                    {{ getInitials(item.name) }}
+                  </span>
+                </v-avatar>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title>{{ item.name }}</v-list-item-title>
+              </v-list-item-content>
+            </template>
+          </v-autocomplete>
+        </v-scroll-x-reverse-transition>
+      </template>
       <v-dialog v-model="isHotelInfo" scrollable="">
         <template #activator="{ on: dialog }">
           <v-tooltip bottom="">
@@ -163,7 +175,7 @@
         color="primary"
         nuxt=""
         exact=""
-        :to="localePath({ name: 'guest-status' })"
+        :to="localePath({ name: 'guest-order' })"
       >
         <span>{{ $t('order') }}</span>
         <v-icon>mdi-clipboard-check</v-icon>
@@ -269,6 +281,7 @@ export default {
         await this.setRoom(qr.room)
         await this.getCategories()
         await this.getServices(qr.hotel)
+        await this.getOrders(qr.hotel)
       }
     }
   },
@@ -295,11 +308,10 @@ export default {
       try {
         this.$setLoading(true)
         const categoriesSnap = await db.collection('categories').get()
-        await (() => {
-          const categories = []
-          categoriesSnap.forEach(category => {
+        const categories = await Promise.all(
+          categoriesSnap.docs.map(category => {
             const categoryRef = category.data()
-            categories.push({
+            return {
               ...categoryRef,
               createdAt:
                 categoryRef &&
@@ -309,13 +321,13 @@ export default {
                 categoryRef &&
                 categoryRef.updatedAt &&
                 categoryRef.updatedAt.toDate()
-            })
+            }
           })
-          this.$store.commit(
-            `category/${categoryTypes.SET_CATEGORIES}`,
-            categories
-          )
-        })()
+        )
+        await this.$store.commit(
+          `category/${categoryTypes.SET_CATEGORIES}`,
+          categories
+        )
       } catch (error) {
         this.$notify({
           isError: true,
@@ -335,28 +347,29 @@ export default {
               .where('hotel', '==', hotel)
               .where('category', '==', category.uid)
               .get()
-            const _services = []
-            serviceSnap.forEach(service => {
-              let serviceRef = service.data()
-              delete serviceRef.hotelRef
-              delete serviceRef.categoryRef
-              serviceRef = {
-                ...serviceRef,
-                imagesMeta: serviceRef.imagesMeta.map(meta => ({
-                  ...meta,
-                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-                })),
-                createdAt:
-                  serviceRef &&
-                  serviceRef.createdAt &&
-                  serviceRef.createdAt.toDate(),
-                updatedAt:
-                  serviceRef &&
-                  serviceRef.updatedAt &&
-                  serviceRef.updatedAt.toDate()
-              }
-              _services.push(serviceRef)
-            })
+            const _services = await Promise.all(
+              serviceSnap.docs.map(service => {
+                let serviceRef = service.data()
+                delete serviceRef.hotelRef
+                delete serviceRef.categoryRef
+                serviceRef = {
+                  ...serviceRef,
+                  imagesMeta: serviceRef.imagesMeta.map(meta => ({
+                    ...meta,
+                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                  })),
+                  createdAt:
+                    serviceRef &&
+                    serviceRef.createdAt &&
+                    serviceRef.createdAt.toDate(),
+                  updatedAt:
+                    serviceRef &&
+                    serviceRef.updatedAt &&
+                    serviceRef.updatedAt.toDate()
+                }
+                return serviceRef
+              })
+            )
             return [category, _services]
           })
         )
@@ -364,6 +377,64 @@ export default {
           _flatten(services).filter(i => Array.isArray(i))
         )
         this.$store.commit(`service/${serviceTypes.SET_SERVICES}`, services)
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    async getOrders(hotel) {
+      try {
+        this.$setLoading(true)
+        const ordersSnap = await db
+          .collection('orders')
+          .where('hotel', '==', hotel)
+          .where('room', '==', this.qr.room)
+          .where('user', '==', this.user.uid)
+          .get()
+        const orders = await Promise.all(
+          ordersSnap.docs.map(async order => {
+            let orderRef = order.data()
+            const serviceSnap = await orderRef.serviceRef.get()
+            let serviceRef = serviceSnap.data()
+            serviceRef = {
+              ...serviceRef,
+              imagesMeta: serviceRef.imagesMeta.map(meta => ({
+                ...meta,
+                createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+              })),
+              createdAt:
+                serviceRef &&
+                serviceRef.createdAt &&
+                serviceRef.createdAt.toDate(),
+              updatedAt:
+                serviceRef &&
+                serviceRef.updatedAt &&
+                serviceRef.updatedAt.toDate()
+            }
+            delete serviceRef.hotelRef
+            delete serviceRef.categoryRef
+            orderRef = {
+              ...orderRef,
+              refData: {
+                service: serviceRef
+              },
+              createdAt:
+                orderRef && orderRef.createdAt && orderRef.createdAt.toDate(),
+              updatedAt:
+                orderRef && orderRef.updatedAt && orderRef.updatedAt.toDate()
+            }
+            delete orderRef.hotelRef
+            delete orderRef.roomRef
+            delete orderRef.userRef
+            delete orderRef.serviceRef
+            return orderRef
+          })
+        )
+        await this.$store.commit(`guest/${guestTypes.SET_ORDERS}`, orders)
       } catch (error) {
         this.$notify({
           isError: true,

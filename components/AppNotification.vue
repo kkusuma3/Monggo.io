@@ -12,7 +12,7 @@ import { mapState } from 'vuex'
 
 export default {
   computed: {
-    ...mapState('notification', ['isError', 'kind', 'message'])
+    ...mapState('notification', ['kind', 'message'])
   }
 }
 </script>

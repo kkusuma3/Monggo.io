@@ -19,7 +19,7 @@ export default {
   currency: 'Currency',
   empty: 'Empty',
   reserved: 'Reserved',
-  received: 'Received',
+  ordered: 'Ordered',
   processed: 'Processed',
   delivered: 'Delivered',
   add: 'Add',

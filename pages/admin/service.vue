@@ -695,35 +695,36 @@ export default {
         } else {
           snaps = await collection.get()
         }
-        const items = []
-        snaps.forEach(async doc => {
-          const data = doc.data()
-          if (cb) {
-            const refData = await cb(data)
-            await items.push({
-              ...data,
-              refData,
-              imagesMeta: data.imagesMeta.map(meta => ({
-                ...meta,
-                createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-              })),
-              images: [],
-              createdAt: data && data.createdAt && data.createdAt.toDate(),
-              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-            })
-          } else {
-            await items.push({
-              ...data,
-              imagesMeta: data.imagesMeta.map(meta => ({
-                ...meta,
-                createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-              })),
-              images: [],
-              createdAt: data && data.createdAt && data.createdAt.toDate(),
-              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-            })
-          }
-        })
+        const items = await Promise.all(
+          snaps.docs.map(async doc => {
+            const data = doc.data()
+            if (cb) {
+              const refData = await cb(data)
+              return {
+                ...data,
+                refData,
+                imagesMeta: data.imagesMeta.map(meta => ({
+                  ...meta,
+                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                })),
+                images: [],
+                createdAt: data && data.createdAt && data.createdAt.toDate(),
+                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+              }
+            } else {
+              return {
+                ...data,
+                imagesMeta: data.imagesMeta.map(meta => ({
+                  ...meta,
+                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                })),
+                images: [],
+                createdAt: data && data.createdAt && data.createdAt.toDate(),
+                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+              }
+            }
+          })
+        )
         if (typeof collection === 'string') {
           if (collection === this.collection) {
             this.items = items

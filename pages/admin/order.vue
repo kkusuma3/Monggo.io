@@ -326,6 +326,7 @@ export default {
       item: {
         uid: uuidv4(),
         hotel: null,
+        room: null,
         user: null,
         service: null,
         count: null,
@@ -336,6 +337,7 @@ export default {
       itemOriginal: {
         uid: uuidv4(),
         hotel: null,
+        room: null,
         user: null,
         service: null,
         count: null,
@@ -344,10 +346,11 @@ export default {
         updatedAt: null
       },
       hotels: [],
+      rooms: [],
       users: [],
       services: [],
       statuses: [
-        { text: this.$t('received'), value: 'received' },
+        { text: this.$t('ordered'), value: 'ordered' },
         { text: this.$t('processed'), value: 'processed' },
         { text: this.$t('delivered'), value: 'delivered' }
       ]
@@ -401,12 +404,14 @@ export default {
       const item = _cloneDeep(this.item)
       delete item.refData
       delete item.hotelRef
+      delete item.roomRef
       delete item.userRef
       delete item.serviceRef
 
       const itemOriginal = _cloneDeep(this.itemOriginal)
       delete itemOriginal.refData
       delete itemOriginal.hotelRef
+      delete itemOriginal.roomRef
       delete itemOriginal.userRef
       delete itemOriginal.serviceRef
       return this.isEditing && !isEqual(item, itemOriginal)
@@ -418,7 +423,7 @@ export default {
         }
         string.toString()
         switch (string) {
-          case 'received':
+          case 'ordered':
             return 'info'
           case 'processed':
             return 'warning'
@@ -436,7 +441,7 @@ export default {
         }
         string.toString()
         switch (string) {
-          case 'received':
+          case 'ordered':
             return 'mdi-basket-fill'
           case 'processed':
             return 'mdi-cached'
@@ -511,22 +516,31 @@ export default {
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
-        if (data.hotelRef && data.userRef && data.serviceRef) {
-          const [hotelRefDoc, userRefDoc, serviceRefDoc] = await Promise.all([
+        if (data.hotelRef && data.roomRef && data.userRef && data.serviceRef) {
+          const [
+            hotelRefDoc,
+            roomRefDoc,
+            userRefDoc,
+            serviceRefDoc
+          ] = await Promise.all([
             data.hotelRef.get(),
+            data.roomRef.get(),
             data.userRef.get(),
             data.serviceRef.get()
           ])
-          const [hotelRef, userRef, serviceRef] = await Promise.all([
+          const [hotelRef, roomRef, userRef, serviceRef] = await Promise.all([
             hotelRefDoc.data(),
+            roomRefDoc.data(),
             userRefDoc.data(),
             serviceRefDoc.data()
           ])
           delete data.hotelRef
+          delete data.roomRef
           delete data.userRef
           delete data.serviceRef
           return {
             hotel: hotelRef,
+            room: roomRef,
             user: userRef,
             service: serviceRef
           }
@@ -545,6 +559,7 @@ export default {
       const item = {
         uid: uuidv4(),
         hotel: null,
+        room: null,
         user: null,
         service: null,
         count: null,
@@ -565,27 +580,28 @@ export default {
         } else {
           snaps = await collection.get()
         }
-        const items = []
-        snaps.forEach(async doc => {
-          const data = doc.data()
-          if (cb) {
-            const refData = await cb(data)
-            await items.push({
-              ...data,
-              refData,
-              images: [],
-              createdAt: data && data.createdAt && data.createdAt.toDate(),
-              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-            })
-          } else {
-            await items.push({
-              ...data,
-              images: [],
-              createdAt: data && data.createdAt && data.createdAt.toDate(),
-              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
-            })
-          }
-        })
+        const items = await Promise.all(
+          snaps.docs.map(async doc => {
+            const data = doc.data()
+            if (cb) {
+              const refData = await cb(data)
+              return {
+                ...data,
+                refData,
+                images: [],
+                createdAt: data && data.createdAt && data.createdAt.toDate(),
+                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+              }
+            } else {
+              return {
+                ...data,
+                images: [],
+                createdAt: data && data.createdAt && data.createdAt.toDate(),
+                updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+              }
+            }
+          })
+        )
         if (typeof collection === 'string') {
           if (collection === this.collection) {
             this.items = items
@@ -652,9 +668,9 @@ export default {
             delete payload.refData
           }
           payload.hotelRef = db.collection('hotels').doc(payload.hotel)
+          payload.roomRef = db.collection('rooms').doc(payload.room)
           payload.userRef = db.collection('users').doc(payload.user)
           payload.serviceRef = db.collection('services').doc(payload.service)
-          delete payload.refData
           this.isSaved = true
           await db
             .collection(this.collection)

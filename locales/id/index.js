@@ -19,7 +19,7 @@ export default {
   currency: 'Mata Uang',
   empty: 'Kosong',
   reserved: 'Dipesan',
-  received: 'Diterima',
+  ordered: 'Dipesan',
   processed: 'Diproses',
   delivered: 'Dikirim',
   add: 'Tambah',
