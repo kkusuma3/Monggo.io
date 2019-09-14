@@ -107,7 +107,7 @@
               <v-card-actions>
                 <v-btn
                   :loading="isLoading"
-                  :disabled="isLoading"
+                  :disabled="isLoading || service.count === 0"
                   block=""
                   color="primary"
                   @click="onRequest"
