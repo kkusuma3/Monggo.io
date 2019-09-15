@@ -181,6 +181,46 @@
         </template>
       </v-autocomplete>
       <v-autocomplete
+        v-model="item.room"
+        v-validate="'required'"
+        :items="rooms"
+        :error-messages="errors.collect('room')"
+        :disabled="isLoading || role === 'operator'"
+        item-text="name"
+        item-value="uid"
+        data-vv-name="room"
+        :data-vv-as="$t('room')"
+        name="room"
+        clearable=""
+        data-vv-value-path="item.room"
+        required=""
+        :label="$t('room')"
+        outlined=""
+      >
+        <template #item="{ item }">
+          <v-list-item-avatar>
+            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+              <app-img
+                v-if="item.imagesMeta && item.imagesMeta.length > 0"
+                :src="item.imagesMeta[0].url"
+                :alt="item.imagesMeta[0].name"
+              />
+              <span
+                v-else=""
+                :class="{
+                  'white--text': isDarkColor(getMaterialColor(item.name, true))
+                }"
+              >
+                {{ getInitials(item.name) }}
+              </span>
+            </v-avatar>
+          </v-list-item-avatar>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
+          </v-list-item-content>
+        </template>
+      </v-autocomplete>
+      <v-autocomplete
         v-model="item.user"
         v-validate="'required'"
         :items="users"
@@ -506,11 +546,18 @@ export default {
   watch: {
     'item.hotel': async function(hotel) {
       if (hotel) {
-        await this.getItems(
-          db.collection('services').where('hotel', '==', hotel),
-          'services'
-        )
+        await Promise.all([
+          this.getItems(
+            db.collection('rooms').where('hotel', '==', hotel),
+            'rooms'
+          ),
+          this.getItems(
+            db.collection('services').where('hotel', '==', hotel),
+            'services'
+          )
+        ])
       } else {
+        this.rooms = []
         this.services = []
       }
     }

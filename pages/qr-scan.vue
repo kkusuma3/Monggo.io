@@ -96,34 +96,90 @@
         </h2>
         <v-card outlined="" class="v-card--outlined-custom mb-3">
           <v-card-text>
-            <v-text-field
-              v-model="qr.hotelCode"
-              v-validate="'required|alpha_num'"
-              :error-messages="errors.collect('hotelCode')"
+            <v-autocomplete
+              v-model="item.hotel"
+              v-validate="'required'"
+              :items="hotels"
+              :error-messages="errors.collect('hotel')"
               :disabled="isLoading"
-              :label="$t('hotelCode')"
-              :hint="$t('hintHotelCode')"
-              :data-vv-as="$t('hotelCode')"
-              data-vv-name="hotelCode"
-              data-vv-value-path="qr.hotelCode"
-              name="hotelCode"
-              outlined=""
+              item-text="name"
+              item-value="uid"
+              data-vv-name="hotel"
+              :data-vv-as="$t('hotel')"
+              name="hotel"
               clearable=""
-            />
-            <v-text-field
-              v-model="qr.roomCode"
-              v-validate="'required|numeric'"
-              :error-messages="errors.collect('roomCode')"
+              data-vv-value-path="item.hotel"
+              required=""
+              :label="$t('hotel')"
+              outlined=""
+            >
+              <template #item="{ item }">
+                <v-list-item-avatar>
+                  <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+                    <app-img
+                      v-if="item.imagesMeta && item.imagesMeta.length > 0"
+                      :src="item.imagesMeta[0].url"
+                      :alt="item.imagesMeta[0].name"
+                    />
+                    <span
+                      v-else=""
+                      :class="{
+                        'white--text': isDarkColor(
+                          getMaterialColor(item.name, true)
+                        )
+                      }"
+                    >
+                      {{ getInitials(item.name) }}
+                    </span>
+                  </v-avatar>
+                </v-list-item-avatar>
+                <v-list-item-content>
+                  <v-list-item-title>{{ item.name }}</v-list-item-title>
+                </v-list-item-content>
+              </template>
+            </v-autocomplete>
+            <v-autocomplete
+              v-model="item.room"
+              v-validate="'required'"
+              :items="rooms"
+              :error-messages="errors.collect('room')"
               :disabled="isLoading"
-              :label="$t('roomCode')"
-              :hint="$t('hintRoomCode')"
-              :data-vv-as="$t('roomCode')"
-              data-vv-name="roomCode"
-              data-vv-value-path="qr.roomCode"
-              name="roomCode"
-              outlined=""
+              item-text="name"
+              item-value="uid"
+              data-vv-name="room"
+              :data-vv-as="$t('room')"
+              name="room"
               clearable=""
-            />
+              data-vv-value-path="item.room"
+              required=""
+              :label="$t('room')"
+              outlined=""
+            >
+              <template #item="{ item }">
+                <v-list-item-avatar>
+                  <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+                    <app-img
+                      v-if="item.imagesMeta && item.imagesMeta.length > 0"
+                      :src="item.imagesMeta[0].url"
+                      :alt="item.imagesMeta[0].name"
+                    />
+                    <span
+                      v-else=""
+                      :class="{
+                        'white--text': isDarkColor(
+                          getMaterialColor(item.name, true)
+                        )
+                      }"
+                    >
+                      {{ getInitials(item.name) }}
+                    </span>
+                  </v-avatar>
+                </v-list-item-avatar>
+                <v-list-item-content>
+                  <v-list-item-title>{{ item.name }}</v-list-item-title>
+                </v-list-item-content>
+              </template>
+            </v-autocomplete>
           </v-card-text>
         </v-card>
         <v-btn
@@ -132,9 +188,7 @@
           color="secondary"
           block=""
           rounded=""
-          nuxt=""
-          exact=""
-          :to="localePath({ name: 'qr-scan' })"
+          @click="onSubmit"
         >
           <v-icon left="">mdi-camera</v-icon>
           <span>{{ $t('submit') }}</span>
@@ -147,7 +201,10 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import pDebounce from 'p-debounce'
-import { auth } from '~/utils/firebase'
+import isDarkColor from 'is-dark-color'
+import materialColorHash from 'material-color-hash'
+import initials from 'initials'
+import { auth, db } from '~/utils/firebase'
 import { types as guestTypes } from '~/store/guest'
 
 export default {
@@ -158,20 +215,83 @@ export default {
   },
   data() {
     return {
-      qr: {
-        hotelCode: null,
-        roomCode: null
-      }
+      item: {
+        hotel: null,
+        room: null
+      },
+      hotels: [],
+      rooms: []
     }
   },
   computed: {
     ...mapGetters('user', ['isAuth']),
-    ...mapState(['isLoading'])
+    ...mapState(['isLoading']),
+    isDarkColor() {
+      return color => {
+        if (!color) {
+          return
+        }
+        color = color.toString()
+        return isDarkColor(color)
+      }
+    },
+    getMaterialColor() {
+      return (string, isCode = false) => {
+        if (!string) {
+          return
+        }
+        string = string.toString()
+        const { backgroundColor, materialColorName } = materialColorHash(string)
+        return isCode ? backgroundColor : materialColorName.toLowerCase()
+      }
+    },
+    getInitials() {
+      return string => {
+        if (!string) {
+          return
+        }
+        string = string.toString()
+        return initials(string)
+      }
+    }
+  },
+  watch: {
+    'item.hotel': async function(hotel) {
+      if (hotel) {
+        await Promise.all([
+          this.getItems(
+            db
+              .collection('rooms')
+              .where('hotel', '==', hotel)
+              .where('hasQr', '==', true),
+            'rooms'
+          )
+        ])
+      } else {
+        this.rooms = []
+      }
+    }
   },
   beforeDestroy() {
     this.$setLoading(false)
   },
+  mounted() {
+    this.initData()
+  },
   methods: {
+    async initData() {
+      try {
+        this.$setLoading(true)
+        await this.getItems('hotels')
+      } catch (error) {
+        this.$notify({
+          kind: 'error',
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
     async onInit(promise) {
       try {
         this.$setLoading(true)
@@ -231,7 +351,105 @@ export default {
       },
       5000,
       { leading: true }
-    )
+    ),
+    async onSubmit() {
+      try {
+        this.$setLoading(true)
+        const qrRef = await db
+          .collection('qr-codes')
+          .where('hotel', '==', this.item.hotel)
+          .where('room', '==', this.item.room)
+          .get()
+        const [qr] = await Promise.all(
+          qrRef.docs.map(doc => {
+            const data = doc.data()
+            return {
+              ...data,
+              createdAt: data && data.createdAt && data.createdAt.toDate(),
+              updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+            }
+          })
+        )
+        if (qr && qr.uid) {
+          await this.onDecode(qr.uid)
+        }
+      } catch (error) {
+        this.$notify({
+          kind: 'error',
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    async getItems(collection = this.collection, location, cb) {
+      try {
+        this.$setLoading(true)
+        let snaps = null
+        if (typeof collection === 'string') {
+          snaps = await db
+            .collection(collection)
+            .orderBy('createdAt', 'desc')
+            .get()
+        } else {
+          snaps = await collection.get()
+        }
+        if (snaps && snaps.docs) {
+          const items = await Promise.all(
+            snaps.docs.map(async doc => {
+              const data = doc.data()
+              if (cb) {
+                const refData = await cb(data)
+                return {
+                  ...data,
+                  refData,
+                  imagesMeta: data.imagesMeta.map(meta => ({
+                    ...meta,
+                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                  })),
+                  images: [],
+                  createdAt: data && data.createdAt && data.createdAt.toDate(),
+                  updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+                }
+              } else {
+                return {
+                  ...data,
+                  imagesMeta: data.imagesMeta.map(meta => ({
+                    ...meta,
+                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                  })),
+                  images: [],
+                  createdAt: data && data.createdAt && data.createdAt.toDate(),
+                  updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+                }
+              }
+            })
+          )
+          await (() => {
+            if (typeof collection === 'string') {
+              if (collection === this.collection) {
+                this.items = items
+              } else if (this[collection]) {
+                this[collection] = items
+              } else {
+                throw new Error('Collection must be defined in the data.')
+              }
+            } else if (this[location]) {
+              this[location] = items
+            } else {
+              throw new Error('Collection must be defined in the data.')
+            }
+          })()
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    }
   }
 }
 </script>
