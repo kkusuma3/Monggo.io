@@ -38,6 +38,11 @@
       :sort-desc="[true]"
       :loading="isLoading"
     >
+      <template #item.user="{ item }">
+        <span>
+          {{ item.refData.user.name || item.refData.user.email || 'Anonim' }}
+        </span>
+      </template>
       <template #item.status="{ item }">
         <v-chip
           label=""
@@ -322,7 +327,7 @@ export default {
       isSaved: false,
       headers: [
         { text: this.$t('hotel'), value: 'refData.hotel.name' },
-        { text: this.$t('user'), value: 'refData.user.name' },
+        { text: this.$t('user'), value: 'user' },
         { text: this.$t('service'), value: 'refData.service.name' },
         { text: this.$t('status'), value: 'status', align: 'center' },
         {
