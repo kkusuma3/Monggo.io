@@ -43,6 +43,11 @@
           {{ item.refData.user.name || item.refData.user.email || 'Anonim' }}
         </span>
       </template>
+      <template #item.price="{ item }">
+        <span>
+          {{ rate(item.refData.service, item.rates, item.count) }}
+        </span>
+      </template>
       <template #item.status="{ item }">
         <v-chip
           label=""
@@ -300,21 +305,18 @@
           </v-list-item-content>
         </template>
       </v-autocomplete>
-      <v-text-field
-        v-model.number="item.count"
-        v-validate="'required|numeric'"
-        :error-messages="errors.collect('count')"
-        :disabled="isLoading"
-        data-vv-name="count"
-        :data-vv-as="$t('count')"
-        name="count"
-        clearable=""
-        data-vv-value-path="item.count"
-        required=""
-        :label="$t('count')"
-        outlined=""
-        type="number"
-        min="0"
+      <v-slider
+        v-if="service"
+        v-model="item.count"
+        style="margin-top: 32px; margin-bottom: 32px"
+        :hint="`${service.count} in stocks`"
+        :min="1"
+        :max="service.count"
+        :thumb-size="24"
+        label="Quantity"
+        persistent-hint=""
+        thumb-label="always"
+        ticks=""
       />
       <v-autocomplete
         v-model="item.status"
@@ -370,6 +372,7 @@ export default {
         { text: this.$t('room'), value: 'refData.room.name' },
         { text: this.$t('user'), value: 'user' },
         { text: this.$t('service'), value: 'refData.service.name' },
+        { text: this.$t('price'), value: 'price' },
         { text: this.$t('status'), value: 'status', align: 'center' },
         {
           text: this.$t('createdAt'),
@@ -428,13 +431,18 @@ export default {
         { text: this.$t('processed'), value: 'processed' },
         { text: this.$t('delivered'), value: 'delivered' },
         { text: this.$t('canceled'), value: 'canceled' }
-      ]
+      ],
+      currencySymbols: {
+        USD: '$',
+        GBP: '£',
+        IDR: 'Rp'
+      }
     }
   },
   computed: {
     ...mapState(['isLoading']),
     ...mapState('user', ['user']),
-    ...mapGetters('user', ['role']),
+    ...mapGetters('user', ['isAuth', 'role']),
     collection() {
       return pluralize(paramCase(this.title))
     },
@@ -541,6 +549,43 @@ export default {
           .slice(1)
           .toLowerCase()}`
       }
+    },
+    service() {
+      if (!this.item.service) {
+        return null
+      }
+      const service = this.services.find(({ uid }) => uid === this.item.service)
+      return service
+    },
+    rate() {
+      return ({ currency, price }, rates, count) => {
+        if (!rates) {
+          return `${this.currencySymbols[currency]}0`
+        }
+        if (price === 0) {
+          return this.$t('free')
+        }
+        let newPrice = price
+        if (count) {
+          newPrice = price * count
+        }
+        if (this.isAuth) {
+          if (rates.length > 0) {
+            if (currency === this.user.currency) {
+              return `${this.currencySymbols[currency]}${newPrice}`
+            }
+            const rate = rates.find(({ base }) => base === currency)
+            if (rate) {
+              return `${this.currencySymbols[this.user.currency]}${(
+                newPrice * rate.rates[this.user.currency] || 1
+              ).toPrecision(4)}`
+            }
+            return `${this.currencySymbols[currency]}0`
+          }
+          return `${this.currencySymbols[currency]}0`
+        }
+        return `${this.currencySymbols[currency]}0`
+      }
     }
   },
   watch: {
@@ -588,7 +633,8 @@ export default {
           this.getItems(
             db.collection('users').where('role', '==', 'guest'),
             'users'
-          )
+          ),
+          this.getRates()
         ])
       } catch (error) {
         this.$notify({
@@ -755,7 +801,7 @@ export default {
     async onDialogAction() {
       try {
         const isValid = await this.$validator.validateAll()
-        if (isValid) {
+        if (isValid && this.item.count > 0) {
           this.$setLoading(true)
           const date = this.$moment().toDate()
           const rates = this.item.rates.map(rate => ({
@@ -788,6 +834,24 @@ export default {
               }),
               { merge: true }
             )
+          if (!this.isEditing || this.item.count !== this.itemOriginal.count) {
+            await db
+              .collection('services')
+              .doc(payload.service)
+              .set(
+                { count: this.service.count - payload.count },
+                { merge: true }
+              )
+          }
+          if (this.isEditing && this.item.status === 'canceled') {
+            await db
+              .collection('services')
+              .doc(payload.service)
+              .set(
+                { count: this.service.count + payload.count },
+                { merge: true }
+              )
+          }
           await this.getItems(this.collection, 'items', this.itemsCallback)
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
@@ -816,6 +880,15 @@ export default {
           .collection(this.collection)
           .doc(item.uid)
           .delete()
+        if (item.status === 'ordered') {
+          await db
+            .collection('services')
+            .doc(this.item.service)
+            .set(
+              { count: this.service.count + this.item.count },
+              { merge: true }
+            )
+        }
         await this.getItems(this.collection, 'items', this.itemsCallback)
         await this.onDeleteClose()
         await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })
