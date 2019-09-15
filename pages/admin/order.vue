@@ -327,6 +327,7 @@ export default {
       isSaved: false,
       headers: [
         { text: this.$t('hotel'), value: 'refData.hotel.name' },
+        { text: this.$t('room'), value: 'refData.room.name' },
         { text: this.$t('user'), value: 'user' },
         { text: this.$t('service'), value: 'refData.service.name' },
         { text: this.$t('status'), value: 'status', align: 'center' },
