@@ -555,7 +555,6 @@ export default {
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
-        console.log(data)
         if (data.hotelRef && data.roomRef && data.userRef && data.serviceRef) {
           const [
             hotelRefDoc,
@@ -627,19 +626,26 @@ export default {
         const items = await Promise.all(
           snaps.docs.map(async doc => {
             const data = doc.data()
+            let rates = []
+            if (data.rates) {
+              rates = data.rates.map(rate => ({
+                ...rate,
+                date: rate && rate.date && rate.date.toDate()
+              }))
+            }
             if (cb) {
               const refData = await cb(data)
               return {
                 ...data,
                 refData,
-                images: [],
+                rates,
                 createdAt: data && data.createdAt && data.createdAt.toDate(),
                 updatedAt: data && data.updatedAt && data.updatedAt.toDate()
               }
             } else {
               return {
                 ...data,
-                images: [],
+                rates,
                 createdAt: data && data.createdAt && data.createdAt.toDate(),
                 updatedAt: data && data.updatedAt && data.updatedAt.toDate()
               }

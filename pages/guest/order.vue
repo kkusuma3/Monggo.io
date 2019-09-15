@@ -118,7 +118,7 @@
               </div>
               <v-card-actions>
                 <v-btn
-                  :disabled="isLoading || order.status === 'canceled'"
+                  :disabled="isLoading || order.status !== 'ordered'"
                   :loading="isLoading"
                   block=""
                   depressed=""
