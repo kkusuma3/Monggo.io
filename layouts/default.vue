@@ -204,10 +204,7 @@
                     :label="$t('wifiPass')"
                     outlined=""
                     hide-details=""
-                    :append-icon="isWifiPass ? 'mdi-eye' : 'mdi-eye-off'"
-                    :type="isWifiPass ? 'text' : 'password'"
                     append-outer-icon="mdi-content-copy"
-                    @click:append="isWifiPass = !isWifiPass"
                     @click:append-outer="onCopyWifiPass"
                   />
                 </v-card-text>
@@ -307,8 +304,7 @@ export default {
       isSearch: false,
       currentScroll: 0,
       isHotelInfo: false,
-      isWifi: false,
-      isWifiPass: false
+      isWifi: false
     }
   },
   computed: {
