@@ -63,6 +63,7 @@
     "pluralize": "^8.0.0",
     "truncate": "^2.1.0",
     "uuid": "^3.3.3",
+    "v-clipboard": "^2.2.2",
     "vee-validate": "^2.2.15",
     "vue-qrcode-reader": "^2.0.4"
   },

@@ -2,15 +2,27 @@
 {
   "en-us": {
     "searchService": "@:(service) @:(search)",
-    "hotelInfo": "@:(hotel) Information"
+    "hotelInfo": "@:(hotel) Information",
+    "wifiName": "@:(wifi) @:(name)",
+    "wifiPass": "@:(wifi) @:(password)",
+    "wifiNameCopied": "@:(wifiName) has copied",
+    "wifiPassCopied": "@:(wifiPass) has copied"
   },
   "en-uk": {
     "searchService": "@:(service) @:(search)",
-    "hotelInfo": "@:(hotel) Information"
+    "hotelInfo": "@:(hotel) Information",
+    "wifiName": "@:(wifi) @:(name)",
+    "wifiPass": "@:(wifi) @:(password)",
+    "wifiNameCopied": "@:(wifiName) has copied",
+    "wifiPassCopied": "@:(wifiPass) has copied"
   },
   "id": {
     "searchService": "@:(search) @:(service)",
-    "hotelInfo": "Informasi @:(hotel)"
+    "hotelInfo": "Informasi @:(hotel)",
+    "wifiName": "@:(name) @:(wifi)",
+    "wifiPass": "@:(password) @:(wifi)",
+    "wifiNameCopied": "@:(wifiName) telah disalin",
+    "wifiPassCopied": "@:(wifiPass) telah disalin"
   }
 }
 </i18n>
@@ -137,7 +149,7 @@
           </v-autocomplete>
         </v-fade-transition>
       </template>
-      <v-dialog v-model="isHotelInfo" scrollable="">
+      <v-dialog v-model="isHotelInfo" scrollable="" width="500">
         <template #activator="{ on: dialog }">
           <v-tooltip bottom="">
             <template #activator="{ on: tooltip }">
@@ -163,6 +175,44 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer />
+            <v-dialog
+              v-if="qr.refData.hotel.wifiName && qr.refData.hotel.wifiPass"
+              v-model="isWifi"
+              width="500"
+            >
+              <template #activator="{ on }">
+                <v-btn color="primary" v-on="on">
+                  <v-icon left="">mdi-wifi</v-icon>
+                  <span>{{ $t('wifi') }}</span>
+                </v-btn>
+              </template>
+              <v-card>
+                <v-card-text class="pa-5 pa-4">
+                  <v-text-field
+                    v-model="qr.refData.hotel.wifiName"
+                    readonly=""
+                    :label="$t('wifiName')"
+                    outlined=""
+                    hide-details=""
+                    append-outer-icon="mdi-content-copy"
+                    class="mb-5"
+                    @click:append-outer="onCopyWifiName"
+                  />
+                  <v-text-field
+                    v-model="qr.refData.hotel.wifiPass"
+                    readonly=""
+                    :label="$t('wifiPass')"
+                    outlined=""
+                    hide-details=""
+                    :append-icon="isWifiPass ? 'mdi-eye' : 'mdi-eye-off'"
+                    :type="isWifiPass ? 'text' : 'password'"
+                    append-outer-icon="mdi-content-copy"
+                    @click:append="isWifiPass = !isWifiPass"
+                    @click:append-outer="onCopyWifiPass"
+                  />
+                </v-card-text>
+              </v-card>
+            </v-dialog>
             <v-btn
               v-if="
                 qr.refData.hotel.callingCodes &&
@@ -255,7 +305,9 @@ export default {
     return {
       isSearch: false,
       currentScroll: 0,
-      isHotelInfo: false
+      isHotelInfo: false,
+      isWifi: false,
+      isWifiPass: false
     }
   },
   computed: {
@@ -738,6 +790,34 @@ export default {
     },
     onScroll() {
       this.currentScroll = window.pageYOffset
+    },
+    onCopyWifiName() {
+      try {
+        this.$clipboard(this.qr.refData.hotel.wifiName)
+        this.$notify({
+          kind: 'success',
+          message: this.$t('wifiNameCopied')
+        })
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      }
+    },
+    onCopyWifiPass() {
+      try {
+        this.$clipboard(this.qr.refData.hotel.wifiPass)
+        this.$notify({
+          kind: 'success',
+          message: this.$t('wifiPassCopied')
+        })
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      }
     }
   }
 }

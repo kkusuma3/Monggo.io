@@ -128,6 +128,7 @@ export default {
   plugins: [
     '~plugins/vee-validate',
     '~plugins/vue-qrcode-reader.client',
+    '~plugins/vue-clipboard.client',
     '~plugins/notify',
     '~plugins/loading',
     '~plugins/components'

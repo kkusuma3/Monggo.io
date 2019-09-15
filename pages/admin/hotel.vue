@@ -1,3 +1,20 @@
+<i18n>
+{
+  "en-us": {
+    "wifiName": "@:(wifi) @:(name)",
+    "wifiPass": "@:(wifi) @:(password)"
+  },
+  "en-uk": {
+    "wifiName": "@:(wifi) @:(name)",
+    "wifiPass": "@:(wifi) @:(password)"
+  },
+  "id": {
+    "wifiName": "@:(name) @:(wifi)",
+    "wifiPass": "@:(password) @:(wifi)"
+  }
+}
+</i18n>
+
 <template>
   <app-wrapper
     :title="title"
@@ -190,6 +207,40 @@
           />
         </v-col>
       </v-row>
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="item.wifiName"
+            v-validate="'required'"
+            :error-messages="errors.collect('wifiName')"
+            :disabled="isLoading"
+            data-vv-name="wifiName"
+            :data-vv-as="$t('wifiName')"
+            name="wifiName"
+            clearable=""
+            data-vv-value-path="item.wifiName"
+            required=""
+            :label="$t('wifiName')"
+            outlined=""
+          />
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="item.wifiPass"
+            v-validate="'required'"
+            :error-messages="errors.collect('wifiPass')"
+            :disabled="isLoading"
+            data-vv-name="wifiPass"
+            :data-vv-as="$t('wifiPass')"
+            name="wifiPass"
+            clearable=""
+            data-vv-value-path="item.wifiPass"
+            required=""
+            :label="$t('wifiPass')"
+            outlined=""
+          />
+        </v-col>
+      </v-row>
       <v-textarea
         v-model="item.description"
         v-validate="'required'"
@@ -346,6 +397,8 @@ export default {
         name: null,
         callingCodes: [],
         phone: null,
+        wifiName: null,
+        wifiPass: null,
         images: [],
         imagesMeta: [],
         description: null,
@@ -358,6 +411,8 @@ export default {
         name: null,
         callingCodes: [],
         phone: null,
+        wifiName: null,
+        wifiPass: null,
         images: [],
         imagesMeta: [],
         description: null,
@@ -535,6 +590,8 @@ export default {
         name: null,
         callingCodes: [],
         phone: null,
+        wifiName: null,
+        wifiPass: null,
         images: [],
         imagesMeta: [],
         description: null,
