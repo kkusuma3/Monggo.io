@@ -549,6 +549,7 @@ export default {
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
+        console.log(data)
         if (data.hotelRef && data.roomRef && data.userRef && data.serviceRef) {
           const [
             hotelRefDoc,
@@ -622,7 +623,6 @@ export default {
             const data = doc.data()
             if (cb) {
               const refData = await cb(data)
-              console.log(refData)
               return {
                 ...data,
                 refData,

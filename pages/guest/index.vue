@@ -237,6 +237,7 @@ export default {
             updatedAt: date
           }
           payload.hotelRef = db.collection('hotels').doc(payload.hotel)
+          payload.roomRef = db.collection('rooms').doc(payload.room)
           payload.userRef = db.collection('users').doc(payload.user)
           payload.serviceRef = db.collection('services').doc(payload.service)
           await db
