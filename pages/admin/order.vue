@@ -699,8 +699,13 @@ export default {
         if (isValid) {
           this.$setLoading(true)
           const date = this.$moment().toDate()
+          const rates = this.item.rates.map(rate => ({
+            ...rate,
+            date: this.$moment(rate.date).toDate()
+          }))
           const payload = {
             ..._cloneDeep(this.item),
+            rates,
             createdAt: this.isEditing ? this.item.createdAt : date,
             updatedAt: date
           }
