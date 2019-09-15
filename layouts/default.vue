@@ -523,6 +523,10 @@ export default {
               delete serviceRef.categoryRef
               orderRef = {
                 ...orderRef,
+                rates: orderRef.rates.map(rate => ({
+                  ...rate,
+                  date: rate && rate.date && rate.date.toDate()
+                })),
                 refData: {
                   service: serviceRef
                 },

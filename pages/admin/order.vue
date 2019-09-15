@@ -357,6 +357,7 @@ export default {
         service: null,
         count: null,
         status: null,
+        rates: [],
         createdAt: null,
         updatedAt: null
       },
@@ -368,6 +369,7 @@ export default {
         service: null,
         count: null,
         status: null,
+        rates: [],
         createdAt: null,
         updatedAt: null
       },
@@ -595,6 +597,7 @@ export default {
         service: null,
         count: null,
         status: null,
+        rates: [],
         createdAt: null,
         updatedAt: null
       }
@@ -771,6 +774,30 @@ export default {
       this.isDialog = false
       this.isEditing = false
       this.reset()
+    },
+
+    async getRates() {
+      try {
+        this.$setLoading(true)
+        const rates = ['USD', 'GBP', 'IDR']
+        const ratesConversion = await Promise.all(
+          rates.map(rate =>
+            this.$http.$get(
+              `https://api.exchangeratesapi.io/latest?base=${rate}&symbols=${rates
+                .filter(r => r !== rate)
+                .join(',')}`
+            )
+          )
+        )
+        this.item.rates = ratesConversion
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
     }
   }
 }

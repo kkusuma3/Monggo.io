@@ -220,6 +220,10 @@ export default {
         this.$setLoading(true)
         if (this.isAuth && this.qr && this.service) {
           const date = this.$moment().toDate()
+          const rates = this.rates.map(rate => ({
+            ...rate,
+            date: this.$moment(rate.date).toDate()
+          }))
           const payload = {
             uid: uuidv4(),
             hotel: this.qr.hotel,
@@ -228,6 +232,7 @@ export default {
             service: this.service.uid,
             count: this.count,
             status: 'ordered',
+            rates,
             createdAt: date,
             updatedAt: date
           }
@@ -364,6 +369,10 @@ export default {
               delete serviceRef.categoryRef
               orderRef = {
                 ...orderRef,
+                rates: orderRef.rates.map(rate => ({
+                  ...rate,
+                  date: rate && rate.date && rate.date.toDate()
+                })),
                 refData: {
                   service: serviceRef
                 },

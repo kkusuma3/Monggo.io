@@ -77,9 +77,21 @@
                   :alt="order.refData.service.imagesMeta[0].name"
                   :contain="false"
                   width="100"
-                />
+                >
+                  <v-row class="fill-height ma-0" justify="end">
+                    <v-chip label="" small="" color="primary" class="ma-2">
+                      <span class="text-uppercase">
+                        {{
+                          rate(order.refData.service, order.rates, order.count)
+                        }}
+                      </span>
+                    </v-chip>
+                  </v-row>
+                </app-img>
                 <v-card-text>
-                  <h3 class="subtitle-1">{{ order.refData.service.name }}</h3>
+                  <h3 class="subtitle-1">
+                    {{ order.count }}x {{ order.refData.service.name }}
+                  </h3>
                   <div class="mb-2">
                     <time :datetime="order.createdAt" class="caption">
                       {{ $moment(order.createdAt).format('llll') }}
@@ -162,7 +174,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import _cloneDeep from 'lodash.clonedeep'
 import _flatten from 'lodash.flatten'
 import { db } from '~/utils/firebase'
@@ -186,8 +198,14 @@ export default {
         service: null,
         count: null,
         status: null,
+        rates: [],
         createdAt: null,
         updatedAt: null
+      },
+      currencySymbols: {
+        USD: '$',
+        GBP: '£',
+        IDR: 'Rp'
       }
     }
   },
@@ -196,6 +214,7 @@ export default {
     ...mapState('user', ['user']),
     ...mapState('category', ['categories']),
     ...mapState('guest', ['qr', 'orders']),
+    ...mapGetters('user', ['isAuth']),
     getStatusColor() {
       return string => {
         if (!string) {
@@ -245,6 +264,36 @@ export default {
         return `${string.charAt(0).toUpperCase()}${string
           .slice(1)
           .toLowerCase()}`
+      }
+    },
+    rate() {
+      return ({ currency, price }, rates, count) => {
+        if (!rates) {
+          return `${this.currencySymbols[currency]}0`
+        }
+        if (price === 0) {
+          return this.$t('free')
+        }
+        let newPrice = price
+        if (count) {
+          newPrice = price * count
+        }
+        if (this.isAuth) {
+          if (rates.length > 0) {
+            if (currency === this.user.currency) {
+              return `${this.currencySymbols[currency]}${newPrice}`
+            }
+            const rate = rates.find(({ base }) => base === currency)
+            if (rate) {
+              return `${this.currencySymbols[this.user.currency]}${(
+                newPrice * rate.rates[this.user.currency] || 1
+              ).toPrecision(4)}`
+            }
+            return `${this.currencySymbols[currency]}0`
+          }
+          return `${this.currencySymbols[currency]}0`
+        }
+        return `${this.currencySymbols[currency]}0`
       }
     }
   },
