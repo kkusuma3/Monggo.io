@@ -714,23 +714,23 @@ export default {
           ) {
             await auth.signOut()
           } else {
-            const payload = {
-              uid: user.uid,
-              name: `User ${uuidv4().split('-')[4]}`,
-              email: user.email,
-              phone: user.phoneNumber,
-              currency: 'USD',
-              avatar: user.photoURL,
-              isAnonymous: user.isAnonymous,
-              role: 'guest',
-              createdAt: this.$moment().toDate(),
-              updatedAt: this.$moment().toDate()
-            }
             let userDoc = await db
               .collection('users')
               .doc(user.uid)
               .get()
             if (!userDoc.exists || !user.isAnonymous) {
+              const payload = {
+                uid: user.uid,
+                name: `User ${uuidv4().split('-')[4]}`,
+                email: user.email,
+                phone: user.phoneNumber,
+                currency: 'USD',
+                avatar: user.photoURL,
+                isAnonymous: user.isAnonymous,
+                role: 'guest',
+                createdAt: this.$moment().toDate(),
+                updatedAt: this.$moment().toDate()
+              }
               await db
                 .collection('users')
                 .doc(user.uid)
