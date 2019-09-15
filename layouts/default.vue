@@ -286,6 +286,7 @@
 <script>
 import _cloneDeep from 'lodash.clonedeep'
 import { mapGetters, mapState } from 'vuex'
+import uuidv4 from 'uuid/v4'
 import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
@@ -715,7 +716,7 @@ export default {
           } else {
             const payload = {
               uid: user.uid,
-              name: user.displayName,
+              name: `User ${uuidv4().split('-')[4]}`,
               email: user.email,
               phone: user.phoneNumber,
               currency: 'USD',
