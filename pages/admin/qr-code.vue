@@ -1,7 +1,7 @@
 <i18n>
 {
   "en-us": {
-    "alreadyHasQR": "Already has @:(qr-code)",
+    "alreadyHasQr": "Already has @:(qr-code)",
     "notHasQr": "Doesn't has @:(qr-code)",
     "uniqueQr": "Please choose another room, this room already has @:(qr-code)",
     "seeQr": "@:(see) @:(qr-code) for {name}",
@@ -9,7 +9,7 @@
     "deleteQr": "@:(delete) @:(qr-code) for {name}"
   },
   "en-uk": {
-    "alreadyHasQR": "Already has @:(qr-code)",
+    "alreadyHasQr": "Already has @:(qr-code)",
     "notHasQr": "Doesn't has @:(qr-code)",
     "uniqueQr": "Please choose another room, this room already has @:(qr-code)",
     "seeQr": "@:(see) @:(qr-code) for {name}",
@@ -17,7 +17,7 @@
     "deleteQr": "@:(delete) @:(qr-code) for {name}"
   },
   "id": {
-    "alreadyHasQR": "Telah memiliki @:(qr-code)",
+    "alreadyHasQr": "Telah memiliki @:(qr-code)",
     "notHasQr": "Belum memiliki @:(qr-code)",
     "uniqueQr": "Silakan pilih kamar lain, kamar ini sudah memiliki @:(qr-code)",
     "seeQr": "@:(see) @:(qr-code) untuk {name}",
