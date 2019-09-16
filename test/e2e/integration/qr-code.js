@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 describe('QR Code', () => {
   it('Visit admin page', () => {
     cy.visit('/admin')

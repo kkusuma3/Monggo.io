@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 describe('Room', () => {
   it('Visit admin page', () => {
     cy.visit('/admin')
