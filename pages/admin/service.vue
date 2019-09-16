@@ -393,13 +393,14 @@ export default {
   },
   data() {
     return {
-      title: 'Service',
-      isDialog: false,
-      isEditing: false,
-      isConfirming: false,
-      isDeleting: false,
-      isPreviewing: false,
-      isSaved: false,
+      title: 'Service', // Hold page name
+      isDialog: false, // Hold dialog state for editing and adding
+      isEditing: false, // Hold editing state
+      isConfirming: false, // Hold edit confirmation state
+      isDeleting: false, // Hold deleting dialog state
+      isPreviewing: false, // Hold previewing dialog state
+      isSaved: false, // Hold whether current data is saved
+      // Array hold table column
       headers: [
         {
           text: this.$tc('image'),
@@ -434,12 +435,14 @@ export default {
           sortable: false
         }
       ],
-      items: [],
+      items: [], // Array hold all hotel data
+      // Array hold currencies data
       currencies: [
         { text: 'United States Dollar', value: 'USD', symbol: '$' },
         { text: 'Pound Sterling', value: 'GBP', symbol: '£' },
         { text: 'Indonesian Rupiah', value: 'IDR', symbol: 'Rp' }
       ],
+      // Hold service data
       item: {
         uid: uuidv4(),
         hotel: null,
@@ -454,6 +457,8 @@ export default {
         createdAt: null,
         updatedAt: null
       },
+      // Hold original service data, useful to calculate whether
+      // the editing data has changed or not
       itemOriginal: {
         uid: uuidv4(),
         hotel: null,
@@ -468,13 +473,16 @@ export default {
         createdAt: null,
         updatedAt: null
       },
+      // Hold image data
       image: {
         name: '',
         url: '',
         fullPath: '',
         createdAt: ''
       },
+      // Array hold hotels data
       hotels: [],
+      // Array hold categories data
       categories: []
     }
   },
@@ -575,6 +583,9 @@ export default {
     this.initData()
   },
   methods: {
+    /**
+     * Called to initialize the data
+     */
     async initData() {
       try {
         this.$setLoading(true)
@@ -606,6 +617,11 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get file form url
+     * @param {string} url
+     * @param {string} name
+     */
     async getFileFromUrl(url, name) {
       try {
         // Taken from: https://stackoverflow.com/questions/44070437/how-to-get-a-file-or-blob-from-an-url-in-javascript
@@ -629,6 +645,10 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get url from file
+     * @param {File} file
+     */
     getUrlFromFile(file) {
       return new Promise(resolve => {
         const fileReader = new FileReader()
@@ -667,7 +687,9 @@ export default {
         this.$setLoading(false)
       }
     },
-
+    /**
+     * Called to reset data to original form
+     */
     reset() {
       const item = {
         uid: uuidv4(),
@@ -686,7 +708,9 @@ export default {
       this.item = _cloneDeep(item)
       this.itemOriginal = _cloneDeep(item)
     },
-
+    /**
+     * Called to get all data
+     */
     async getItems(collection = this.collection, location, cb) {
       try {
         this.$setLoading(true)
@@ -767,10 +791,15 @@ export default {
         this.$setLoading(false)
       }
     },
-
+    /**
+     * Called to trigger displaying dialog for adding data
+     */
     onTriggerAdd() {
       this.isDialog = true
     },
+    /**
+     * Called to trigger displaying dialog for editing data
+     */
     async onTriggerEdit(_item) {
       try {
         this.$setLoading(true)
@@ -797,15 +826,23 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to trigger displaying dialog for deleting data
+     */
     onTriggerDelete(item) {
       this.isDeleting = true
       this.item = _cloneDeep(item)
     },
+    /**
+     * Called to trigger displaying dialog for previewing image
+     */
     onTriggerPreview(item) {
       this.isPreviewing = true
       this.image = _cloneDeep(item)
     },
-
+    /**
+     * Called when the user close dialog for adding or editing data
+     */
     onDialogClose() {
       if (this.isEdited) {
         if (!this.isSaved) {
@@ -819,6 +856,9 @@ export default {
       this.isSaved = false
       this.reset()
     },
+    /**
+     * Called when the user click the save or edit button
+     */
     async onDialogAction() {
       try {
         const isValid = await this.$validator.validateAll()
@@ -891,12 +931,17 @@ export default {
         this.$setLoading(false)
       }
     },
-
+    /**
+     * Called when the user close delete confirmation dialog
+     */
     onDeleteClose() {
       this.$validator.reset()
       this.isDeleting = false
       this.reset()
     },
+    /**
+     * Called when the user click the delete button on dialog
+     */
     async onDeleteAction() {
       try {
         this.$setLoading(true)
@@ -923,10 +968,15 @@ export default {
         this.$setLoading(false)
       }
     },
-
+    /**
+     * Called when the user close edit confirmation dialog
+     */
     onConfirmClose() {
       this.isConfirming = false
     },
+    /**
+     * Called when the user click yes in edit confirmation dialog
+     */
     onConfirmAction() {
       this.onConfirmClose()
       this.$validator.reset()
@@ -934,7 +984,9 @@ export default {
       this.isEditing = false
       this.reset()
     },
-
+    /**
+     * Called when the user close image preview
+     */
     onPreviewClose() {
       this.isPreviewing = false
       this.image = {
@@ -944,6 +996,9 @@ export default {
         createdAt: ''
       }
     },
+    /**
+     * Called when the user click ok on image preview
+     */
     onPreviewAction() {
       this.onPreviewClose()
     }

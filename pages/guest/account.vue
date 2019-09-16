@@ -239,6 +239,9 @@ export default {
     }
   },
   methods: {
+    /**
+     * Called when the anonymous user click the login button
+     */
     async onLoginUpgrade() {
       try {
         this.$setLoading(true)
@@ -252,6 +255,11 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called when the signed user (Has been signed using Google) click the save button.
+     * It check whether the field is correct or not. If it correct, it will trigger
+     * onSave method below.
+     */
     async onTriggerSave() {
       if (!this.isEditing) {
         this.isEditing = true
@@ -272,6 +280,9 @@ export default {
         }
       }
     },
+    /**
+     * Called when the field is correct and save data to firestore
+     */
     async onSave() {
       try {
         this.$setLoading(true)

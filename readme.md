@@ -43,8 +43,6 @@ $ yarn test:e2e
 
 ## Getting Started
 
-Don't forget to change your sentry dsn and google analytics id in `.env.example` file.
-
 For detailed explanation on how things work, check out the [Nuxt.js](https://github.com/nuxt/nuxt.js) and [Vuetify.js](https://vuetifyjs.com/) documentation.
 
 ## License

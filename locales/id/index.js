@@ -1,3 +1,7 @@
+/**
+ * Hold Indonesia translation
+ */
+
 export default {
   next: 'Selanjutnya',
   login: 'Masuk',

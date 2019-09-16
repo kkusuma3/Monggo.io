@@ -114,12 +114,13 @@ export default {
   },
   data() {
     return {
-      title: 'Category',
-      isDialog: false,
-      isEditing: false,
-      isConfirming: false,
-      isDeleting: false,
-      isSaved: false,
+      title: 'Category', // Hold page name
+      isDialog: false, // Hold dialog state for editing and adding
+      isEditing: false, // Hold editing state
+      isConfirming: false, // Hold edit confirmation state
+      isDeleting: false, // Hold deleting dialog state
+      isSaved: false, // Hold whether current data is saved
+      // Array hold table column
       headers: [
         { text: this.$t('name'), value: 'name' },
         {
@@ -145,13 +146,16 @@ export default {
           sortable: false
         }
       ],
-      items: [],
+      items: [], // Array hold all category data
+      // Hold category data
       item: {
         uid: uuidv4(),
         name: null,
         createdAt: null,
         updatedAt: null
       },
+      // Hold original category data, useful to calculate whether
+      // the editing data has changed or not
       itemOriginal: {
         uid: uuidv4(),
         name: null,
@@ -186,6 +190,9 @@ export default {
     this.initData()
   },
   methods: {
+    /**
+     * Called to initialize the data
+     */
     async initData() {
       try {
         this.$setLoading(true)
@@ -199,6 +206,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to reset data to original form
+     */
     reset() {
       const item = {
         uid: uuidv4(),
@@ -210,6 +220,9 @@ export default {
       this.itemOriginal = _cloneDeep(item)
     },
 
+    /**
+     * Called to get all data
+     */
     async getItems(collection = this.collection, location, cb) {
       try {
         this.$setLoading(true)
@@ -271,9 +284,16 @@ export default {
       }
     },
 
+    /**
+     * Called to trigger displaying dialog for adding data
+     */
     onTriggerAdd() {
       this.isDialog = true
     },
+
+    /**
+     * Called to trigger displaying dialog for editing data
+     */
     onTriggerEdit(item) {
       this.isDialog = true
       this.isEditing = true
@@ -281,11 +301,16 @@ export default {
       this.item = _cloneDeep(item)
       this.itemOriginal = _cloneDeep(item)
     },
+    /**
+     * Called to trigger displaying dialog for deleting data
+     */
     onTriggerDelete(item) {
       this.isDeleting = true
       this.item = _cloneDeep(item)
     },
-
+    /**
+     * Called when the user close dialog for adding or editing data
+     */
     onDialogClose() {
       if (this.isEdited) {
         if (!this.isSaved) {
@@ -299,6 +324,9 @@ export default {
       this.isSaved = false
       this.reset()
     },
+    /**
+     * Called when the user click the save or edit button
+     */
     async onDialogAction() {
       try {
         const isValid = await this.$validator.validateAll()
@@ -341,11 +369,18 @@ export default {
       }
     },
 
+    /**
+     * Called when the user close delete confirmation dialog
+     */
     onDeleteClose() {
       this.$validator.reset()
       this.isDeleting = false
       this.reset()
     },
+
+    /**
+     * Called when the user click the delete button on dialog
+     */
     async onDeleteAction() {
       try {
         this.$setLoading(true)
@@ -368,9 +403,15 @@ export default {
       }
     },
 
+    /**
+     * Called when the user close edit confirmation dialog
+     */
     onConfirmClose() {
       this.isConfirming = false
     },
+    /**
+     * Called when the user click yes in edit confirmation dialog
+     */
     onConfirmAction() {
       this.onConfirmClose()
       this.$validator.reset()

@@ -309,13 +309,14 @@ export default {
   },
   data() {
     return {
-      title: 'User',
-      isDialog: false,
-      isEditing: false,
-      isConfirming: false,
-      isDeleting: false,
-      isPreviewing: false,
-      isSaved: false,
+      title: 'User', // Hold page name
+      isDialog: false, // Hold dialog state for editing and adding
+      isEditing: false, // Hold editing state
+      isConfirming: false, // Hold edit confirmation state
+      isDeleting: false, // Hold deleting dialog state
+      isPreviewing: false, // Hold previewing dialog state
+      isSaved: false, // Hold whether current data is saved
+      // Array hold table column
       headers: [
         {
           text: this.$tc('image'),
@@ -349,7 +350,8 @@ export default {
           sortable: false
         }
       ],
-      items: [],
+      items: [], // Array hold all hotel data
+      // Hold hotel data
       item: {
         uid: null,
         name: null,
@@ -362,6 +364,8 @@ export default {
         createdAt: null,
         updatedAt: null
       },
+      // Hold original hotel data, useful to calculate whether
+      // the editing data has changed or not
       itemOriginal: {
         uid: null,
         name: null,
@@ -374,16 +378,19 @@ export default {
         createdAt: null,
         updatedAt: null
       },
+      // Array hold currencies data
       currencies: [
         { text: 'United States Dollar', value: 'USD', symbol: '$' },
         { text: 'Pound Sterling', value: 'GBP', symbol: '£' },
         { text: 'Indonesian Rupiah', value: 'IDR', symbol: 'Rp' }
       ],
+      // Array hold roles data
       roles: [
         { text: 'Guest', value: 'guest' },
         { text: 'Operator', value: 'operator' },
         { text: 'Admin', value: 'admin' }
       ],
+      // Array hold hotel data
       hotels: []
     }
   },
@@ -491,6 +498,9 @@ export default {
     this.initData()
   },
   methods: {
+    /**
+     * Called to initialize the data
+     */
     async initData() {
       try {
         this.$setLoading(true)
@@ -507,6 +517,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to reset data to original form
+     */
     reset() {
       const item = {
         uid: null,
@@ -523,7 +536,9 @@ export default {
       this.item = _cloneDeep(item)
       this.itemOriginal = _cloneDeep(item)
     },
-
+    /**
+     * Called to get user relation
+     */
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
@@ -545,6 +560,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get all data
+     */
     async getItems(collection = this.collection, location, cb) {
       try {
         this.$setLoading(true)
@@ -601,7 +619,9 @@ export default {
         this.$setLoading(false)
       }
     },
-
+    /**
+     * Called to trigger displaying dialog for editing data
+     */
     onTriggerEdit(_item) {
       try {
         this.$setLoading(true)
@@ -619,10 +639,15 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to trigger displaying dialog for previewing image
+     */
     onTriggerPreview() {
       this.isPreviewing = true
     },
-
+    /**
+     * Called when the user close dialog for adding or editing data
+     */
     onDialogClose() {
       if (this.isEdited) {
         if (!this.isSaved) {
@@ -636,6 +661,9 @@ export default {
       this.isSaved = false
       this.reset()
     },
+    /**
+     * Called when the user click the save or edit button
+     */
     async onDialogAction() {
       try {
         const isValid = await this.$validator.validateAll()
@@ -677,10 +705,15 @@ export default {
         this.$setLoading(false)
       }
     },
-
+    /**
+     * Called when the user close edit confirmation dialog
+     */
     onConfirmClose() {
       this.isConfirming = false
     },
+    /**
+     * Called when the user click yes in edit confirmation dialog
+     */
     onConfirmAction() {
       this.onConfirmClose()
       this.$validator.reset()
@@ -688,11 +721,16 @@ export default {
       this.isEditing = false
       this.reset()
     },
-
+    /**
+     * Called when the user close image preview
+     */
     onPreviewClose() {
       this.isPreviewing = false
       this.image = null
     },
+    /**
+     * Called when the user click ok on image preview
+     */
     onPreviewAction() {
       this.onPreviewClose()
     }

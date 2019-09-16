@@ -142,12 +142,14 @@ export default {
   },
   data() {
     return {
-      isService: false,
+      isService: false, // Hold service dialog
+      // Hold currency symbol
       currencySymbols: {
         USD: '$',
         GBP: '£',
         IDR: 'Rp'
       },
+      // Hold service count
       count: 0
     }
   },
@@ -206,15 +208,25 @@ export default {
     }
   },
   methods: {
+    /**
+     * Called when the user click one of the service and the dialog appeared
+     */
     onTriggerService(service) {
       this.isService = true
       this.$store.commit(`guest/${guestTypes.SET_SERVICE}`, service)
     },
+    /**
+     * Called when the user close the dialog service
+     */
     onServiceClose() {
       this.isService = false
       this.count = 0
       this.$store.commit(`guest/${guestTypes.SET_SERVICE}`, null)
     },
+    /**
+     * Called when the user click request button,
+     * it will save the user request to firestore and add it to order list
+     */
     async onRequest() {
       try {
         this.$setLoading(true)
@@ -272,6 +284,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get all the service available
+     */
     async getServices() {
       try {
         this.$setLoading(true)
@@ -329,6 +344,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get all the current user' order
+     */
     async getOrders() {
       try {
         this.$setLoading(true)

@@ -1,3 +1,7 @@
+/**
+ * Hold English UK translation
+ */
+
 export default {
   next: 'Next',
   login: 'Login',

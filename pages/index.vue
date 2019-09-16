@@ -88,7 +88,7 @@ export default {
   },
   data() {
     return {
-      locales: [...locales]
+      locales: [...locales] // Locale imported from locale list
     }
   },
   computed: {

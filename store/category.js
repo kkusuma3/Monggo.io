@@ -1,3 +1,7 @@
+/**
+ * This file initialize store for category
+ */
+
 export const types = {
   SET_CATEGORIES: 'SET_CATEGORIES'
 }

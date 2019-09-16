@@ -225,11 +225,17 @@ export default {
     this.init()
   },
   methods: {
+    /**
+     * Called to initialize data
+     */
     async init() {
       await this.initLocale()
       await this.onAuthStateChanged()
       await this.initAuth()
     },
+    /**
+     * Called to initialize locale
+     */
     initLocale() {
       const currLocale = this.$cookies.get('i18n_redirected')
       if (!currLocale) {
@@ -238,6 +244,9 @@ export default {
         this.$router.push(this.switchLocalePath(currLocale))
       }
     },
+    /**
+     * Called to get user state change (after logged in)
+     */
     onAuthStateChanged() {
       auth.onAuthStateChanged(async user => {
         if (user === null) {
@@ -307,6 +316,9 @@ export default {
         }
       })
     },
+    /**
+     * Called to initialize authentication
+     */
     initAuth() {
       if (!this.isAuth) {
         const path = this.localePath({ name: 'admin-login' })
@@ -316,6 +328,9 @@ export default {
         this.$router.replace(path)
       }
     },
+    /**
+     * Called to logout
+     */
     async onLogout() {
       try {
         this.$setLoading(true)
@@ -334,6 +349,10 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called when user change the locale
+     * @param {string} locale
+     */
     onLocaleChange(locale) {
       this.$vuetify.lang.current = locale
       this.$cookies.set('i18n_redirected', locale)

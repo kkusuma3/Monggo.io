@@ -1,3 +1,7 @@
+/**
+ * This file initialize store for anything related to guest
+ */
+
 export const types = {
   SET_UID: 'SET_UID',
   SET_QR: 'SET_QR',
@@ -7,11 +11,11 @@ export const types = {
 }
 
 export const state = () => ({
-  uid: null,
-  qr: null,
-  service: null,
-  orders: [],
-  rates: []
+  uid: null, // user id got after scanning the qr code
+  qr: null, // object hold the entire information about the qr
+  service: null, // object hold the choosen service
+  orders: [], // array hold user orders
+  rates: [] // array hold current currency rates
 })
 
 export const getters = {

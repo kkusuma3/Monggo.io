@@ -189,7 +189,8 @@ export default {
   },
   data() {
     return {
-      isCancelling: false,
+      isCancelling: false, // Hold cancellation dialog status
+      // Hold order data
       item: {
         uid: null,
         hotel: null,
@@ -202,11 +203,13 @@ export default {
         createdAt: null,
         updatedAt: null
       },
+      // Hold currency symbol
       currencySymbols: {
         USD: '$',
         GBP: '£',
         IDR: 'Rp'
       },
+      // Hold interval id
       interval: null
     }
   },
@@ -307,10 +310,16 @@ export default {
     clearInterval(this.interval)
   },
   methods: {
+    /**
+     * Called to trigger order cancellation process
+     */
     triggerCancel(item) {
       this.isCancelling = true
       this.item = _cloneDeep(item)
     },
+    /**
+     * Called to cancel order cancellation process
+     */
     onCancelCanceled() {
       this.isCancelling = false
       this.item = {
@@ -325,6 +334,9 @@ export default {
         updatedAt: null
       }
     },
+    /**
+     * Called when the user confirm cancellation process
+     */
     async onCancelAction() {
       try {
         this.$setLoading(true)
@@ -354,6 +366,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get all the services available
+     */
     async getServices() {
       try {
         this.$setLoading(true)
@@ -411,6 +426,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get all the current user' order
+     */
     async getOrders() {
       try {
         this.$setLoading(true)

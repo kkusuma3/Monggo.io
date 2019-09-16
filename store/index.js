@@ -1,11 +1,15 @@
+/**
+ * This file initialize store for global state
+ */
+
 export const types = {
   SET_LOADING: 'SET_LOADING',
   SET_DATA_LOADED: 'SET_DATA_LOADED'
 }
 
 export const state = () => ({
-  isLoading: false,
-  isDataLoaded: false
+  isLoading: false, // hold global loading state
+  isDataLoaded: false // hold global data loaded state
 })
 
 export const getters = {}

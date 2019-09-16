@@ -301,10 +301,10 @@ export default {
   },
   data() {
     return {
-      isSearch: false,
-      currentScroll: 0,
-      isHotelInfo: false,
-      isWifi: false
+      isSearch: false, // Hold search field state
+      currentScroll: 0, // Hold scroll position
+      isHotelInfo: false, // Hold hotel info dialog
+      isWifi: false // Hold wifi info dialog
     }
   },
   computed: {
@@ -377,6 +377,9 @@ export default {
     this.init()
   },
   methods: {
+    /**
+     * Called to initialize data
+     */
     async init() {
       try {
         this.$setLoading(true)
@@ -392,6 +395,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get categories data
+     */
     async getCategories() {
       try {
         this.$setLoading(true)
@@ -428,6 +434,10 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get services data
+     * @param {string} hotel
+     */
     async getServices(hotel) {
       try {
         this.$setLoading(true)
@@ -485,6 +495,10 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get orders data
+     * @param {string} hotel
+     */
     async getOrders(hotel) {
       try {
         this.$setLoading(true)
@@ -550,6 +564,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get currency rates data
+     */
     async getRates() {
       try {
         this.$setLoading(true)
@@ -573,6 +590,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get qr code uid
+     */
     initUid() {
       const uid = this.$cookies.get('qr')
       if (uid) {
@@ -582,6 +602,9 @@ export default {
         this.$router.replace(this.localePath({ name: 'index' }))
       }
     },
+    /**
+     * Called to initialize locale
+     */
     initLocale() {
       const currLocale = this.$cookies.get('i18n_redirected')
       if (!currLocale) {
@@ -590,6 +613,9 @@ export default {
         this.$router.push(this.switchLocalePath(currLocale))
       }
     },
+    /**
+     * Called to set current room
+     */
     async setRoom(room, uid = this.user && this.user.uid) {
       if (room && uid) {
         try {
@@ -615,6 +641,9 @@ export default {
         }
       }
     },
+    /**
+     * Called to set qr code data
+     */
     async setQr(uid) {
       try {
         this.$setLoading(true)
@@ -690,6 +719,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called to get user state change (after logged in)
+     */
     onAuthStateChanged() {
       auth.onAuthStateChanged(async user => {
         if (user === null) {
@@ -761,6 +793,9 @@ export default {
         }
       })
     },
+    /**
+     * Called when user checkout
+     */
     async onCheckout() {
       try {
         this.$setLoading(true)
@@ -789,9 +824,15 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called when user scroll
+     */
     onScroll() {
       this.currentScroll = window.pageYOffset
     },
+    /**
+     * Called when wifi name copied
+     */
     onCopyWifiName() {
       try {
         this.$clipboard(this.qr.refData.hotel.wifiName)
@@ -806,6 +847,9 @@ export default {
         })
       }
     },
+    /**
+     * Called when wifi password copied
+     */
     onCopyWifiPass() {
       try {
         this.$clipboard(this.qr.refData.hotel.wifiPass)

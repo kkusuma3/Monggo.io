@@ -216,11 +216,11 @@ export default {
   data() {
     return {
       item: {
-        hotel: null,
-        room: null
+        hotel: null, // Hold hotel id
+        room: null // Hold room id
       },
-      hotels: [],
-      rooms: []
+      hotels: [], // Array hold hotel list
+      rooms: [] // Array hold room list
     }
   },
   computed: {
@@ -279,6 +279,9 @@ export default {
     this.initData()
   },
   methods: {
+    /**
+     * Method to initialize the data
+     */
     async initData() {
       try {
         this.$setLoading(true)
@@ -292,6 +295,9 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Methot to initialize the qr code scanner
+     */
     async onInit(promise) {
       try {
         this.$setLoading(true)
@@ -329,6 +335,11 @@ export default {
         this.$setLoading(false)
       }
     },
+    /**
+     * Called when the qr code is decoded.
+     *
+     * @param {string} uid
+     */
     onDecode: pDebounce(
       async function(uid) {
         try {
@@ -352,6 +363,9 @@ export default {
       5000,
       { leading: true }
     ),
+    /**
+     * Called when the user click the submit button
+     */
     async onSubmit() {
       try {
         this.$setLoading(true)

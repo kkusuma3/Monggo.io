@@ -1,11 +1,15 @@
+/**
+ * This file initialize store for service displayed on guest homepage
+ */
+
 export const types = {
   SET_UNCATEGORIZED_SERVICES: 'SET_UNCATEGORIZED_SERVICES',
   SET_SERVICES: 'SET_SERVICES'
 }
 
 export const state = () => ({
-  uncategorizedServices: [],
-  services: []
+  uncategorizedServices: [], // array hold service displayed for the guest homepage
+  services: [] // array hold service displayed for the guest search autocomplete
 })
 
 export const mutations = {

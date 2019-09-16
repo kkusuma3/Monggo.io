@@ -41,6 +41,9 @@ export default {
     }
   },
   methods: {
+    /**
+     * Called when the admin called login button
+     */
     async onLogin() {
       try {
         this.$setLoading(true)
