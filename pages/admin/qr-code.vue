@@ -79,7 +79,7 @@
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-qr-${slugify(item.refData.room.name)}`"
+              :data-cy="`trigger-preview-${slugify(item.refData.room.name)}`"
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"
@@ -95,7 +95,7 @@
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-edit-${slugify(item.refData.room.name)}`"
+              :data-cy="`trigger-edit-${slugify(item.refData.room.name)}`"
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"
@@ -111,7 +111,7 @@
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-delete-${slugify(item.refData.room.name)}`"
+              :data-cy="`trigger-delete-${slugify(item.refData.room.name)}`"
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"

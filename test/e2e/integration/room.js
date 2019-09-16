@@ -10,6 +10,7 @@ describe('Room', () => {
     cy.get('[data-cy="room"]').click()
     cy.contains('[data-cy="page-title"]', 'Room')
     cy.screenshot()
+    cy.wait(5000)
   })
 
   it('Add new room', () => {

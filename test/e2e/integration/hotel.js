@@ -10,6 +10,7 @@ describe('Hotel', () => {
     cy.get('[data-cy="hotel"]').click()
     cy.contains('[data-cy="page-title"]', 'Hotel')
     cy.screenshot()
+    cy.wait(5000)
   })
 
   it('Add new hotel', () => {
