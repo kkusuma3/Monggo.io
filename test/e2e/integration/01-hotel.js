@@ -34,13 +34,13 @@ describe('Hotel', () => {
       .type('Monggo Hotel is really awesome place to stay!')
     cy.uploadFile('input[name="images"]', 'img/hotel-mumbai.jpg', 'jpg')
     cy.get('[data-cy="dialog-action"]').click()
-    cy.wait(7000)
+    cy.wait(10000)
     cy.screenshot()
   })
 
   it('Edit existing hotel', () => {
     cy.get('[data-cy="trigger-edit-monggo-hotel"]').click()
-    cy.wait(7000)
+    cy.wait(10000)
     cy.get('input[name="name"]')
       .clear()
       .type('Monggo Hotel Awesome')
@@ -61,7 +61,7 @@ describe('Hotel', () => {
       .type('Monggo Hotel Awesome is do really awesome place to stay!')
     cy.uploadFile('input[name="images"]', 'img/hotel-mumbai-2.jpg', 'jpg')
     cy.get('[data-cy="dialog-action"]').click()
-    cy.wait(7000)
+    cy.wait(10000)
     cy.screenshot()
   })
 

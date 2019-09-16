@@ -86,7 +86,7 @@
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-edit-${slugify(item.name || 'Anonim')}`"
+              :data-cy="`trigger-edit-${slugify(item.name || 'Anonim')}`"
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"

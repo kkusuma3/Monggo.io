@@ -7,25 +7,26 @@ export const types = {
 }
 
 export const state = () => ({
-  // user: null // object hold the entire user information,
-  // Uncomment to run the test
-  user: {
-    avatar:
-      'https://lh4.googleusercontent.com/-YHbsFQddGE8/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rexqf_sp9Qjt9KLHa-k52ZR3QwvrQ/photo.jpg',
-    createdAt:
-      '[native Date Sun Sep 08 2019 07:45:49 GMT+0700 (Western Indonesia Time)]',
-    currency: 'USD',
-    email: 'monggoayoio@gmail.com',
-    hotel: null,
-    isAnonymous: false,
-    name: 'Monggo IO',
-    phone: null,
-    role: 'admin',
-    uid: 'ZJZBjzNGjHcoiCCEmogub2rbZDY2',
-    updatedAt:
-      '[native Date Fri Sep 13 2019 05:06:49 GMT+0700 (Western Indonesia Time)]',
-    refData: { hotel: null }
-  }
+  user: null // object hold the entire user information,
+  // Uncomment this user object below start from line 13 to 28 to run E2E test
+  // then comment user object on line 10 above
+  // user: {
+  //   avatar:
+  //     'https://lh4.googleusercontent.com/-YHbsFQddGE8/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rexqf_sp9Qjt9KLHa-k52ZR3QwvrQ/photo.jpg',
+  //   createdAt:
+  //     '[native Date Sun Sep 08 2019 07:45:49 GMT+0700 (Western Indonesia Time)]',
+  //   currency: 'USD',
+  //   email: 'monggoayoio@gmail.com',
+  //   hotel: null,
+  //   isAnonymous: false,
+  //   name: 'Monggo IO',
+  //   phone: null,
+  //   role: 'admin',
+  //   uid: 'ZJZBjzNGjHcoiCCEmogub2rbZDY2',
+  //   updatedAt:
+  //     '[native Date Fri Sep 13 2019 05:06:49 GMT+0700 (Western Indonesia Time)]',
+  //   refData: { hotel: null }
+  // }
 })
 
 export const getters = {

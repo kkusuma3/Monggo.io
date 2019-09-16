@@ -230,7 +230,8 @@ export default {
      */
     async init() {
       await this.initLocale()
-      // await this.onAuthStateChanged()
+      // Comment line 234 below to run the E2E test
+      await this.onAuthStateChanged()
       await this.initAuth()
     },
     /**
