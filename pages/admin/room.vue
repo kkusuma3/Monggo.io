@@ -84,7 +84,7 @@
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-edit-${slugify(item.name)}`"
+              :data-cy="`trigger-edit-${slugify(item.name)}`"
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"
@@ -100,7 +100,7 @@
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :class="`trigger-delete-${slugify(item.name)}`"
+              :data-cy="`trigger-delete-${slugify(item.name)}`"
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"
