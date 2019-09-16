@@ -23,3 +23,34 @@
 //
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+
+// Taken from: https://github.com/cypress-io/cypress/issues/170#issuecomment-411289023
+/**
+ * Uploads a file to an input
+ * @memberOf Cypress.Chainable#
+ * @name upload_file
+ * @function
+ * @param {String} selector - element to target
+ * @param {String} fileUrl - The file url to upload
+ * @param {String} type - content type of the uploaded file
+ */
+Cypress.Commands.add('uploadFile', (selector, fileUrl, type = '') => {
+  return cy.get(selector).then(subject => {
+    return cy
+      .fixture(fileUrl, 'base64')
+      .then(Cypress.Blob.base64StringToBlob)
+      .then(blob => {
+        return cy.window().then(win => {
+          const el = subject[0]
+          const nameSegments = fileUrl.split('/')
+          const name = nameSegments[nameSegments.length - 1]
+          const testFile = new win.File([blob], name, { type })
+          const dataTransfer = new DataTransfer()
+          dataTransfer.items.add(testFile)
+          el.files = dataTransfer.files
+          el.dispatchEvent(new Event('change'))
+          return subject
+        })
+      })
+  })
+})

@@ -25,7 +25,7 @@
         style="cursor: pointer"
         @click="$router.push(localePath({ name: 'admin' }))"
       >
-        <h1 class="headline">Monggo.IO</h1>
+        <h1 class="headline" data-cy="app-title">Monggo.IO</h1>
       </v-toolbar-title>
       <v-toolbar-items class="hidden-sm-and-down ml-4">
         <template v-for="(menu, i) in menus">
@@ -230,7 +230,7 @@ export default {
      */
     async init() {
       await this.initLocale()
-      await this.onAuthStateChanged()
+      // await this.onAuthStateChanged()
       await this.initAuth()
     },
     /**

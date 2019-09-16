@@ -9,6 +9,7 @@
             dark=""
             nuxt=""
             exact=""
+            :data-cy="menu.to"
           >
             <v-card-text class="text-center">
               <v-icon x-large="">{{ menu.icon }}</v-icon>

@@ -28,7 +28,8 @@
               <v-btn
                 :disabled="isLoading"
                 :loading="isLoading"
-                class="trigger-refresh ma-1"
+                data-cy="trigger-refresh"
+                class="ma-1"
                 color="secondary"
                 @click="$emit('trigger:refresh')"
                 v-on="on"
@@ -43,8 +44,9 @@
               <v-btn
                 :disabled="isLoading"
                 :loading="isLoading"
-                class="trigger-add ma-1"
+                class="ma-1"
                 color="secondary"
+                data-cy="trigger-add"
                 @click="$emit('trigger:add')"
                 v-on="on"
               >
@@ -61,7 +63,7 @@
         <v-card>
           <v-app-bar flat="" color="grey lighten-3">
             <v-toolbar-title>
-              <h1 class="headline">
+              <h1 class="headline" data-cy="page-title">
                 {{ $t(formattedTitle) }}
               </h1>
             </v-toolbar-title>
@@ -101,7 +103,7 @@
               <v-btn
                 :loading="isLoading"
                 :disabled="isLoading"
-                class="dialog-close"
+                data-cy="dialog-close"
                 depressed=""
                 @click="$emit('dialog:close')"
               >
@@ -111,8 +113,8 @@
               <v-btn
                 :loading="isLoading"
                 :disabled="isLoading"
-                class="dialog-action"
                 color="secondary"
+                data-cy="dialog-action"
                 @click="$emit(`dialog:action`)"
               >
                 <v-icon>{{ isEditing ? 'mdi-pencil' : 'mdi-plus' }}</v-icon>
@@ -148,7 +150,7 @@
               <v-btn
                 :loading="isLoading"
                 :disabled="isLoading"
-                class="delete-close"
+                data-cy="delete-close"
                 color="secondary"
                 @click="$emit('delete:close')"
               >
@@ -159,7 +161,7 @@
                 :loading="isLoading"
                 :disabled="isLoading"
                 depressed=""
-                class="delete-action"
+                data-cy="delete-action"
                 @click="$emit(`delete:action`)"
               >
                 <v-icon left="">mdi-delete</v-icon>
@@ -196,7 +198,7 @@
               <v-btn
                 :loading="isLoading"
                 :disabled="isLoading"
-                class="confirm-close"
+                data-cy="confirm-close"
                 color="secondary"
                 @click="$emit('confirm:close')"
               >
@@ -207,7 +209,7 @@
                 :loading="isLoading"
                 :disabled="isLoading"
                 depressed=""
-                class="confirm-action"
+                data-cy="confirm-action"
                 @click="$emit(`confirm:action`)"
               >
                 <v-icon left="">mdi-check</v-icon>
@@ -246,7 +248,7 @@
               <v-btn
                 :loading="isLoading"
                 :disabled="isLoading"
-                class="preview-close"
+                data-cy="preview-close"
                 depressed=""
                 @click="$emit('preview:close')"
               >
@@ -256,7 +258,7 @@
               <v-btn
                 :loading="isLoading"
                 :disabled="isLoading"
-                class="preview-action"
+                data-cy="preview-action"
                 color="secondary"
                 @click="$emit(`preview:action`)"
               >
