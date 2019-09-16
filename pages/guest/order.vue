@@ -206,7 +206,8 @@ export default {
         USD: '$',
         GBP: '£',
         IDR: 'Rp'
-      }
+      },
+      interval: null
     }
   },
   computed: {
@@ -296,6 +297,14 @@ export default {
         return `${this.currencySymbols[currency]}0`
       }
     }
+  },
+  mounted() {
+    this.interval = setInterval(() => {
+      this.getOrders()
+    }, 60 * 1000)
+  },
+  beforeDestroy() {
+    clearInterval(this.interval)
   },
   methods: {
     triggerCancel(item) {

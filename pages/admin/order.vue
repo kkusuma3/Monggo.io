@@ -436,7 +436,8 @@ export default {
         USD: '$',
         GBP: '£',
         IDR: 'Rp'
-      }
+      },
+      interval: null
     }
   },
   computed: {
@@ -609,6 +610,12 @@ export default {
   },
   mounted() {
     this.initData()
+    this.interval = setInterval(() => {
+      this.initData()
+    }, 60 * 1000)
+  },
+  beforeDestroy() {
+    clearInterval(this.interval)
   },
   methods: {
     async initData() {
