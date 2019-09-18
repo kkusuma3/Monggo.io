@@ -288,24 +288,25 @@ export default {
                 kind: 'success',
                 message: this.$t('loginSuccess')
               })
-            } else {
-              const payload = {
-                uid: user.uid,
-                name: user.displayName,
-                email: user.email,
-                phone: user.phoneNumber,
-                avatar: user.photoURL,
-                isAnonymous: user.isAnonymous,
-                role: 'guest',
-                createdAt: this.$moment().toDate(),
-                updatedAt: this.$moment().toDate()
-              }
-              await usersRef.doc(payload.uid).set(payload, { merge: true })
-              await auth.signOut()
-              await this.$notify({
-                message: this.$t('notAdminNorOperator')
-              })
             }
+          } else {
+            const payload = {
+              uid: user.uid,
+              name: user.displayName,
+              email: user.email,
+              phone: user.phoneNumber,
+              avatar: user.photoURL,
+              currency: 'USD',
+              isAnonymous: user.isAnonymous,
+              role: 'guest',
+              createdAt: this.$moment().toDate(),
+              updatedAt: this.$moment().toDate()
+            }
+            await usersRef.doc(payload.uid).set(payload, { merge: true })
+            await auth.signOut()
+            await this.$notify({
+              message: this.$t('notAdminNorOperator')
+            })
           }
         } catch (error) {
           this.$notify({
