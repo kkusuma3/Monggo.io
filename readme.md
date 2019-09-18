@@ -44,6 +44,16 @@ $ yarn dev
 
 For detailed explanation on how things work, check out the [Nuxt.js](https://github.com/nuxt/nuxt.js) and [Vuetify.js](https://vuetifyjs.com/) documentation.
 
+### Adding Operator
+1. Go to https://localhost:3000/admin
+2. Login using Google Account that want to be added as Operator.
+3. In Login page, there will be a notification saying that, "You're not the admin nor the operator"
+4. After that, login again using Google Account that already has `Admin` role.
+5. Go to user page.
+6. Change the new account to operator.
+
+Or You can watch this video, [Adding Operator - Monggo.IO](https://drive.google.com/open?id=1ZzXaMuccn1s6rAhsKESqr7sFUOBKozGN).
+
 ## Deployment
 
 Run this one-lined command below to deploy to [Firebase Hosting](https://firebase.google.com/docs/hosting):
