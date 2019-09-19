@@ -1,13 +1,37 @@
 <i18n>
 {
   "en-us": {
-    "orderPlaced": "Your request is submitted. Check the request status on @:(order) menu"
+    "orderPlaced": "Your request is submitted. Check the request status on @:(order) menu",
+    "noDescription": "No description available",
+    "noService": "No services available on this category",
+    "nameAsc": "Name A-Z",
+    "nameDesc": "Name Z-A",
+    "priceAsc": "Most Expensive",
+    "priceDesc": "Least Expensive",
+    "dateDesc": "Newest",
+    "dateAsc": "Oldest"
   },
   "en-uk": {
-    "orderPlaced": "Your request is submitted. Check the request status on @:(order) menu"
+    "orderPlaced": "Your request is submitted. Check the request status on @:(order) menu",
+    "noDescription": "No description available",
+    "noService": "No services available on this category",
+    "nameAsc": "Name A-Z",
+    "nameDesc": "Name Z-A",
+    "priceAsc": "Most Expensive",
+    "priceDesc": "Least Expensive",
+    "dateDesc": "Newest",
+    "dateAsc": "Oldest"
   },
   "id": {
-    "orderPlaced": "Permintaan Anda telah terkirim. Periksa status pemesanan pada menu @:(order)"
+    "orderPlaced": "Permintaan Anda telah terkirim. Periksa status pemesanan pada menu @:(order)",
+    "noDescription": "Tidak ada deskripsi tersedia",
+    "noService": "Tidak ada layanan tersedia untuk kategori ini",
+    "nameAsc": "Nama A-Z",
+    "nameDesc": "Nama Z-A",
+    "priceAsc": "Paling Mahal",
+    "priceDesc": "Paling Murah",
+    "dateDesc": "Terbaru",
+    "dateAsc": "Terlama"
   }
 }
 </i18n>
@@ -25,6 +49,15 @@
       </v-row>
       <v-row v-else="">
         <v-col cols="12">
+          <v-select
+            v-model="sortBy"
+            :items="sorts"
+            :label="$t('sortBy')"
+            hide-details=""
+            solo=""
+            flat=""
+            class="mb-5"
+          />
           <v-card
             v-for="(service, i) in services"
             :key="service[0].uid"
@@ -33,7 +66,7 @@
           >
             <v-card-text>
               <h2 class="subtitle-1">{{ service[0].name }}</h2>
-              <v-slide-group>
+              <v-slide-group v-if="service[1].length > 0">
                 <v-slide-item
                   v-for="serviceItem in service[1]"
                   :key="`${service[0].uid}_${serviceItem.uid}`"
@@ -63,12 +96,18 @@
                         {{ serviceItem.name }}
                       </h3>
                       <p class="mb-0">
-                        {{ truncate(serviceItem.description, 20) }}
+                        {{
+                          serviceItem.description &&
+                          serviceItem.description.length
+                            ? truncate(serviceItem.description, 20)
+                            : $t('noDescription')
+                        }}
                       </p>
                     </v-card-text>
                   </v-card>
                 </v-slide-item>
               </v-slide-group>
+              <div v-else="">{{ $t('noService') }}</div>
             </v-card-text>
           </v-card>
           <v-dialog
@@ -150,7 +189,15 @@ export default {
         IDR: 'Rp'
       },
       // Hold service count
-      count: 0
+      count: 0,
+      sorts: [
+        { text: this.$t('nameAsc'), value: 'name asc' },
+        { text: this.$t('nameDesc'), value: 'name desc' },
+        { text: this.$t('priceAsc'), value: 'price asc' },
+        { text: this.$t('priceDesc'), value: 'price desc' },
+        { text: this.$t('dateDesc'), value: 'createdAt desc' },
+        { text: this.$t('dateAsc'), value: 'createdAt asc' }
+      ]
     }
   },
   computed: {
@@ -160,6 +207,15 @@ export default {
     ...mapState('category', ['categories']),
     ...mapGetters('user', ['isAuth']),
     ...mapState('guest', ['qr', 'service', 'rates']),
+    ...mapGetters('guest', ['sortByArray']),
+    sortBy: {
+      get() {
+        return this.$store.state.guest.sortBy
+      },
+      set(sortBy) {
+        this.$store.commit(`guest/${guestTypes.SET_SORT_BY}`, sortBy)
+      }
+    },
     truncate() {
       return (str, length) => {
         if (!str) {
@@ -204,6 +260,11 @@ export default {
     service(service) {
       if (service) {
         this.onTriggerService(service)
+      }
+    },
+    sortBy(sortBy) {
+      if (sortBy) {
+        this.getServices()
       }
     }
   },
@@ -297,7 +358,7 @@ export default {
                 .collection('services')
                 .where('hotel', '==', this.qr.hotel)
                 .where('category', '==', category.uid)
-                .orderBy('createdAt', 'desc')
+                .orderBy(...this.sortByArray)
                 .get()
               const _services = await Promise.all(
                 serviceSnap.docs.map(service => {
@@ -336,6 +397,7 @@ export default {
           this.$store.commit(`service/${serviceTypes.SET_SERVICES}`, services)
         }
       } catch (error) {
+        console.log(error)
         this.$notify({
           isError: true,
           message: error.message

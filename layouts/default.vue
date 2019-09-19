@@ -314,6 +314,7 @@ export default {
     ...mapGetters('user', ['role', 'isAuth']),
     ...mapState('category', ['categories']),
     ...mapState('service', ['uncategorizedServices']),
+    ...mapGetters('guest', ['sortByArray']),
     isScrolled() {
       return this.currentScroll > 0
     },
@@ -448,7 +449,7 @@ export default {
                 .collection('services')
                 .where('hotel', '==', hotel)
                 .where('category', '==', category.uid)
-                .orderBy('createdAt', 'desc')
+                .orderBy(...this.sortByArray)
                 .get()
               const _services = await Promise.all(
                 serviceSnap.docs.map(service => {
@@ -487,6 +488,7 @@ export default {
           this.$store.commit(`service/${serviceTypes.SET_SERVICES}`, services)
         }
       } catch (error) {
+        console.log(error)
         this.$notify({
           isError: true,
           message: error.message

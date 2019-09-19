@@ -22,6 +22,7 @@
     :is-editing="isEditing"
     :is-confirming="isConfirming"
     :is-deleting="isDeleting"
+    :is-add-active="role !== 'worker'"
     @trigger:refresh="initData"
     @trigger:add="onTriggerAdd"
     @dialog:close="onDialogClose"
@@ -40,7 +41,10 @@
     >
       <template #item.user="{ item }">
         <span>
-          {{ item.refData.user.name || item.refData.user.email || 'Anonim' }}
+          {{
+            item.refData.user &&
+              (item.refData.user.name || item.refData.user.email || 'Anonim')
+          }}
         </span>
       </template>
       <template #item.price="{ item }">
@@ -49,21 +53,50 @@
         </span>
       </template>
       <template #item.status="{ item }">
-        <v-chip
-          label=""
-          class="ma-1"
-          :color="getStatusColor(item.status)"
-          text-color="white"
+        <v-select
+          v-model="item.status"
+          :items="['ordered', 'processed', 'delivered', 'canceled']"
+          :label="$t('status')"
+          solo=""
+          flat=""
+          hide-details=""
+          @change="onStatusChange($event, item)"
         >
-          <v-avatar left>
-            <v-icon>
-              {{ getStatusIcon(item.status) }}
-            </v-icon>
-          </v-avatar>
-          <span>
-            {{ $t(item.status) }}
-          </span>
-        </v-chip>
+          <template #selection="data">
+            <v-chip
+              label=""
+              class="ma-1"
+              :color="getStatusColor(data.item)"
+              text-color="white"
+            >
+              <v-avatar left>
+                <v-icon>
+                  {{ getStatusIcon(data.item) }}
+                </v-icon>
+              </v-avatar>
+              <span>
+                {{ $t(data.item) }}
+              </span>
+            </v-chip>
+          </template>
+          <template #item="data">
+            <v-chip
+              label=""
+              class="ma-1"
+              :color="getStatusColor(data.item)"
+              text-color="white"
+            >
+              <v-avatar left>
+                <v-icon>
+                  {{ getStatusIcon(data.item) }}
+                </v-icon>
+              </v-avatar>
+              <span>
+                {{ $t(data.item) }}
+              </span>
+            </v-chip>
+          </template>
+        </v-select>
       </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
@@ -94,7 +127,7 @@
                     : 'Anonim'
                 )}`
               "
-              :disabled="isLoading"
+              :disabled="isLoading || role === 'worker'"
               :loading="isLoading"
               class="ma-1"
               color="secondary"
@@ -123,7 +156,7 @@
                     : 'Anonim'
                 )}`
               "
-              :disabled="isLoading"
+              :disabled="isLoading || role === 'worker'"
               :loading="isLoading"
               class="ma-1"
               color="error"
@@ -150,7 +183,7 @@
         v-validate="'required'"
         :items="hotels"
         :error-messages="errors.collect('hotel')"
-        :disabled="isLoading || role === 'operator'"
+        :disabled="isLoading || role === 'operator' || role === 'worker'"
         item-text="name"
         item-value="uid"
         data-vv-name="hotel"
@@ -318,7 +351,7 @@
         thumb-label="always"
         ticks=""
       />
-      <v-autocomplete
+      <v-select
         v-model="item.status"
         v-validate="'required'"
         :items="statuses"
@@ -367,6 +400,7 @@ export default {
       isConfirming: false, // Hold edit confirmation state
       isDeleting: false, // Hold deleting dialog state
       isSaved: false, // Hold whether current data is saved
+      isEditingStatus: false, // Hold whether current editing status is only changing status
       // Array hold table column
       headers: [
         { text: this.$t('hotel'), value: 'refData.hotel.name' },
@@ -799,6 +833,7 @@ export default {
      * Called to trigger displaying dialog for adding data
      */
     onTriggerAdd() {
+      this.$validator.reset()
       this.isDialog = true
     },
     /**
@@ -873,29 +908,35 @@ export default {
               }),
               { merge: true }
             )
-          if (!this.isEditing || this.item.count !== this.itemOriginal.count) {
-            await db
-              .collection('services')
-              .doc(payload.service)
-              .set(
-                { count: this.service.count - payload.count },
-                { merge: true }
-              )
-          }
-          if (this.isEditing && this.item.status === 'canceled') {
-            await db
-              .collection('services')
-              .doc(payload.service)
-              .set(
-                { count: this.service.count + payload.count },
-                { merge: true }
-              )
+          if (!this.isEditingStatus) {
+            if (
+              !this.isEditing ||
+              this.item.count !== this.itemOriginal.count
+            ) {
+              await db
+                .collection('services')
+                .doc(payload.service)
+                .set(
+                  { count: this.service.count - payload.count },
+                  { merge: true }
+                )
+            }
+            if (this.isEditing && this.item.status === 'canceled') {
+              await db
+                .collection('services')
+                .doc(payload.service)
+                .set(
+                  { count: this.service.count + payload.count },
+                  { merge: true }
+                )
+            }
           }
           await this.getItems(this.collection, 'items', this.itemsCallback)
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
         }
       } catch (error) {
+        console.log(error)
         this.$notify({
           isError: true,
           message: error.message
@@ -984,6 +1025,26 @@ export default {
           message: error.message
         })
       } finally {
+        this.$setLoading(false)
+      }
+    },
+    /**
+     * Called when status changed
+     */
+    async onStatusChange(event, item) {
+      try {
+        this.$setLoading(true)
+        this.isEditingStatus = true
+        this.item = _cloneDeep(item)
+        this.itemOriginal = _cloneDeep(item)
+        await this.onDialogAction()
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.isEditingStatus = false
         this.$setLoading(false)
       }
     }

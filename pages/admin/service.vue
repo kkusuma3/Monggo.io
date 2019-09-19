@@ -205,15 +205,9 @@
       />
       <v-textarea
         v-model="item.description"
-        v-validate="'required'"
-        :error-messages="errors.collect('description')"
         :disabled="isLoading"
-        data-vv-name="description"
-        :data-vv-as="$t('description')"
         name="description"
         clearable=""
-        data-vv-value-path="item.description"
-        required=""
         :label="$t('description')"
         outlined=""
         auto-grow=""
@@ -299,17 +293,11 @@
       />
       <v-file-input
         v-model="item.images"
-        v-validate="'required'"
-        :error-messages="errors.collect('images')"
         :disabled="isLoading"
         :prepend-icon="null"
-        data-vv-name="images"
-        :data-vv-as="$tc('image', 2)"
         name="images"
         counter=""
         clearable=""
-        data-vv-value-path="item.images"
-        required=""
         :label="$tc('image', 2)"
         outlined=""
         multiple=""
@@ -483,7 +471,17 @@ export default {
       // Array hold hotels data
       hotels: [],
       // Array hold categories data
-      categories: []
+      categories: [],
+      // Hold default images meta data
+      imagesMeta: [
+        {
+          createdAt: this.$moment('2019-09-19T02:52:55.000Z').toDate(),
+          fullPath: 'default/de65cf77-9923-4fcd-b066-1d02a507c8f6.png',
+          name: 'de65cf77-9923-4fcd-b066-1d02a507c8f6.png',
+          url:
+            'https://firebasestorage.googleapis.com/v0/b/monggo-io.appspot.com/o/default%2Fde65cf77-9923-4fcd-b066-1d02a507c8f6.png?alt=media&token=2ab8536c-cd3f-4ca2-a069-f5efc21525fa'
+        }
+      ]
     }
   },
   computed: {
@@ -795,6 +793,7 @@ export default {
      * Called to trigger displaying dialog for adding data
      */
     onTriggerAdd() {
+      this.$validator.reset()
       this.isDialog = true
     },
     /**
@@ -882,21 +881,24 @@ export default {
             )
             delete payload.refData
           }
-          const imagesMeta = await Promise.all(
-            payload.images.map(async image => {
-              const snap = await storage
-                .ref(this.collection)
-                .child(`${uuidv4()}.jpg`)
-                .put(image)
-              const url = await snap.ref.getDownloadURL()
-              return {
-                url,
-                name: snap.metadata.name,
-                fullPath: snap.metadata.fullPath,
-                createdAt: this.$moment(snap.metadata.timeCreated).toDate()
-              }
-            })
-          )
+          let imagesMeta = this.imagesMeta
+          if (this.item.imagesMeta.length > 0) {
+            imagesMeta = await Promise.all(
+              payload.images.map(async image => {
+                const snap = await storage
+                  .ref(this.collection)
+                  .child(`${uuidv4()}.jpg`)
+                  .put(image)
+                const url = await snap.ref.getDownloadURL()
+                return {
+                  url,
+                  name: snap.metadata.name,
+                  fullPath: snap.metadata.fullPath,
+                  createdAt: this.$moment(snap.metadata.timeCreated).toDate()
+                }
+              })
+            )
+          }
           payload.imagesMeta = imagesMeta
           delete payload.images
           payload.hotelRef = db.collection('hotels').doc(payload.hotel)

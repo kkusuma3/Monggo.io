@@ -3,17 +3,17 @@
   "en-us": {
     "loginSuccess": "@:(login) successfully",
     "logoutSuccess": "@:(logout) successfully",
-    "notAdminNorOperator": "You're not the admin nor the operator"
+    "notAdminOperatorNorWorker": "You're not the admin, operator nor the worker"
   },
   "en-uk": {
     "loginSuccess": "@:(login) successfully",
     "logoutSuccess": "@:(logout) successfully",
-    "notAdminNorOperator": "You're not the admin nor the operator"
+    "notAdminOperatorNorWorker": "You're not the admin, operator nor the worker"
   },
   "id": {
     "loginSuccess": "Berhasil @:(login)",
     "logoutSuccess": "Berhasil @:(logout)",
-    "notAdminNorOperator": "Anda bukan admin maupun operator"
+    "notAdminOperatorNorWorker": "Anda bukan admin, operator maupun pegawai"
   }
 }
 </i18n>
@@ -169,24 +169,6 @@ export default {
     ...mapState('user', ['user']),
     ...mapGetters('user', ['isAuth', 'role']),
     menus() {
-      const menus = [
-        {
-          icon: 'mdi-hotel',
-          to: 'room'
-        },
-        {
-          icon: 'mdi-qrcode',
-          to: 'qr-code'
-        },
-        {
-          icon: 'mdi-room-service',
-          to: 'service'
-        },
-        {
-          icon: 'mdi-cart',
-          to: 'order'
-        }
-      ]
       switch (this.role) {
         case 'admin':
           return [
@@ -194,7 +176,22 @@ export default {
               icon: 'mdi-office-building',
               to: 'hotel'
             },
-            ...menus,
+            {
+              icon: 'mdi-hotel',
+              to: 'room'
+            },
+            {
+              icon: 'mdi-qrcode',
+              to: 'qr-code'
+            },
+            {
+              icon: 'mdi-room-service',
+              to: 'service'
+            },
+            {
+              icon: 'mdi-cart',
+              to: 'order'
+            },
             {
               icon: 'mdi-tag',
               to: 'category'
@@ -205,7 +202,31 @@ export default {
             }
           ]
         case 'operator':
-          return menus
+          return [
+            {
+              icon: 'mdi-hotel',
+              to: 'room'
+            },
+            {
+              icon: 'mdi-qrcode',
+              to: 'qr-code'
+            },
+            {
+              icon: 'mdi-room-service',
+              to: 'service'
+            },
+            {
+              icon: 'mdi-cart',
+              to: 'order'
+            }
+          ]
+        case 'worker':
+          return [
+            {
+              icon: 'mdi-cart',
+              to: 'order'
+            }
+          ]
         default:
           return []
       }
@@ -265,12 +286,17 @@ export default {
             const userRef = userDoc.data()
             if (
               userRef &&
-              (userRef.role === 'admin' || userRef.role === 'operator')
+              (userRef.role === 'admin' ||
+                userRef.role === 'operator' ||
+                userRef.role === 'worker')
             ) {
               const snap = await usersRef.doc(user.uid).get()
               const data = await snap.data()
               let hotel = null
-              if (userRef.role === 'operator' && data.hotelRef) {
+              if (
+                (userRef.role === 'operator' || userRef.role === 'worker') &&
+                data.hotelRef
+              ) {
                 const hotelDoc = await data.hotelRef.get()
                 hotel = hotelDoc.data()
               }
@@ -305,7 +331,7 @@ export default {
             await usersRef.doc(payload.uid).set(payload, { merge: true })
             await auth.signOut()
             await this.$notify({
-              message: this.$t('notAdminNorOperator')
+              message: this.$t('notAdminOperatorNorWorker')
             })
           }
         } catch (error) {

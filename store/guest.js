@@ -7,7 +7,8 @@ export const types = {
   SET_QR: 'SET_QR',
   SET_SERVICE: 'SET_SERVICE',
   SET_ORDERS: 'SET_ORDERS',
-  SET_RATES: 'SET_RATES'
+  SET_RATES: 'SET_RATES',
+  SET_SORT_BY: 'SET_SORT_BY'
 }
 
 export const state = () => ({
@@ -15,11 +16,18 @@ export const state = () => ({
   qr: null, // object hold the entire information about the qr
   service: null, // object hold the choosen service
   orders: [], // array hold user orders
-  rates: [] // array hold current currency rates
+  rates: [], // array hold current currency rates,
+  sortBy: 'name asc' // hold current filter
 })
 
 export const getters = {
-  isCheckedIn: state => state.uid !== null
+  isCheckedIn: state => state.uid !== null,
+  sortByArray: state => {
+    if (!state.sortBy) {
+      return 'name asc'
+    }
+    return state.sortBy.split(' ')
+  }
 }
 
 export const mutations = {
@@ -37,6 +45,9 @@ export const mutations = {
   },
   [types.SET_RATES]: (state, rates) => {
     state.rates = rates
+  },
+  [types.SET_SORT_BY]: (state, sortBy) => {
+    state.sortBy = sortBy
   }
 }
 

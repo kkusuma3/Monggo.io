@@ -288,6 +288,7 @@ export default {
      * Called to trigger displaying dialog for adding data
      */
     onTriggerAdd() {
+      this.$validator.reset()
       this.isDialog = true
     },
 

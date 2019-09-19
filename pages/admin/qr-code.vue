@@ -130,6 +130,46 @@
     </v-data-table>
     <template #form="">
       <v-autocomplete
+        v-model="item.hotel"
+        v-validate="'required'"
+        :items="hotels"
+        :error-messages="errors.collect('hotel')"
+        :disabled="isLoading || role === 'operator'"
+        item-text="name"
+        item-value="uid"
+        data-vv-name="hotel"
+        :data-vv-as="$t('hotel')"
+        name="hotel"
+        clearable=""
+        data-vv-value-path="item.hotel"
+        required=""
+        :label="$t('hotel')"
+        outlined=""
+      >
+        <template #item="{ item }">
+          <v-list-item-avatar>
+            <v-avatar :color="getMaterialColor(item.name)" class="ma-1">
+              <app-img
+                v-if="item.imagesMeta && item.imagesMeta.length > 0"
+                :src="item.imagesMeta[0].url"
+                :alt="item.imagesMeta[0].name"
+              />
+              <span
+                v-else=""
+                :class="{
+                  'white--text': isDarkColor(getMaterialColor(item.name, true))
+                }"
+              >
+                {{ getInitials(item.name) }}
+              </span>
+            </v-avatar>
+          </v-list-item-avatar>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
+          </v-list-item-content>
+        </template>
+      </v-autocomplete>
+      <v-autocomplete
         v-model="item.room"
         v-validate="'required'"
         :items="rooms"
@@ -239,6 +279,7 @@ export default {
           align: 'center',
           sortable: false
         },
+        { text: this.$t('hotel'), value: 'refData.hotel.name' },
         { text: this.$t('room'), value: 'refData.room.name' },
         {
           text: this.$t('createdAt'),
@@ -281,7 +322,8 @@ export default {
         hotel: null,
         createdAt: null,
         updatedAt: null
-      }
+      },
+      hotels: []
     }
   },
   computed: {
@@ -342,6 +384,19 @@ export default {
     }
   },
   watch: {
+    'item.hotel': async function(hotel) {
+      if (hotel) {
+        await Promise.all([
+          this.getItems(
+            db.collection('rooms').where('hotel', '==', hotel),
+            'rooms',
+            this.roomsCallback
+          )
+        ])
+      } else {
+        this.rooms = []
+      }
+    },
     'item.room': function(id) {
       if (id) {
         const room = this.rooms.find(({ uid }) => uid === id)
@@ -354,7 +409,9 @@ export default {
             this.item.room = null
           }
         }
-        this.item.hotel = room.hotel
+        if (room) {
+          this.item.hotel = room.hotel
+        }
       } else {
         this.item.hotel = null
       }
@@ -382,6 +439,7 @@ export default {
               'items',
               this.itemsCallback
             ),
+            this.getItems('hotels'),
             this.getItems(
               db.collection('rooms').where('hotel', '==', this.user.hotel),
               'rooms',
@@ -391,7 +449,7 @@ export default {
         } else {
           await Promise.all([
             this.getItems(this.collection, 'items', this.itemsCallback),
-            this.getItems('rooms', null, this.roomsCallback)
+            this.getItems('hotels')
           ])
         }
       } catch (error) {
@@ -409,11 +467,19 @@ export default {
     async itemsCallback(data) {
       try {
         this.$setLoading(true)
-        if (data.roomRef) {
-          const roomRefDoc = await data.roomRef.get()
-          const roomRef = roomRefDoc.data()
+        if (data.hotelRef && data.roomRef) {
+          const [hotelRefDoc, roomRefDoc] = await Promise.all([
+            data.hotelRef.get(),
+            data.roomRef.get()
+          ])
+          const [hotelRef, roomRef] = await Promise.all([
+            hotelRefDoc.data(),
+            roomRefDoc.data()
+          ])
+          delete data.hotelRef
           delete data.roomRef
           return {
+            hotel: hotelRef,
             room: roomRef
           }
         }

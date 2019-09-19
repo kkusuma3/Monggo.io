@@ -45,6 +45,7 @@ export default {
   status: 'Status',
   file: 'File | File | Files',
   admin: 'Admin',
+  worker: 'Worker',
   operator: 'Operator',
   guest: 'Guest',
   close: 'Close',
@@ -58,5 +59,6 @@ export default {
   call: 'Call',
   callingCode: 'Calling Code',
   free: 'Free',
-  request: 'Request'
+  request: 'Request',
+  sortBy: 'Sort by'
 }

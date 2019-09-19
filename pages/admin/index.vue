@@ -38,24 +38,6 @@ export default {
   computed: {
     ...mapGetters('user', ['role']),
     menus() {
-      const menus = [
-        {
-          icon: 'mdi-hotel',
-          to: 'room'
-        },
-        {
-          icon: 'mdi-qrcode',
-          to: 'qr-code'
-        },
-        {
-          icon: 'mdi-room-service',
-          to: 'service'
-        },
-        {
-          icon: 'mdi-cart',
-          to: 'order'
-        }
-      ]
       switch (this.role) {
         case 'admin':
           return [
@@ -63,7 +45,22 @@ export default {
               icon: 'mdi-office-building',
               to: 'hotel'
             },
-            ...menus,
+            {
+              icon: 'mdi-hotel',
+              to: 'room'
+            },
+            {
+              icon: 'mdi-qrcode',
+              to: 'qr-code'
+            },
+            {
+              icon: 'mdi-room-service',
+              to: 'service'
+            },
+            {
+              icon: 'mdi-cart',
+              to: 'order'
+            },
             {
               icon: 'mdi-tag',
               to: 'category'
@@ -74,7 +71,31 @@ export default {
             }
           ]
         case 'operator':
-          return menus
+          return [
+            {
+              icon: 'mdi-hotel',
+              to: 'room'
+            },
+            {
+              icon: 'mdi-qrcode',
+              to: 'qr-code'
+            },
+            {
+              icon: 'mdi-room-service',
+              to: 'service'
+            },
+            {
+              icon: 'mdi-cart',
+              to: 'order'
+            }
+          ]
+        case 'worker':
+          return [
+            {
+              icon: 'mdi-cart',
+              to: 'order'
+            }
+          ]
         default:
           return []
       }

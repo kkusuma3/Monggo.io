@@ -10,6 +10,8 @@
     @trigger:refresh="initData"
     @dialog:close="onDialogClose"
     @dialog:action="onDialogAction"
+    @delete:close="onDeleteClose"
+    @delete:action="onDeleteAction"
     @confirm:close="onConfirmClose"
     @confirm:action="onConfirmAction"
     @preview:close="onPreviewClose"
@@ -98,6 +100,22 @@
             </v-btn>
           </template>
           <span>{{ $t('edit') }} {{ item.name || 'Anonim' }}</span>
+        </v-tooltip>
+        <v-tooltip bottom="">
+          <template #activator="{ on }">
+            <v-btn
+              :data-cy="`trigger-delete-${slugify(item.name)}`"
+              :disabled="isLoading || role !== 'admin'"
+              :loading="isLoading"
+              class="ma-1"
+              color="error"
+              @click="onTriggerDelete(item)"
+              v-on="on"
+            >
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </template>
+          <span>{{ $t('delete') }} {{ item.name }}</span>
         </v-tooltip>
       </template>
     </v-data-table>
@@ -195,10 +213,14 @@
       />
       <v-autocomplete
         v-model="item.hotel"
-        v-validate="{ required: item.role === 'operator' }"
+        v-validate="{
+          required: item.role === 'operator' && item.role === 'worker'
+        }"
         :items="hotels"
         :error-messages="errors.collect('hotel')"
-        :disabled="isLoading || item.role !== 'operator'"
+        :disabled="
+          isLoading || (item.role !== 'operator' && item.role !== 'worker')
+        "
         item-text="name"
         item-value="uid"
         data-vv-name="hotel"
@@ -206,7 +228,7 @@
         name="hotel"
         clearable=""
         data-vv-value-path="item.hotel"
-        :required="item.role === 'operator'"
+        :required="item.role === 'operator' && item.role === 'worker'"
         :label="$t('hotel')"
         outlined=""
       >
@@ -287,7 +309,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import slugify from '@sindresorhus/slugify'
 import _cloneDeep from 'lodash.clonedeep'
 import cleanDeep from 'clean-deep'
@@ -386,9 +408,10 @@ export default {
       ],
       // Array hold roles data
       roles: [
-        { text: 'Guest', value: 'guest' },
-        { text: 'Operator', value: 'operator' },
-        { text: 'Admin', value: 'admin' }
+        { text: this.$t('guest'), value: 'guest' },
+        { text: this.$t('worker'), value: 'worker' },
+        { text: this.$t('operator'), value: 'operator' },
+        { text: this.$t('admin'), value: 'admin' }
       ],
       // Array hold hotel data
       hotels: []
@@ -396,9 +419,7 @@ export default {
   },
   computed: {
     ...mapState(['isLoading']),
-    isOperator() {
-      return this.item.role === 'operator'
-    },
+    ...mapGetters('user', ['role']),
     collection() {
       return pluralize(paramCase(this.title))
     },
@@ -458,8 +479,10 @@ export default {
         switch (string) {
           case 'guest':
             return 'info'
-          case 'operator':
+          case 'worker':
             return 'warning'
+          case 'operator':
+            return 'error'
           case 'admin':
             return 'success'
           default:
@@ -476,19 +499,21 @@ export default {
         switch (string) {
           case 'guest':
             return 'mdi-account'
+          case 'worker':
+            return 'mdi-account-group'
           case 'operator':
-            return 'mdi-account-plus'
+            return 'mdi-account-supervisor'
           case 'admin':
-            return 'mdi-account-star'
+            return 'mdi-shield-account'
           default:
-            return 'error'
+            return 'mdi-account'
         }
       }
     }
   },
   watch: {
     'item.role': function(role) {
-      if (role !== 'operator') {
+      if (role !== 'operator' && role !== 'worker') {
         this.item.hotel = null
         this.itemOriginal.hotel = null
       }
@@ -640,6 +665,13 @@ export default {
       }
     },
     /**
+     * Called to trigger displaying dialog for deleting data
+     */
+    onTriggerDelete(item) {
+      this.isDeleting = true
+      this.item = _cloneDeep(item)
+    },
+    /**
      * Called to trigger displaying dialog for previewing image
      */
     onTriggerPreview() {
@@ -660,6 +692,38 @@ export default {
       this.isEditing = false
       this.isSaved = false
       this.reset()
+    },
+    /**
+     * Called when the user close delete confirmation dialog
+     */
+    onDeleteClose() {
+      this.$validator.reset()
+      this.isDeleting = false
+      this.reset()
+    },
+    /**
+     * Called when the user click the delete button on dialog
+     */
+    async onDeleteAction() {
+      try {
+        this.$setLoading(true)
+        const item = _cloneDeep(this.item)
+
+        await db
+          .collection(this.collection)
+          .doc(item.uid)
+          .delete()
+        await this.getItems(this.collection, 'items', this.itemsCallback)
+        await this.onDeleteClose()
+        await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
     },
     /**
      * Called when the user click the save or edit button

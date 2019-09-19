@@ -431,7 +431,17 @@ export default {
         fullPath: '',
         createdAt: ''
       },
-      callingCodes: [] // Array hold calling codes data
+      callingCodes: [], // Array hold calling codes data
+      // Hold default images meta data
+      imagesMeta: [
+        {
+          createdAt: this.$moment('2019-09-19T02:52:55.000Z').toDate(),
+          fullPath: 'default/de65cf77-9923-4fcd-b066-1d02a507c8f6.png',
+          name: 'de65cf77-9923-4fcd-b066-1d02a507c8f6.png',
+          url:
+            'https://firebasestorage.googleapis.com/v0/b/monggo-io.appspot.com/o/default%2Fde65cf77-9923-4fcd-b066-1d02a507c8f6.png?alt=media&token=2ab8536c-cd3f-4ca2-a069-f5efc21525fa'
+        }
+      ]
     }
   },
   computed: {
@@ -700,6 +710,7 @@ export default {
      * Called to trigger displaying dialog for adding data
      */
     onTriggerAdd() {
+      this.$validator.reset()
       this.isDialog = true
     },
     /**
@@ -786,21 +797,24 @@ export default {
               })
             )
           }
-          const imagesMeta = await Promise.all(
-            payload.images.map(async image => {
-              const snap = await storage
-                .ref(this.collection)
-                .child(`${uuidv4()}.jpg`)
-                .put(image)
-              const url = await snap.ref.getDownloadURL()
-              return {
-                url,
-                name: snap.metadata.name,
-                fullPath: snap.metadata.fullPath,
-                createdAt: this.$moment(snap.metadata.timeCreated).toDate()
-              }
-            })
-          )
+          let imagesMeta = this.imagesMeta
+          if (this.item.imagesMeta.length > 0) {
+            imagesMeta = await Promise.all(
+              payload.images.map(async image => {
+                const snap = await storage
+                  .ref(this.collection)
+                  .child(`${uuidv4()}.jpg`)
+                  .put(image)
+                const url = await snap.ref.getDownloadURL()
+                return {
+                  url,
+                  name: snap.metadata.name,
+                  fullPath: snap.metadata.fullPath,
+                  createdAt: this.$moment(snap.metadata.timeCreated).toDate()
+                }
+              })
+            )
+          }
           payload.imagesMeta = imagesMeta
           if (payload.phone.charAt(0) === '0') {
             payload.phone = payload.phone.substring(1)

@@ -45,6 +45,7 @@ export default {
   status: 'Status',
   file: 'Berkas',
   admin: 'Admin',
+  worker: 'Pegawai',
   operator: 'Operator',
   guest: 'Tamu',
   close: 'Tutup',
@@ -58,5 +59,6 @@ export default {
   call: 'Hubungi',
   callingCode: 'Kode Panggilan',
   free: 'Gratis',
-  request: 'Pesan'
+  request: 'Pesan',
+  sortBy: 'Urutkan berdasarkan'
 }
