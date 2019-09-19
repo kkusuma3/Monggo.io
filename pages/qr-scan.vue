@@ -9,7 +9,7 @@
     "hintHotelCode": "Ex: HIL1092",
     "hintRoomCode": "Ex: 4321",
     "submit": "Submit",
-    "qrScan": "@:(qr) Scan"
+    "qrScan": "@:(qr-code) Scan"
   },
   "en-uk": {
     "scan": "Scan the QR Code in your room on the box below",
@@ -20,7 +20,7 @@
     "hintHotelCode": "Ex: HIL1092",
     "hintRoomCode": "Ex: 4321",
     "submit": "Submit",
-    "qrScan": "@:(qr) Scan"
+    "qrScan": "@:(qr-code) Scan"
   },
   "id": {
     "scan": "Pindai kode QR pada ruangan di kotak di bawah ini",
@@ -31,7 +31,7 @@
     "hintHotelCode": "Contoh: HIL1092",
     "hintRoomCode": "Contoh: 4321",
     "submit": "Kirim",
-    "qrScan": "Pemindaian @:(qr)"
+    "qrScan": "Pemindaian @:(qr-code)"
   }
 }
 </i18n>
