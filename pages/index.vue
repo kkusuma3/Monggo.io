@@ -2,15 +2,18 @@
 {
   "en-us": {
     "hotelSimpler": "Your hotel <strong class='secondary--text'>needs</strong> made <strong class='secondary--text'>simpler</strong>",
-    "langPref": "Choose your Language of Preference below"
+    "langPref": "Choose your Language of Preference below",
+    "operatorLogin": "@:(operator) @:(login)"
   },
   "en-uk": {
     "hotelSimpler": "Your hotel <strong class='secondary--text'>needs</strong> made <strong class='secondary--text'>simpler</strong>",
-    "langPref": "Choose your Language of Preference below"
+    "langPref": "Choose your Language of Preference below",
+    "operatorLogin": "@:(operator) @:(login)"
   },
   "id": {
     "hotelSimpler": "<strong class='secondary--text'>Kebutuhan</strong> hotel Anda dibuat <strong class='secondary--text'>lebih sederhana</strong>",
-    "langPref": "Pilih preferensi bahasa Anda"
+    "langPref": "Pilih preferensi bahasa Anda",
+    "operatorLogin": "@:(login) @:(operator)"
   }
 }
 </i18n>
@@ -68,9 +71,20 @@
           rounded=""
           nuxt=""
           exact=""
+          class="mb-5"
           :to="localePath({ name: 'qr-scan' })"
         >
           {{ $t('next') }}
+        </v-btn>
+        <v-btn
+          color="secondary"
+          block=""
+          rounded=""
+          nuxt=""
+          exact=""
+          :to="localePath({ name: 'admin' })"
+        >
+          {{ $t('operatorLogin') }}
         </v-btn>
       </v-col>
     </v-row>

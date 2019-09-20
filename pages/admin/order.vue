@@ -366,6 +366,15 @@
         :label="$t('status')"
         outlined=""
       />
+      <v-textarea
+        v-model="item.note"
+        :disabled="isLoading"
+        name="note"
+        clearable=""
+        :label="$t('note')"
+        outlined=""
+        auto-grow=""
+      />
     </template>
   </app-wrapper>
 </template>
@@ -374,7 +383,7 @@
 import { mapState, mapGetters } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
-import _cloneDeep from 'clone-deep'
+import _cloneDeep from 'lodash.clonedeep'
 import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
@@ -442,6 +451,7 @@ export default {
         service: null,
         count: null,
         status: null,
+        note: null,
         rates: [],
         createdAt: null,
         updatedAt: null
@@ -456,6 +466,7 @@ export default {
         service: null,
         count: null,
         status: null,
+        note: null,
         rates: [],
         createdAt: null,
         updatedAt: null
@@ -753,6 +764,7 @@ export default {
         service: null,
         count: null,
         status: null,
+        note: null,
         rates: [],
         createdAt: null,
         updatedAt: null

@@ -2,7 +2,6 @@
 {
   "en-us": {
     "orderPlaced": "Your request is submitted. Check the request status on @:(order) menu",
-    "noDescription": "No description available",
     "noService": "No services available on this category",
     "nameAsc": "Name A-Z",
     "nameDesc": "Name Z-A",
@@ -13,7 +12,6 @@
   },
   "en-uk": {
     "orderPlaced": "Your request is submitted. Check the request status on @:(order) menu",
-    "noDescription": "No description available",
     "noService": "No services available on this category",
     "nameAsc": "Name A-Z",
     "nameDesc": "Name Z-A",
@@ -24,7 +22,6 @@
   },
   "id": {
     "orderPlaced": "Permintaan Anda telah terkirim. Periksa status pemesanan pada menu @:(order)",
-    "noDescription": "Tidak ada deskripsi tersedia",
     "noService": "Tidak ada layanan tersedia untuk kategori ini",
     "nameAsc": "Nama A-Z",
     "nameDesc": "Nama Z-A",
@@ -96,12 +93,7 @@
                         {{ serviceItem.name }}
                       </h3>
                       <p class="mb-0">
-                        {{
-                          serviceItem.description &&
-                          serviceItem.description.length
-                            ? truncate(serviceItem.description, 20)
-                            : $t('noDescription')
-                        }}
+                        {{ truncate(serviceItem.description, 20) }}
                       </p>
                     </v-card-text>
                   </v-card>
@@ -141,6 +133,18 @@
                   persistent-hint=""
                   thumb-label="always"
                   ticks=""
+                />
+              </v-card-text>
+              <v-card-text class="pa-5 pa-4">
+                <v-textarea
+                  v-model="note"
+                  :disabled="isLoading"
+                  name="note"
+                  clearable=""
+                  :label="$t('note')"
+                  outlined=""
+                  auto-grow=""
+                  hide-details=""
                 />
               </v-card-text>
               <v-card-actions>
@@ -190,6 +194,8 @@ export default {
       },
       // Hold service count
       count: 0,
+      // Hold service note
+      note: null,
       sorts: [
         { text: this.$t('nameAsc'), value: 'name asc' },
         { text: this.$t('nameDesc'), value: 'name desc' },
@@ -305,6 +311,7 @@ export default {
             service: this.service.uid,
             count: this.count,
             status: 'ordered',
+            note: this.note,
             rates,
             createdAt: date,
             updatedAt: date
@@ -387,17 +394,19 @@ export default {
               return [category, _services]
             })
           )
-          const uncategorizedServices = _flatten(
+          const uncategorizedServices = await _flatten(
             _flatten(services).filter(i => Array.isArray(i))
           )
-          this.$store.commit(
+          await this.$store.commit(
             `service/${serviceTypes.SET_UNCATEGORIZED_SERVICES}`,
             uncategorizedServices
           )
-          this.$store.commit(`service/${serviceTypes.SET_SERVICES}`, services)
+          await this.$store.commit(
+            `service/${serviceTypes.SET_SERVICES}`,
+            services
+          )
         }
       } catch (error) {
-        console.log(error)
         this.$notify({
           isError: true,
           message: error.message

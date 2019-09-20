@@ -183,14 +183,14 @@
           </v-card-text>
         </v-card>
         <v-btn
-          :disabled="isLoading"
+          :disabled="isLoading || hotels.length === 0 || rooms.length === 0"
           :loading="isLoading"
           color="secondary"
           block=""
           rounded=""
           @click="onSubmit"
         >
-          <v-icon left="">mdi-camera</v-icon>
+          <v-icon left="">mdi-send</v-icon>
           <span>{{ $t('submit') }}</span>
         </v-btn>
       </v-col>

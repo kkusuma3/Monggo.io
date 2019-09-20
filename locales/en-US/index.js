@@ -16,6 +16,7 @@ export default {
   name: 'Name',
   password: 'Password',
   description: 'Description',
+  note: 'Note',
   image: 'Image | Image | Images',
   email: 'Email',
   phone: 'Phone',

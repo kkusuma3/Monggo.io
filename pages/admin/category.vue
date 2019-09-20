@@ -97,7 +97,7 @@
 import { mapState } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
-import _cloneDeep from 'clone-deep'
+import _cloneDeep from 'lodash.clonedeep'
 import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import pluralize from 'pluralize'

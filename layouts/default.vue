@@ -6,7 +6,9 @@
     "wifiName": "@:(wifi) @:(name)",
     "wifiPass": "@:(wifi) @:(password)",
     "wifiNameCopied": "@:(wifiName) has copied",
-    "wifiPassCopied": "@:(wifiPass) has copied"
+    "wifiPassCopied": "@:(wifiPass) has copied",
+    "takeSurvey": "Take Survey",
+    "winPrizes": "Win Prizes"
   },
   "en-uk": {
     "searchService": "@:(service) @:(search)",
@@ -14,7 +16,9 @@
     "wifiName": "@:(wifi) @:(name)",
     "wifiPass": "@:(wifi) @:(password)",
     "wifiNameCopied": "@:(wifiName) has copied",
-    "wifiPassCopied": "@:(wifiPass) has copied"
+    "wifiPassCopied": "@:(wifiPass) has copied",
+    "takeSurvey": "Take Survey",
+    "winPrizes": "Win Prizes"
   },
   "id": {
     "searchService": "@:(search) @:(service)",
@@ -22,7 +26,9 @@
     "wifiName": "@:(name) @:(wifi)",
     "wifiPass": "@:(password) @:(wifi)",
     "wifiNameCopied": "@:(wifiName) telah disalin",
-    "wifiPassCopied": "@:(wifiPass) telah disalin"
+    "wifiPassCopied": "@:(wifiPass) telah disalin",
+    "takeSurvey": "Ikuti Survei",
+    "winPrizes": "Menangkan Hadiah"
   }
 }
 </i18n>
@@ -57,14 +63,14 @@
         "
       >
         <v-fade-transition mode="in-out">
-          <v-toolbar-title v-if="!isSearch" class="mr-3 text-center">
+          <v-toolbar-title class="mr-3 text-center">
             <h1 aria-label="Monggo.IO">
               <app-img
                 src="/icon.png"
                 class="mx-auto"
                 alt="Monggo.IO"
-                :width="isScrolled ? 24 : 48"
-                :height="isScrolled ? 24 : 48"
+                :width="isScrolled ? 28 : 48"
+                :height="isScrolled ? 28 : 48"
               />
             </h1>
             <h2 v-if="!isScrolled" class="title">
@@ -95,8 +101,8 @@
           !($route.name.includes('order') || $route.name.includes('account'))
         "
       >
-        <v-fade-transition mode="out-in">
-          <v-tooltip v-if="!isSearch" key="button-search" bottom="">
+        <v-fade-transition mode="out-in" hide-on-leave="">
+          <v-tooltip v-if="!isSearch && !isScrolled" bottom="">
             <template #activator="{ on }">
               <v-btn icon="" v-on="on" @click="isSearch = !isSearch">
                 <v-icon>mdi-magnify</v-icon>
@@ -104,8 +110,10 @@
             </template>
             <span>{{ $t('search') }}</span>
           </v-tooltip>
+        </v-fade-transition>
+        <v-fade-transition mode="out-in" hide-on-leave="">
           <v-autocomplete
-            v-else=""
+            v-if="isSearch || isScrolled"
             key="input-search"
             v-model="service"
             :items="uncategorizedServices"
@@ -120,7 +128,7 @@
             prepend-inner-icon="mdi-magnify"
             clearable=""
             autofocus=""
-            @blur="isSearch = !isSearch"
+            @blur="isSearch = false"
           >
             <template #item="{ item }">
               <v-list-item-avatar>
@@ -229,14 +237,51 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-      <v-tooltip bottom="">
-        <template #activator="{ on }">
-          <v-btn icon="" v-on="on" @click="onCheckout">
-            <v-icon>mdi-logout-variant</v-icon>
-          </v-btn>
+      <v-dialog v-model="isCheckout" scrollable="" width="500">
+        <template #activator="{ on: dialog }">
+          <v-tooltip bottom="">
+            <template #activator="{ on: tooltip }">
+              <v-btn icon="" v-on="{ ...dialog, ...tooltip }">
+                <v-icon>mdi-logout-variant</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ $t('checkout') }}</span>
+          </v-tooltip>
         </template>
-        <span>{{ $t('checkout') }}</span>
-      </v-tooltip>
+        <v-card>
+          <v-card-text class="pa-5 pa-4">
+            <v-btn
+              :disabled="isLoading"
+              :loading="isLoading"
+              color="primary"
+              block=""
+              class="mb-5"
+              @click="onCheckout"
+            >
+              <v-icon left="">mdi-logout-variant</v-icon>
+              <span>{{ $t('checkout') }}</span>
+            </v-btn>
+            <v-tooltip bottom="">
+              <template #activator="{ on }">
+                <v-btn
+                  :disabled="isLoading"
+                  :loading="isLoading"
+                  color="primary"
+                  block=""
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://forms.gle/YdAozKbJDuJt9hrA9"
+                  v-on="on"
+                >
+                  <v-icon left="">mdi-format-list-checks</v-icon>
+                  <span>{{ $t('takeSurvey') }}</span>
+                </v-btn>
+              </template>
+              <span>{{ $t('winPrizes') }}</span>
+            </v-tooltip>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </v-app-bar>
     <v-content>
       <nuxt />
@@ -281,7 +326,7 @@
 </template>
 
 <script>
-import _cloneDeep from 'clone-deep'
+import _cloneDeep from 'lodash.clonedeep'
 import { mapGetters, mapState } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import isDarkColor from 'is-dark-color'
@@ -304,7 +349,8 @@ export default {
       isSearch: false, // Hold search field state
       currentScroll: 0, // Hold scroll position
       isHotelInfo: false, // Hold hotel info dialog
-      isWifi: false // Hold wifi info dialog
+      isWifi: false, // Hold wifi info dialog
+      isCheckout: false // Hold checkout dialog
     }
   },
   computed: {
@@ -424,7 +470,7 @@ export default {
         )
         await this.$store.commit(
           `category/${categoryTypes.SET_CATEGORIES}`,
-          categories
+          _cloneDeep(categories)
         )
       } catch (error) {
         this.$notify({
@@ -440,9 +486,9 @@ export default {
      * @param {string} hotel
      */
     async getServices(hotel) {
-      try {
-        this.$setLoading(true)
-        if (hotel && this.categories.length > 0) {
+      if (hotel && this.categories.length > 0) {
+        try {
+          this.$setLoading(true)
           const services = await Promise.all(
             this.categories.map(async category => {
               const serviceSnap = await db
@@ -478,23 +524,26 @@ export default {
               return [category, _services]
             })
           )
-          const uncategorizedServices = _flatten(
+          const uncategorizedServices = await _flatten(
             _flatten(services).filter(i => Array.isArray(i))
           )
-          this.$store.commit(
+          await this.$store.commit(
             `service/${serviceTypes.SET_UNCATEGORIZED_SERVICES}`,
-            uncategorizedServices
+            _cloneDeep(uncategorizedServices)
           )
-          this.$store.commit(`service/${serviceTypes.SET_SERVICES}`, services)
+          await this.$store.commit(
+            `service/${serviceTypes.SET_SERVICES}`,
+            _cloneDeep(services)
+          )
+        } catch (error) {
+          console.log(error)
+          this.$notify({
+            isError: true,
+            message: error.message
+          })
+        } finally {
+          this.$setLoading(false)
         }
-      } catch (error) {
-        console.log(error)
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
       }
     },
     /**
@@ -502,9 +551,9 @@ export default {
      * @param {string} hotel
      */
     async getOrders(hotel) {
-      try {
-        this.$setLoading(true)
-        if (this.user && this.user.uid && this.qr && hotel && this.qr.room) {
+      if (this.user && this.user.uid && this.qr && hotel && this.qr.room) {
+        try {
+          this.$setLoading(true)
           const ordersSnap = await db
             .collection('orders')
             .where('hotel', '==', hotel)
@@ -555,15 +604,18 @@ export default {
               return orderRef
             })
           )
-          await this.$store.commit(`guest/${guestTypes.SET_ORDERS}`, orders)
+          await this.$store.commit(
+            `guest/${guestTypes.SET_ORDERS}`,
+            _cloneDeep(orders)
+          )
+        } catch (error) {
+          this.$notify({
+            isError: true,
+            message: error.message
+          })
+        } finally {
+          this.$setLoading(false)
         }
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
       }
     },
     /**
@@ -582,7 +634,10 @@ export default {
             )
           )
         )
-        this.$store.commit(`guest/${guestTypes.SET_RATES}`, ratesConversion)
+        await this.$store.commit(
+          `guest/${guestTypes.SET_RATES}`,
+          _cloneDeep(ratesConversion)
+        )
       } catch (error) {
         this.$notify({
           isError: true,
@@ -647,78 +702,87 @@ export default {
      * Called to set qr code data
      */
     async setQr(uid) {
-      try {
-        this.$setLoading(true)
-        const qrDoc = await db
-          .collection('qr-codes')
-          .doc(uid)
-          .get()
-        let qrRef = qrDoc.data()
-        if (
-          qrRef &&
-          qrRef.room &&
-          qrRef.hotel &&
-          qrRef.hotelRef &&
-          qrRef.roomRef
-        ) {
-          await this.setRoom(qrRef.room)
-          if (qrRef.hotelRef && qrRef.roomRef) {
-            const [hotelRefDoc, roomRefDoc] = await Promise.all([
-              qrRef.hotelRef.get(),
-              qrRef.roomRef.get()
-            ])
-            let [hotelRef, roomRef] = await Promise.all([
-              hotelRefDoc.data(),
-              roomRefDoc.data()
-            ])
-            await (() => {
-              hotelRef = {
-                ...hotelRef,
-                imagesMeta: hotelRef.imagesMeta.map(meta => ({
-                  ...meta,
-                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-                })),
-                createdAt:
-                  hotelRef && hotelRef.createdAt && hotelRef.createdAt.toDate(),
-                updatedAt:
-                  hotelRef && hotelRef.updatedAt && hotelRef.updatedAt.toDate()
-              }
-              roomRef = {
-                ...roomRef,
-                imagesMeta: roomRef.imagesMeta.map(meta => ({
-                  ...meta,
-                  createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-                })),
-                createdAt:
-                  roomRef && roomRef.createdAt && roomRef.createdAt.toDate(),
-                updatedAt:
-                  roomRef && roomRef.updatedAt && roomRef.updatedAt.toDate()
-              }
-              delete roomRef.hotelRef
-              qrRef = {
-                ...qrRef,
-                refData: {
-                  hotel: hotelRef,
-                  room: roomRef
-                },
-                createdAt: qrRef && qrRef.createdAt && qrRef.createdAt.toDate(),
-                updatedAt: qrRef && qrRef.updatedAt && qrRef.updatedAt.toDate()
-              }
-              delete qrRef.hotelRef
-              delete qrRef.roomRef
-
-              const payload = _cloneDeep(qrRef)
-              this.$store.commit(`guest/${guestTypes.SET_QR}`, payload)
-            })()
+      if (uid) {
+        try {
+          this.$setLoading(true)
+          const qrDoc = await db
+            .collection('qr-codes')
+            .doc(uid)
+            .get()
+          let qrRef = qrDoc.data()
+          if (
+            qrRef &&
+            qrRef.room &&
+            qrRef.hotel &&
+            qrRef.hotelRef &&
+            qrRef.roomRef
+          ) {
+            await this.setRoom(qrRef.room)
+            if (qrRef.hotelRef && qrRef.roomRef) {
+              const [hotelRefDoc, roomRefDoc] = await Promise.all([
+                qrRef.hotelRef.get(),
+                qrRef.roomRef.get()
+              ])
+              let [hotelRef, roomRef] = await Promise.all([
+                hotelRefDoc.data(),
+                roomRefDoc.data()
+              ])
+              await (() => {
+                hotelRef = {
+                  ...hotelRef,
+                  imagesMeta: hotelRef.imagesMeta.map(meta => ({
+                    ...meta,
+                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                  })),
+                  createdAt:
+                    hotelRef &&
+                    hotelRef.createdAt &&
+                    hotelRef.createdAt.toDate(),
+                  updatedAt:
+                    hotelRef &&
+                    hotelRef.updatedAt &&
+                    hotelRef.updatedAt.toDate()
+                }
+                roomRef = {
+                  ...roomRef,
+                  imagesMeta: roomRef.imagesMeta.map(meta => ({
+                    ...meta,
+                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                  })),
+                  createdAt:
+                    roomRef && roomRef.createdAt && roomRef.createdAt.toDate(),
+                  updatedAt:
+                    roomRef && roomRef.updatedAt && roomRef.updatedAt.toDate()
+                }
+                delete roomRef.hotelRef
+                qrRef = {
+                  ...qrRef,
+                  refData: {
+                    hotel: hotelRef,
+                    room: roomRef
+                  },
+                  createdAt:
+                    qrRef && qrRef.createdAt && qrRef.createdAt.toDate(),
+                  updatedAt:
+                    qrRef && qrRef.updatedAt && qrRef.updatedAt.toDate()
+                }
+                delete qrRef.hotelRef
+                delete qrRef.roomRef
+              })()
+              await this.$store.commit(
+                `guest/${guestTypes.SET_QR}`,
+                _cloneDeep(qrRef)
+              )
+            }
           }
+        } catch (error) {
+          this.$notify({
+            isError: true,
+            message: error.message
+          })
+        } finally {
+          this.$setLoading(false)
         }
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
       }
     },
     /**
@@ -780,7 +844,10 @@ export default {
                   userRef && userRef.updatedAt && userRef.updatedAt.toDate()
               }
               if (userRef) {
-                this.$store.commit(`user/${userTypes.SET_USER}`, userRef)
+                this.$store.commit(
+                  `user/${userTypes.SET_USER}`,
+                  _cloneDeep(userRef)
+                )
                 this.setQr(this.uid, userRef.uid)
               }
             })()

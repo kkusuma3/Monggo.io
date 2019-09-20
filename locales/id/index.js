@@ -16,6 +16,7 @@ export default {
   name: 'Nama',
   password: 'Kata Sandi',
   description: 'Deskripsi',
+  note: 'Catatan',
   image: 'Gambar',
   email: 'Email',
   phone: 'Nomor Ponsel',

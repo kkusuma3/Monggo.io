@@ -146,7 +146,7 @@
 import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
-import _cloneDeep from 'clone-deep'
+import _cloneDeep from 'lodash.clonedeep'
 import cleanDeep from 'clean-deep'
 import { mapState, mapGetters } from 'vuex'
 import { auth, GoogleAuthProvider, db } from '~/utils/firebase'
