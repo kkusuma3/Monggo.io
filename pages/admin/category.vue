@@ -97,7 +97,7 @@
 import { mapState } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
-import _cloneDeep from 'lodash.clonedeep'
+import _cloneDeep from 'clone-deep'
 import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import pluralize from 'pluralize'
@@ -307,7 +307,9 @@ export default {
      */
     onTriggerDelete(item) {
       this.isDeleting = true
+
       this.item = _cloneDeep(item)
+      this.itemOriginal = _cloneDeep(item)
     },
     /**
      * Called when the user close dialog for adding or editing data

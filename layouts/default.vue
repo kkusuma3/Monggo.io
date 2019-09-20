@@ -281,7 +281,7 @@
 </template>
 
 <script>
-import _cloneDeep from 'lodash.clonedeep'
+import _cloneDeep from 'clone-deep'
 import { mapGetters, mapState } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import isDarkColor from 'is-dark-color'

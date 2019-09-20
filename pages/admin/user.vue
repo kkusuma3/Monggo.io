@@ -311,7 +311,7 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import slugify from '@sindresorhus/slugify'
-import _cloneDeep from 'lodash.clonedeep'
+import _cloneDeep from 'clone-deep'
 import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
@@ -667,9 +667,21 @@ export default {
     /**
      * Called to trigger displaying dialog for deleting data
      */
-    onTriggerDelete(item) {
-      this.isDeleting = true
-      this.item = _cloneDeep(item)
+    onTriggerDelete(_item) {
+      try {
+        this.$setLoading(true)
+        this.isDeleting = true
+
+        this.item = _cloneDeep(_item)
+        this.itemOriginal = _cloneDeep(_item)
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
     },
     /**
      * Called to trigger displaying dialog for previewing image

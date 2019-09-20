@@ -62,7 +62,8 @@
         </v-avatar>
       </template>
       <template #item.price="{ item }">
-        <span>{{ item.price }} {{ item.currency }}</span>
+        <span v-if="item.price > 0">{{ item.price }} {{ item.currency }}</span>
+        <span v-else="">{{ $t('free') }}</span>
       </template>
       <template #item.createdAt="{ item }">
         <time :datetime="item.createdAt">
@@ -99,10 +100,12 @@
           </template>
           <span>
             {{
-              $t('editService', {
-                name: item.name,
-                hotel: item.refData.hotel.name
-              })
+              item.refData && item.refData.hotel
+                ? $t('editService', {
+                    name: item.name,
+                    hotel: item.refData.hotel.name
+                  })
+                : ''
             }}
           </span>
         </v-tooltip>
@@ -122,10 +125,12 @@
           </template>
           <span>
             {{
-              $t('deleteService', {
-                name: item.name,
-                hotel: item.refData.hotel.name
-              })
+              item.refData && item.refData.hotel
+                ? $t('deleteService', {
+                    name: item.name,
+                    hotel: item.refData.hotel.name
+                  })
+                : ''
             }}
           </span>
         </v-tooltip>
@@ -361,7 +366,7 @@
 import { mapState, mapGetters } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
-import _cloneDeep from 'lodash.clonedeep'
+import _cloneDeep from 'clone-deep'
 import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
@@ -828,9 +833,30 @@ export default {
     /**
      * Called to trigger displaying dialog for deleting data
      */
-    onTriggerDelete(item) {
-      this.isDeleting = true
-      this.item = _cloneDeep(item)
+    async onTriggerDelete(_item) {
+      try {
+        this.$setLoading(true)
+        this.isDeleting = true
+
+        const item = _cloneDeep(_item)
+
+        const images = await Promise.all(
+          item.imagesMeta.map(meta =>
+            this.getFileFromUrl(meta.url, meta.name || `${uuidv4()}.jpg`)
+          )
+        )
+        item.images = images
+
+        this.item = _cloneDeep(item)
+        this.itemOriginal = _cloneDeep(item)
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
     },
     /**
      * Called to trigger displaying dialog for previewing image
@@ -955,7 +981,12 @@ export default {
           .delete()
         if (item.imagesMeta && item.imagesMeta.length > 0) {
           await Promise.all(
-            item.imagesMeta.map(meta => storage.ref(meta.fullPath).delete())
+            item.imagesMeta.map(meta => {
+              if (meta.fullPath.includes('default')) {
+                return
+              }
+              return storage.ref(meta.fullPath).delete()
+            })
           )
         }
         await this.initData()

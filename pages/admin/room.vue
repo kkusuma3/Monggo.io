@@ -303,7 +303,7 @@
 import { mapState, mapGetters } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
-import _cloneDeep from 'lodash.clonedeep'
+import _cloneDeep from 'clone-deep'
 import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
@@ -798,9 +798,30 @@ export default {
     /**
      * Called to trigger displaying dialog for deleting data
      */
-    onTriggerDelete(item) {
-      this.isDeleting = true
-      this.item = _cloneDeep(item)
+    async onTriggerDelete(_item) {
+      try {
+        this.$setLoading(true)
+        this.isDeleting = true
+
+        const item = _cloneDeep(_item)
+
+        const images = await Promise.all(
+          item.imagesMeta.map(meta =>
+            this.getFileFromUrl(meta.url, meta.name || `${uuidv4()}.jpg`)
+          )
+        )
+        item.images = images
+
+        this.item = _cloneDeep(item)
+        this.itemOriginal = _cloneDeep(item)
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
     },
     /**
      * Called to trigger displaying dialog for previewing image
@@ -924,9 +945,28 @@ export default {
           .delete()
         if (item.imagesMeta && item.imagesMeta.length > 0) {
           await Promise.all(
-            item.imagesMeta.map(meta => storage.ref(meta.fullPath).delete())
+            item.imagesMeta.map(meta => {
+              if (meta.fullPath.includes('default')) {
+                return
+              }
+              return storage.ref(meta.fullPath).delete()
+            })
           )
         }
+        const [qrRef, ordersRef] = await Promise.all([
+          db
+            .collection('qr-codes')
+            .where('room', '==', item.uid)
+            .get(),
+          db
+            .collection('orders')
+            .where('room', '==', item.uid)
+            .get()
+        ])
+        await Promise.all([
+          ...qrRef.docs.map(qrDoc => qrDoc.ref.delete()),
+          ...ordersRef.docs.map(orderDoc => orderDoc.ref.delete())
+        ])
         await this.initData()
         await this.onDeleteClose()
         await this.$notify({ kind: 'success', message: this.$t('dataDeleted') })

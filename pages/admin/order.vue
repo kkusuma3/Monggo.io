@@ -374,7 +374,7 @@
 import { mapState, mapGetters } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
-import _cloneDeep from 'lodash.clonedeep'
+import _cloneDeep from 'clone-deep'
 import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
@@ -851,7 +851,9 @@ export default {
      */
     onTriggerDelete(item) {
       this.isDeleting = true
+
       this.item = _cloneDeep(item)
+      this.itemOriginal = _cloneDeep(item)
     },
     /**
      * Called when the user close dialog for adding or editing data
@@ -888,7 +890,7 @@ export default {
             createdAt: this.isEditing ? this.item.createdAt : date,
             updatedAt: date
           }
-          if (this.isEdited) {
+          if (this.isEdited || this.isEditingStatus) {
             delete payload.refData
           }
           payload.hotelRef = db.collection('hotels').doc(payload.hotel)

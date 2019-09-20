@@ -175,7 +175,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import _cloneDeep from 'lodash.clonedeep'
+import _cloneDeep from 'clone-deep'
 import _flatten from 'lodash.flatten'
 import { db } from '~/utils/firebase'
 import { types as guestTypes } from '~/store/guest'

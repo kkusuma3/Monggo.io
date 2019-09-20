@@ -240,7 +240,7 @@
 import { mapState, mapGetters } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import slugify from '@sindresorhus/slugify'
-import _cloneDeep from 'lodash.clonedeep'
+import _cloneDeep from 'clone-deep'
 import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import isDarkColor from 'is-dark-color'
@@ -603,15 +603,18 @@ export default {
     onTriggerEdit(_item) {
       this.isDialog = true
       this.isEditing = true
+
       this.item = _cloneDeep(_item)
       this.itemOriginal = _cloneDeep(_item)
     },
     /**
      * Called to trigger displaying dialog for deleting data
      */
-    onTriggerDelete(item) {
+    onTriggerDelete(_item) {
       this.isDeleting = true
-      this.item = _cloneDeep(item)
+
+      this.item = _cloneDeep(_item)
+      this.itemOriginal = _cloneDeep(_item)
     },
     /**
      * Called to trigger displaying dialog for previewing image
