@@ -79,7 +79,11 @@
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :data-cy="`trigger-preview-${slugify(item.refData.room.name)}`"
+              :data-cy="
+                `trigger-preview-${slugify(
+                  isExist(item.refData.room) ? item.refData.room.name : 'Room'
+                )}`
+              "
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"
@@ -90,12 +94,20 @@
               <v-icon>mdi-qrcode</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('seeQr', { name: item.refData.room.name }) }}</span>
+          <span>{{
+            $t('seeQr', {
+              name: isExist(item.refData.room) ? item.refData.room.name : 'Room'
+            })
+          }}</span>
         </v-tooltip>
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :data-cy="`trigger-edit-${slugify(item.refData.room.name)}`"
+              :data-cy="
+                `trigger-edit-${slugify(
+                  isExist(item.refData.room) ? item.refData.room.name : 'Room'
+                )}`
+              "
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"
@@ -106,12 +118,20 @@
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('seeQr', { name: item.refData.room.name }) }}</span>
+          <span>{{
+            $t('seeQr', {
+              name: isExist(item.refData.room) ? item.refData.room.name : 'Room'
+            })
+          }}</span>
         </v-tooltip>
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
-              :data-cy="`trigger-delete-${slugify(item.refData.room.name)}`"
+              :data-cy="
+                `trigger-delete-${slugify(
+                  isExist(item.refData.room) ? item.refData.room.name : 'Room'
+                )}`
+              "
               :disabled="isLoading"
               :loading="isLoading"
               class="ma-1"
@@ -123,7 +143,13 @@
             </v-btn>
           </template>
           <span>
-            {{ $t('deleteQr', { name: item.refData.room.name }) }}
+            {{
+              $t('deleteQr', {
+                name: isExist(item.refData.room)
+                  ? item.refData.room.name
+                  : 'Room'
+              })
+            }}
           </span>
         </v-tooltip>
       </template>
@@ -421,6 +447,9 @@ export default {
     this.initData()
   },
   methods: {
+    isExist(obj) {
+      return obj !== null && typeof obj !== 'undefined'
+    },
     /**
      * Called to initialize the data
      */
