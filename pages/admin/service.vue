@@ -484,7 +484,7 @@ export default {
           fullPath: 'default/de65cf77-9923-4fcd-b066-1d02a507c8f6.png',
           name: 'de65cf77-9923-4fcd-b066-1d02a507c8f6.png',
           url:
-            'https://firebasestorage.googleapis.com/v0/b/monggo-io.appspot.com/o/default%2Fde65cf77-9923-4fcd-b066-1d02a507c8f6.png?alt=media&token=2ab8536c-cd3f-4ca2-a069-f5efc21525fa'
+            'https://firebasestorage.googleapis.com/v0/b/monggo-io.appspot.com/o/default%2Fde65cf77-9923-4fcd-b066-1d02a507c8f6.png?alt=media&token=5704205a-726a-4d40-a4bf-e782cec5b427'
         }
       ]
     }
@@ -901,9 +901,12 @@ export default {
             this.itemOriginal.imagesMeta.length > 0
           ) {
             await Promise.all(
-              this.itemOriginal.imagesMeta.map(meta =>
-                storage.ref(meta.fullPath).delete()
-              )
+              this.itemOriginal.imagesMeta.map(meta => {
+                if (meta.fullPath.includes('default')) {
+                  return
+                }
+                return storage.ref(meta.fullPath).delete()
+              })
             )
             delete payload.refData
           }
