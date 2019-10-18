@@ -1,0 +1,21 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Pre-build
+      run: yarn install
+    - name: Test
+      run: |
+        yarn test
+        yarn test:e2e
+    - name: Build
+      run: yarn build
+    - name: Deploy
+      run: firebase deploy
