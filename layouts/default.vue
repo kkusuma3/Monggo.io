@@ -102,7 +102,7 @@
         "
       >
         <v-fade-transition mode="out-in" hide-on-leave="">
-          <v-tooltip v-if="!isSearch && !isScrolled" bottom="">
+          <v-tooltip v-if="!isSearch" bottom="">
             <template #activator="{ on }">
               <v-btn icon="" v-on="on" @click="isSearch = !isSearch">
                 <v-icon>mdi-magnify</v-icon>
@@ -113,7 +113,7 @@
         </v-fade-transition>
         <v-fade-transition mode="out-in" hide-on-leave="">
           <v-autocomplete
-            v-if="isSearch || isScrolled"
+            v-if="isSearch"
             key="input-search"
             v-model="service"
             :items="uncategorizedServices"
