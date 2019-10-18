@@ -127,7 +127,7 @@
                   style="margin-top: 32px"
                   :hint="`${service.count} in stocks`"
                   :min="1"
-                  :max="service.count"
+                  :max="5"
                   :thumb-size="24"
                   label="Quantity"
                   persistent-hint=""
