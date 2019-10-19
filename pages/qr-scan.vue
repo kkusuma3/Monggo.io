@@ -88,7 +88,7 @@
             </qrcode-stream>
           </v-card-text>
         </v-card>
-        <h2 class="text-center subtitle-1 primary--text text-uppercase">
+        <!-- <h2 class="text-center subtitle-1 primary--text text-uppercase">
           {{ $t('or') }}
         </h2>
         <h2 class="text-center subtitle-1 primary--text mb-3">
@@ -191,8 +191,8 @@
           @click="onSubmit"
         >
           <v-icon left="">mdi-send</v-icon>
-          <span>{{ $t('submit') }}</span>
-        </v-btn>
+          <span>{{ $t('submit') }}</span> -->
+        <!-- </v-btn> -->
       </v-col>
     </v-row>
   </v-container>

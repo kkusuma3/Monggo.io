@@ -5,8 +5,8 @@
     "noService": "No services available on this category",
     "nameAsc": "Name A-Z",
     "nameDesc": "Name Z-A",
-    "priceAsc": "Most Expensive",
-    "priceDesc": "Least Expensive",
+    "priceAsc": "Least Expensive",
+    "priceDesc": "Most Expensive",
     "dateDesc": "Newest",
     "dateAsc": "Oldest"
   },
@@ -15,8 +15,8 @@
     "noService": "No services available on this category",
     "nameAsc": "Name A-Z",
     "nameDesc": "Name Z-A",
-    "priceAsc": "Most Expensive",
-    "priceDesc": "Least Expensive",
+    "priceAsc": "Least Expensive",
+    "priceDesc": "Most Expensive",
     "dateDesc": "Newest",
     "dateAsc": "Oldest"
   },
@@ -25,8 +25,8 @@
     "noService": "Tidak ada layanan tersedia untuk kategori ini",
     "nameAsc": "Nama A-Z",
     "nameDesc": "Nama Z-A",
-    "priceAsc": "Paling Mahal",
-    "priceDesc": "Paling Murah",
+    "priceAsc": "Paling Murah",
+    "priceDesc": "Paling Mahal",
     "dateDesc": "Terbaru",
     "dateAsc": "Terlama"
   }
