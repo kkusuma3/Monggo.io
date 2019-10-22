@@ -39,7 +39,6 @@ export default {
     [
       '@nuxtjs/google-analytics',
       {
-        // TODO: Change this id to your Google Analytics ID
         id: 'UA-145883475-1'
       }
     ],
