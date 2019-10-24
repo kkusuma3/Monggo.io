@@ -88,7 +88,11 @@
             </qrcode-stream>
           </v-card-text>
         </v-card>
-        <!-- <h2 class="text-center subtitle-1 primary--text text-uppercase">
+      </v-col>
+    </v-row>
+  </v-container>
+</template>
+<!-- <h2 class="text-center subtitle-1 primary--text text-uppercase">
           {{ $t('or') }}
         </h2>
         <h2 class="text-center subtitle-1 primary--text mb-3">
@@ -192,11 +196,11 @@
         >
           <v-icon left="">mdi-send</v-icon>
           <span>{{ $t('submit') }}</span> -->
-        <!-- </v-btn> -->
-      </v-col>
-    </v-row>
-  </v-container>
-</template>
+<!-- </v-btn> -->
+<!-- </v-col> -->
+<!-- </v-row> -->
+<!-- </v-container>
+</template> -->
 
 <script>
 import { mapState, mapGetters } from 'vuex'
