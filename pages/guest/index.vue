@@ -125,7 +125,6 @@
                   v-if="service"
                   v-model="count"
                   style="margin-top: 32px"
-                  :hint="`${service.count} in stocks`"
                   :min="1"
                   :max="5"
                   :thumb-size="24"
@@ -134,6 +133,7 @@
                   thumb-label="always"
                   ticks=""
                 />
+                <!-- :hint="`${service.count} in stocks`" -->
               </v-card-text>
               <v-card-text class="pa-5 pa-4">
                 <v-textarea
