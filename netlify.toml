@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/app"
+  to = "/"
+  status = 301
+  force = true
