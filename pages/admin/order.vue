@@ -484,8 +484,8 @@ export default {
       ],
       // Hold currency symbol
       currencySymbols: {
-        USD: '$',
-        GBP: '£',
+        USD: 'Rp', // '$',
+        GBP: 'Rp', // '£',
         IDR: 'Rp'
       },
       // Hold interval id
@@ -1022,7 +1022,8 @@ export default {
     async getRates() {
       try {
         this.$setLoading(true)
-        const rates = ['USD', 'GBP', 'IDR']
+        // -----------------------change the rate to all IDR-------------//
+        const rates = ['IDR', 'IDR', 'IDR'] // ['USD', 'GBP', 'IDR']
         const ratesConversion = await Promise.all(
           rates.map(rate =>
             this.$http.$get(

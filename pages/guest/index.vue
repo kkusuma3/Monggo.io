@@ -133,6 +133,7 @@
                   thumb-label="always"
                   ticks=""
                 />
+                <!--This is used to item avalaibality-->
                 <!-- :hint="`${service.count} in stocks`" -->
               </v-card-text>
               <v-card-text class="pa-5 pa-4">
