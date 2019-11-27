@@ -624,7 +624,7 @@ export default {
     async getRates() {
       try {
         this.$setLoading(true)
-        const rates = ['USD', 'GBP', 'IDR']
+        const rates = ['IDR', 'IDR', 'IDR'] // ['USD', 'GBP', 'IDR']
         const ratesConversion = await Promise.all(
           rates.map(rate =>
             this.$http.$get(
@@ -818,7 +818,7 @@ export default {
                 name: `User ${uuidv4().split('-')[4]}`,
                 email: user.email,
                 phone: user.phoneNumber,
-                currency: 'USD',
+                currency: 'IDR', // 'USD',
                 avatar: user.photoURL,
                 isAnonymous: user.isAnonymous,
                 role: 'guest',

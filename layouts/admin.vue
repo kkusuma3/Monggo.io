@@ -322,7 +322,7 @@ export default {
               email: user.email,
               phone: user.phoneNumber,
               avatar: user.photoURL,
-              currency: 'USD',
+              currency: 'IDR', // 'USD',
               isAnonymous: user.isAnonymous,
               role: 'guest',
               createdAt: this.$moment().toDate(),
