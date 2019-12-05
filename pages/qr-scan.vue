@@ -91,7 +91,7 @@
         <h2 class="text-center subtitle-1 primary--text text-uppercase">
           {{ $t('or') }}
         </h2>
-        <h2 class="text-center subtitle-1 primary--text mb-3">
+        <!-- <h2 class="text-center subtitle-1 primary--text mb-3">
           {{ $t('manual') }}
         </h2>
         <v-card outlined="" class="v-card--outlined-custom mb-3">
@@ -181,7 +181,7 @@
               </template>
             </v-autocomplete>
           </v-card-text>
-        </v-card>
+        </v-card> -->
         <v-btn
           :disabled="isLoading || hotels.length === 0 || rooms.length === 0"
           :loading="isLoading"

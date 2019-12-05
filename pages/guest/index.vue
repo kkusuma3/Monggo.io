@@ -189,8 +189,8 @@ export default {
       isService: false, // Hold service dialog
       // Hold currency symbol
       currencySymbols: {
-        USD: '$',
-        GBP: '£',
+        USD: 'Rp', // '$',
+        GBP: 'Rp', // '£',
         IDR: 'Rp'
       },
       // Hold service count
