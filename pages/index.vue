@@ -14,6 +14,16 @@
     "hotelSimpler": "<strong class='secondary--text'>Kebutuhan</strong> hotel Anda dibuat <strong class='secondary--text'>lebih sederhana</strong>",
     "langPref": "Pilih preferensi bahasa Anda",
     "operatorLogin": "@:(login) @:(operator)"
+  },
+  "cn": {
+    "hotelSimpler": "您的酒店需求变得更加简单",
+    "langPref": "在下面选择您的偏好语言",
+    "operatorLogin": "@:(login) @:(operator)"
+  },
+  "ja": {
+    "hotelSimpler": "ホテルのニーズがよりシンプルに",
+    "langPref": "言語設定を選択してください",
+    "operatorLogin": "@:(login) @:(operator)"
   }
 }
 </i18n>

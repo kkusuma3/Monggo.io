@@ -14,6 +14,16 @@
     "orderEmpty": "Anda masih belum memiliki pesanan. Anda dapat memesan layanan kami melalui halaman beranda.",
     "cancelConfirmationWarn": "Apakah Anda yakin ingin membatalkan pesanan ini?",
     "cancelationSuccess": "Pembatalan pesanan sukses"
+  },
+  "cn": {
+    "orderEmpty": "您仍然没有订单。您可以通过主页订购我们的服务。",
+    "cancelConfirmationWarn": "您确定要取消此订单吗？",
+    "cancelationSuccess": "订单取消成功"
+  },
+  "ja": {
+    "orderEmpty": "あなたにはまだ注文がありません。ホームページから当社のサービスを注文できます。",
+    "cancelConfirmationWarn": "この注文をキャンセルしてもよろしいですか？",
+    "cancelationSuccess": "注文のキャンセルに成功しました"
   }
 }
 </i18n>

@@ -40,6 +40,9 @@ export default {
       }
     }
   },
+  mounted() {
+    this.$setLoading(false)
+  },
   methods: {
     /**
      * Called when the admin called login button

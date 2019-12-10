@@ -14,6 +14,16 @@
     "editService": "@:(edit) {name} untuk {hotel}",
     "deleteService": "@:(delete) {name} untuk {hotel}",
     "hintPrice": "Atur harga menjadi 0 untuk membuatnya gratis"
+  },
+  "cn": {
+    "editService": "@:(edit) {name} 对于 {hotel}",
+    "deleteService": "@:(delete) {name} 对于 {hotel}",
+    "hintPrice": "将价格设为0以使其免费"
+  },
+  "ja": {
+    "editService": "@:(edit) {name} ために {hotel}",
+    "deleteService": "@:(delete) {name} ために {hotel}",
+    "hintPrice": "価格を0に設定して無料にします"
   }
 }
 </i18n>

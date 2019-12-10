@@ -29,6 +29,26 @@
     "priceDesc": "Paling Mahal",
     "dateDesc": "Terbaru",
     "dateAsc": "Terlama"
+  },
+  "cn": {
+    "orderPlaced": "您的请求已发送。检查菜单上的订单状态 @:(order)",
+    "noService": "没有适用于此类别的服务",
+    "nameAsc": "AZ名称",
+    "nameDesc": "名字叫Z-A",
+    "priceAsc": "最便宜的",
+    "priceDesc": "最贵的",
+    "dateDesc": "最新的",
+    "dateAsc": "最长的"
+  },
+  "ja": {
+    "orderPlaced": "リクエストが送信されました。メニューで注文状況を確認する @:(order)",
+    "noService": "このカテゴリで利用できるサービスはありません",
+    "nameAsc": "A-Z名",
+    "nameDesc": "名前Z-A",
+    "priceAsc": "最も安い",
+    "priceDesc": "最も高価な",
+    "dateDesc": "最新の",
+    "dateAsc": "最長"
   }
 }
 </i18n>

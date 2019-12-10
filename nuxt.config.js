@@ -1,5 +1,7 @@
 import en from 'vuetify/es5/locale/en'
 import id from 'vuetify/es5/locale/id'
+import cn from 'vuetify/es5/locale/zh-Hans'
+import ja from 'vuetify/es5/locale/ja'
 import locales from './utils/locales'
 
 const isDev = process.env.NODE_ENV !== 'production'
@@ -91,7 +93,7 @@ export default {
       }
     },
     lang: {
-      locales: { 'en-us': en, 'en-uk': en, id: id },
+      locales: { 'en-us': en, 'en-uk': en, id: id, cn: cn, ja: ja },
       current: 'id'
     }
   },

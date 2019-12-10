@@ -11,6 +11,14 @@
   "id": {
     "wifiName": "@:(name) @:(wifi)",
     "wifiPass": "@:(password) @:(wifi)"
+  },
+  "cn": {
+    "wifiName": "@:(name) @:(wifi)",
+    "wifiPass": "@:(password) @:(wifi)"
+  },
+  "ja": {
+    "wifiName": "@:(name) @:(wifi)",
+    "wifiPass": "@:(password) @:(wifi)"
   }
 }
 </i18n>

@@ -11,6 +11,14 @@
   "id": {
     "editOrder": "@:(edit) @:(order) untuk {name}",
     "deleteOrder": "@:(delete) @:(order) untuk {name}"
+  },
+  "cn": {
+    "editOrder": "@:(edit) @:(order) 对于 {name}",
+    "deleteOrder": "@:(delete) @:(order) 对于 {name}"
+  },
+  "jp": {
+    "editOrder": "@:(edit) @:(order) ために {name}",
+    "deleteOrder": "@:(delete) @:(order) ために {name}"
   }
 }
 </i18n>
