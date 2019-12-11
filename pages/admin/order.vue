@@ -637,9 +637,9 @@ export default {
             }
             const rate = rates.find(({ base }) => base === currency)
             if (rate) {
-              return `${this.currencySymbols[this.user.currency]}${(
+              return `${this.currencySymbols[this.user.currency]}${parseFloat(
                 newPrice * rate.rates[this.user.currency] || 1
-              ).toPrecision(4)}`
+              ).toFixed(2)}`
             }
             return `${this.currencySymbols[currency]}0`
           }
