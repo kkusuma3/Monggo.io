@@ -205,8 +205,8 @@ export default {
       },
       // Hold currency symbol
       currencySymbols: {
-        USD: '$',
-        GBP: '£',
+        USD: 'Rp', // '$',
+        GBP: 'RP', // '£',
         IDR: 'Rp'
       },
       // Hold interval id

@@ -342,7 +342,6 @@
         v-if="service"
         v-model="item.count"
         style="margin-top: 32px; margin-bottom: 32px"
-        :hint="`${service.count} in stocks`"
         :min="1"
         :max="service.count"
         :thumb-size="24"
@@ -351,6 +350,7 @@
         thumb-label="always"
         ticks=""
       />
+      <!-- :hint="`${service.count} in stocks`" -->
       <v-select
         v-model="item.status"
         v-validate="'required'"
@@ -484,8 +484,8 @@ export default {
       ],
       // Hold currency symbol
       currencySymbols: {
-        USD: '$',
-        GBP: '£',
+        USD: 'Rp', // '$',
+        GBP: 'Rp', // '£',
         IDR: 'Rp'
       },
       // Hold interval id
@@ -1022,7 +1022,8 @@ export default {
     async getRates() {
       try {
         this.$setLoading(true)
-        const rates = ['USD', 'GBP', 'IDR']
+        // -----------------------change the rate to all IDR-------------//
+        const rates = ['IDR', 'IDR', 'IDR'] // ['USD', 'GBP', 'IDR']
         const ratesConversion = await Promise.all(
           rates.map(rate =>
             this.$http.$get(
