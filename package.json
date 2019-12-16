@@ -31,7 +31,7 @@
   "scripts": {
     "build": "nuxt build",
     "coverage": "codecov",
-    "dev": "HOST=0.0.0.0 nuxt",
+    "dev": "nuxt --hostname localhost --port 3000",
     "generate": "nuxt generate",
     "start": "nuxt start",
     "test": "npm run test:unit",

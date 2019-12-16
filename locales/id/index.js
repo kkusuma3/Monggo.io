@@ -61,5 +61,8 @@ export default {
   callingCode: 'Kode Panggilan',
   free: 'Gratis',
   request: 'Pesan',
-  sortBy: 'Urutkan berdasarkan'
+  sortBy: 'Urutkan berdasarkan',
+  average: 'Rata-rata',
+  today: 'Hari ini',
+  history: 'Histori'
 }
