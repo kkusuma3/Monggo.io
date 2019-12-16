@@ -3,10 +3,14 @@
  */
 
 export const types = {
-  SET_USER: 'SET_USER'
+  SET_USER: 'SET_USER',
+  SET_LOCALE: 'SET_LOCALE',
+  SET_QR: 'SET_QR'
 }
 
 export const state = () => ({
+  qr: null,
+  locale: null,
   user: null // object hold the entire user information,
   // Uncomment this user object below start from line 13 to 28 to run E2E test
   // then comment user object on line 10 above
@@ -39,5 +43,11 @@ export const getters = {
 export const mutations = {
   [types.SET_USER]: (state, user = null) => {
     state.user = user
+  },
+  [types.SET_LOCALE]: (state, locale = null) => {
+    state.locale = locale
+  },
+  [types.SET_QR]: (state, qr = null) => {
+    state.qr = qr
   }
 }

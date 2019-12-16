@@ -82,7 +82,7 @@
           nuxt=""
           exact=""
           class="mb-5"
-          :to="localePath({ name: 'qr-scan' })"
+          @click="checkQr()"
         >
           {{ $t('next') }}
         </v-btn>
@@ -103,6 +103,7 @@
 
 <script>
 import locales from '~/utils/locales'
+import { types as userTypes } from '~/store/user'
 
 export default {
   head() {
@@ -116,6 +117,12 @@ export default {
     }
   },
   computed: {
+    localeSelected() {
+      return this.$store.state.user.locale
+    },
+    qr() {
+      return this.$store.state.user.qr
+    },
     locale: {
       get() {
         return this.$i18n.locale
@@ -123,7 +130,26 @@ export default {
       set(locale) {
         this.$vuetify.lang.current = locale
         this.$cookies.set('i18n_redirected', locale)
+        this.$store.commit(`user/${userTypes.SET_LOCALE}`, locale)
         this.$router.push(this.switchLocalePath(locale))
+      }
+    }
+  },
+  mounted() {
+    const { qrCode } = this.$route.query
+    if (qrCode) {
+      this.$store.commit(`user/${userTypes.SET_QR}`, qrCode)
+    }
+  },
+  methods: {
+    checkQr() {
+      this.$store.commit(`user/${userTypes.SET_LOCALE}`, this.locale)
+
+      if (this.qr === null) {
+        this.$router.push('qr-scan')
+      } else {
+        this.$cookies.set('qr', this.qr)
+        this.$router.replace(this.localePath({ name: 'guest' }))
       }
     }
   }
