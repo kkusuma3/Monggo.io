@@ -61,5 +61,6 @@ export default {
   callingCode: '呼叫码',
   free: '自由',
   request: '请求',
-  sortBy: '排序方式'
+  sortBy: '排序方式',
+  numberOfRooms: '房间数'
 }

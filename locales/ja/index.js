@@ -61,5 +61,6 @@ export default {
   callingCode: 'コーリングコード',
   free: '無料',
   request: '要求',
-  sortBy: '並び替え'
+  sortBy: '並び替え',
+  numberOfRooms: '部屋数'
 }

@@ -102,8 +102,11 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import locales from '~/utils/locales'
 import { types as userTypes } from '~/store/user'
+import { types as guestTypes } from '~/store/guest'
+import { auth } from '~/utils/firebase'
 
 export default {
   head() {
@@ -117,6 +120,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters('user', ['isAuth']),
     localeSelected() {
       return this.$store.state.user.locale
     },
@@ -142,12 +146,16 @@ export default {
     }
   },
   methods: {
-    checkQr() {
+    async checkQr() {
       this.$store.commit(`user/${userTypes.SET_LOCALE}`, this.locale)
 
       if (this.qr === null) {
         this.$router.push('qr-scan')
       } else {
+        if (!this.isAuth) {
+          await auth.signInAnonymously()
+        }
+        this.$store.commit(`guest/${guestTypes.SET_UID}`, this.qr)
         this.$cookies.set('qr', this.qr)
         this.$router.replace(this.localePath({ name: 'guest' }))
       }
