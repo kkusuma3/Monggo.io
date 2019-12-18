@@ -366,13 +366,33 @@ export default {
       async function(uid) {
         try {
           this.$setLoading(true)
-          if (!this.isAuth) {
-            await auth.signInAnonymously()
+          const qr = await db
+            .collection('qr-codes')
+            .where('uid', '==', uid)
+            .get()
+          if (qr.docs[0]) {
+            const room = await qr.docs[0].data().roomRef.get()
+            const roomData = room.data()
+            if (roomData.status !== 'empty') {
+              this.$notify({
+                isError: true,
+                message: roomData.name + ' is not available'
+              })
+            } else {
+              if (!this.isAuth) {
+                await auth.signInAnonymously()
+              }
+              this.$store.commit(`guest/${guestTypes.SET_UID}`, uid)
+              this.$cookies.set('qr', uid)
+              const path = this.localePath({ name: 'guest' })
+              this.$router.replace(path)
+            }
+          } else {
+            this.$notify({
+              isError: true,
+              message: 'Invalid QR-Code'
+            })
           }
-          this.$store.commit(`guest/${guestTypes.SET_UID}`, uid)
-          this.$cookies.set('qr', uid)
-          const path = this.localePath({ name: 'guest' })
-          this.$router.replace(path)
         } catch (error) {
           this.$notify({
             kind: 'error',

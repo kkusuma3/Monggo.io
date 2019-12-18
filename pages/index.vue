@@ -76,6 +76,8 @@
           </v-card-text>
         </v-card>
         <v-btn
+          :loading="isLoading"
+          :disabled="isLoading"
           color="secondary"
           block=""
           rounded=""
@@ -102,11 +104,11 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import locales from '~/utils/locales'
 import { types as userTypes } from '~/store/user'
 import { types as guestTypes } from '~/store/guest'
-import { auth } from '~/utils/firebase'
+import { auth, db } from '~/utils/firebase'
 
 export default {
   head() {
@@ -120,6 +122,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(['isLoading']),
     ...mapGetters('user', ['isAuth']),
     localeSelected() {
       return this.$store.state.user.locale
@@ -147,18 +150,39 @@ export default {
   },
   methods: {
     async checkQr() {
+      this.$setLoading(true)
       this.$store.commit(`user/${userTypes.SET_LOCALE}`, this.locale)
-
       if (this.qr === null) {
-        this.$router.push('qr-scan')
-      } else {
-        if (!this.isAuth) {
-          await auth.signInAnonymously()
-        }
-        this.$store.commit(`guest/${guestTypes.SET_UID}`, this.qr)
-        this.$cookies.set('qr', this.qr)
-        this.$router.replace(this.localePath({ name: 'guest' }))
+        this.$setLoading(false)
+        return this.$router.push('qr-scan')
       }
+      const qr = await db
+        .collection('qr-codes')
+        .where('uid', '==', this.qr)
+        .get()
+      if (qr.docs[0]) {
+        const room = await qr.docs[0].data().roomRef.get()
+        const roomData = room.data()
+        if (roomData.status !== 'empty') {
+          this.$notify({
+            isError: true,
+            message: roomData.name + ' is not available'
+          })
+        } else {
+          if (!this.isAuth) {
+            await auth.signInAnonymously()
+          }
+          this.$store.commit(`guest/${guestTypes.SET_UID}`, this.qr)
+          this.$cookies.set('qr', this.qr)
+          this.$router.replace(this.localePath({ name: 'guest' }))
+        }
+      } else {
+        this.$notify({
+          isError: true,
+          message: 'Invalid QR-Code'
+        })
+      }
+      this.$setLoading(false)
     }
   }
 }
