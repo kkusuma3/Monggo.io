@@ -144,6 +144,7 @@
         outlined=""
       />
       <v-text-field
+        v-if="!isEditing"
         v-model="item.rooms"
         v-validate="'required|numeric'"
         :error-messages="errors.collect('rooms')"
@@ -872,13 +873,11 @@ export default {
           delete payload.images
           delete payload.refData
           this.isSaved = true
-
           const roomNumber = Number(payload.rooms)
           const newRoomArray = Array.from(Array(roomNumber).keys())
           const addRoom = newRoomArray.map(room => {
             const roomUid = uuidv4()
             const qrUid = uuidv4()
-
             return Promise.all([
               /**
                * Create Room
@@ -918,7 +917,6 @@ export default {
                 })
             ])
           })
-
           await Promise.all([
             db
               .collection(this.collection)
