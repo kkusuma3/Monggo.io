@@ -365,6 +365,7 @@ import initials from 'initials'
 import pluralize from 'pluralize'
 import paramCase from 'param-case'
 
+import services from '~/utils/services'
 import { db, storage } from '~/utils/firebase'
 
 export default {
@@ -875,7 +876,7 @@ export default {
           this.isSaved = true
           const roomNumber = Number(payload.rooms)
           const newRoomArray = Array.from(Array(roomNumber).keys())
-          const addRoom = newRoomArray.map(room => {
+          const addRooms = newRoomArray.map(room => {
             const roomUid = uuidv4()
             const qrUid = uuidv4()
             return Promise.all([
@@ -917,6 +918,27 @@ export default {
                 })
             ])
           })
+          const addServices = services.map(service => {
+            const uid = uuidv4()
+            return db
+              .collection('services')
+              .doc(uid)
+              .set({
+                category: service.category,
+                categoryRef: db.collection('categories').doc(service.category),
+                count: service.count,
+                createdAt: payload.createdAt,
+                currency: service.currency,
+                description: service.description,
+                hotel: payload.uid,
+                hotelRef: db.collection('hotels').doc(payload.uid),
+                imagesMeta: service.imagesMeta,
+                name: service.name,
+                price: service.price,
+                uid,
+                updatedAt: payload.updatedAt
+              })
+          })
           await Promise.all([
             db
               .collection(this.collection)
@@ -930,7 +952,8 @@ export default {
                 }),
                 { merge: true }
               ),
-            addRoom
+            addRooms,
+            addServices
           ])
           await this.getItems()
           await this.onDialogClose()
