@@ -125,10 +125,50 @@
       </v-row>
     </template>
     <template v-else-if="activeTab === 'hitoday'">
-      ss
+      <v-row>
+        <v-col cols="12">
+          <v-card class="pt-8 px-8">
+            <v-row>
+              <v-col cols="12" class="pt-0 align-center d-flex">
+                <div class="dashboard-today-circle">
+                  254
+                </div>
+                <div class="d-inline-block ml-8">
+                  <h1>Requests Made Today</h1>
+                  <p class="primary--text">Daily Average: 20</p>
+                </div>
+              </v-col>
+              <v-col cols="12" class="pt-0 align-center d-flex">
+                <div class="dashboard-today-circle">
+                  300
+                </div>
+                <div class="d-inline-block ml-8">
+                  <h1>Requests Complete Today</h1>
+                  <p class="primary--text">Daily Average: 20</p>
+                </div>
+              </v-col>
+              <v-col cols="12" class="pt-0 align-center d-flex">
+                <div class="dashboard-today-circle">
+                  254
+                </div>
+                <div class="d-inline-block ml-8">
+                  <h1>Requests Canceled Today</h1>
+                  <p class="primary--text">Daily Average: 20</p>
+                </div>
+              </v-col>
+            </v-row>
+          </v-card>
+        </v-col>
+      </v-row>
     </template>
     <template v-else-if="activeTab === 'history'">
-      pp
+      <v-row>
+        <v-col cols="12">
+          <v-card class="py-8 px-8">
+            <bar-chart :chart-data="chartData" :options="chartOptions" />
+          </v-card>
+        </v-col>
+      </v-row>
     </template>
   </v-container>
 </template>
@@ -149,7 +189,22 @@ export default {
       activeTab: 'average',
       items: [], // Array hold all dashboard data
       hotels: [], // Array hold hotel data
-      users: [] // Array hold user data
+      users: [], // Array hold user data
+      chartOptions: {
+        maintainAspectRatio: false,
+        scales: {
+          xAxes: [
+            {
+              stacked: true
+            }
+          ],
+          yAxes: [
+            {
+              stacked: true
+            }
+          ]
+        }
+      }
     }
   },
   computed: {
@@ -218,6 +273,23 @@ export default {
         default:
           return []
       }
+    },
+    chartData() {
+      return {
+        labels: ['January', 'February'],
+        datasets: [
+          {
+            label: 'Canceled',
+            backgroundColor: '#FDD835',
+            data: [3, 6]
+          },
+          {
+            label: 'Completed',
+            backgroundColor: '#FB8C00',
+            data: [2, 3]
+          }
+        ]
+      }
     }
   },
   mounted() {
@@ -250,8 +322,6 @@ export default {
             )
           ])
         }
-
-        console.log(this.hotels)
       } catch (error) {
         this.$notify({
           isError: true,
