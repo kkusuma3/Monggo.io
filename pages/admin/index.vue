@@ -1,8 +1,8 @@
 <template>
-  <v-container class="fill-height">
-    <v-row align="center">
+  <v-container>
+    <v-row>
       <template v-for="(menu, i) in menus">
-        <v-col :key="`menu_${i}`" cols="12" md="2">
+        <v-col :key="`menu_${i}`" cols="6" md="2">
           <v-card
             :to="localePath({ name: `admin-${menu.to}` })"
             color="primary"
@@ -19,23 +19,197 @@
         </v-col>
       </template>
     </v-row>
+    <v-row>
+      <v-col cols="12" md="4">
+        <v-select
+          v-model="hotels[0]"
+          item-value="name"
+          :items="hotels"
+          item-text="name"
+          label="Hotel"
+          :loading="isLoading"
+          outlined
+          hide-details
+          style="min-height: 50px"
+        ></v-select>
+      </v-col>
+      <v-col cols="12" md="8">
+        <v-btn-toggle
+          mandatory
+          class="col-12 px-0 py-1"
+          background-color="transparent"
+        >
+          <v-btn
+            x-large
+            class="col-4"
+            @click.native="setActiveTab('average')"
+            >{{ $t('average') }}</v-btn
+          >
+          <v-btn
+            x-large
+            class="col-4"
+            @click.native="setActiveTab('hitoday')"
+            >{{ $t('today') }}</v-btn
+          >
+          <v-btn
+            x-large
+            class="col-4"
+            @click.native="setActiveTab('history')"
+            >{{ $t('history') }}</v-btn
+          >
+        </v-btn-toggle>
+      </v-col>
+    </v-row>
+    <template v-if="activeTab === 'average'">
+      <v-row>
+        <v-col cols="12" md="4">
+          <v-card>
+            <v-card-text>
+              <div>Word of the Day</div>
+              <p class="display-1 text--primary">
+                be•nev•o•lent
+              </p>
+              <p>adjective</p>
+              <div class="text--primary">
+                well meaning and kindly.<br />
+                "a benevolent smile"
+              </div>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn text color="deep-purple accent-4">
+                Learn More
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-card>
+            <v-card-text>
+              <div>Word of the Day</div>
+              <p class="display-1 text--primary">
+                be•nev•o•lent
+              </p>
+              <p>adjective</p>
+              <div class="text--primary">
+                well meaning and kindly.<br />
+                "a benevolent smile"
+              </div>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn text color="deep-purple accent-4">
+                Learn More
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-card>
+            <v-card-text>
+              <div>Word of the Day</div>
+              <p class="display-1 text--primary">
+                be•nev•o•lent
+              </p>
+              <p>adjective</p>
+              <div class="text--primary">
+                well meaning and kindly.<br />
+                "a benevolent smile"
+              </div>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn text color="deep-purple accent-4">
+                Learn More
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+    </template>
+    <template v-else-if="activeTab === 'hitoday'">
+      <v-row>
+        <v-col cols="12">
+          <v-card class="pt-8 px-8">
+            <v-row>
+              <v-col cols="12" class="pt-0 align-center d-flex">
+                <div class="dashboard-today-circle">
+                  254
+                </div>
+                <div class="d-inline-block ml-8">
+                  <h1>Requests Made Today</h1>
+                  <p class="primary--text">Daily Average: 20</p>
+                </div>
+              </v-col>
+              <v-col cols="12" class="pt-0 align-center d-flex">
+                <div class="dashboard-today-circle">
+                  300
+                </div>
+                <div class="d-inline-block ml-8">
+                  <h1>Requests Complete Today</h1>
+                  <p class="primary--text">Daily Average: 20</p>
+                </div>
+              </v-col>
+              <v-col cols="12" class="pt-0 align-center d-flex">
+                <div class="dashboard-today-circle">
+                  254
+                </div>
+                <div class="d-inline-block ml-8">
+                  <h1>Requests Canceled Today</h1>
+                  <p class="primary--text">Daily Average: 20</p>
+                </div>
+              </v-col>
+            </v-row>
+          </v-card>
+        </v-col>
+      </v-row>
+    </template>
+    <template v-else-if="activeTab === 'history'">
+      <v-row>
+        <v-col cols="12">
+          <v-card class="py-8 px-8">
+            <bar-chart :chart-data="chartData" :options="chartOptions" />
+          </v-card>
+        </v-col>
+      </v-row>
+    </template>
   </v-container>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
+import { db } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
   head() {
     return {
-      title: 'Admin'
+      title: 'Dashboard - Admin'
     }
   },
   data() {
-    return {}
+    return {
+      activeTab: 'average',
+      items: [], // Array hold all dashboard data
+      hotels: [], // Array hold hotel data
+      users: [], // Array hold user data
+      chartOptions: {
+        maintainAspectRatio: false,
+        scales: {
+          xAxes: [
+            {
+              stacked: true
+            }
+          ],
+          yAxes: [
+            {
+              stacked: true
+            }
+          ]
+        }
+      }
+    }
   },
   computed: {
+    ...mapState(['isLoading']),
+    ...mapState('user', ['user']),
     ...mapGetters('user', ['role']),
     menus() {
       switch (this.role) {
@@ -99,6 +273,182 @@ export default {
         default:
           return []
       }
+    },
+    chartData() {
+      return {
+        labels: ['January', 'February'],
+        datasets: [
+          {
+            label: 'Canceled',
+            backgroundColor: '#FDD835',
+            data: [3, 6]
+          },
+          {
+            label: 'Completed',
+            backgroundColor: '#FB8C00',
+            data: [2, 3]
+          }
+        ]
+      }
+    }
+  },
+  mounted() {
+    this.initData()
+  },
+  methods: {
+    /**
+     * Called to initialize the data
+     */
+    async initData() {
+      try {
+        this.$setLoading(true)
+        this.collection = 'hotels'
+        if (this.role === 'operator') {
+          await Promise.all([
+            // this.getItems(
+            //   db
+            //     .collection(this.collection)
+            //     .where('hotel', '==', this.user.hotel)
+            //     .orderBy('createdAt', 'desc'),
+            //   'items',
+            //   this.itemsCallback
+            // ),
+            this.getItems(
+              db
+                .collection('hotels')
+                .where('uid', '==', this.user.hotel)
+                .orderBy('createdAt', 'desc'),
+              'hotels'
+            )
+          ])
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    async itemsCallback(data) {
+      try {
+        this.$setLoading(true)
+        let refData = null
+        if (data.hotelRef) {
+          const hotelRefDoc = await data.hotelRef.get()
+          let hotelRef = hotelRefDoc.data()
+          hotelRef = {
+            ...hotelRef,
+            createdAt:
+              hotelRef && hotelRef.createdAt && hotelRef.createdAt.toDate(),
+            updatedAt:
+              hotelRef && hotelRef.updatedAt && hotelRef.updatedAt.toDate()
+          }
+          delete data.hotelRef
+          refData = {
+            hotel: hotelRef
+          }
+        }
+        if (data.userRef) {
+          const userRefDoc = await data.userRef.get()
+          let userRef = userRefDoc.data()
+          userRef = {
+            ...userRef,
+            createdAt:
+              userRef && userRef.createdAt && userRef.createdAt.toDate(),
+            updatedAt:
+              userRef && userRef.updatedAt && userRef.updatedAt.toDate()
+          }
+          delete data.userRef
+          refData = {
+            ...refData,
+            user: userRef
+          }
+        }
+        return refData
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    /**
+     * Called to get all data
+     */
+    async getItems(collection = this.collection, location, cb) {
+      try {
+        this.$setLoading(true)
+        let snaps = null
+        if (typeof collection === 'string') {
+          snaps = await db
+            .collection(collection)
+            .orderBy('createdAt', 'desc')
+            .get()
+        } else {
+          snaps = await collection.get()
+        }
+        if (snaps && snaps.docs) {
+          const items = await Promise.all(
+            snaps.docs.map(async doc => {
+              const data = doc.data()
+              if (cb) {
+                const refData = await cb(data)
+                return {
+                  ...data,
+                  refData,
+                  imagesMeta: data.imagesMeta.map(meta => ({
+                    ...meta,
+                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                  })),
+                  images: [],
+                  createdAt: data && data.createdAt && data.createdAt.toDate(),
+                  updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+                }
+              } else {
+                return {
+                  ...data,
+                  imagesMeta: data.imagesMeta.map(meta => ({
+                    ...meta,
+                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
+                  })),
+                  images: [],
+                  createdAt: data && data.createdAt && data.createdAt.toDate(),
+                  updatedAt: data && data.updatedAt && data.updatedAt.toDate()
+                }
+              }
+            })
+          )
+          await (() => {
+            if (typeof collection === 'string') {
+              if (collection === this.collection) {
+                this.items = items
+              } else if (this[collection]) {
+                this[collection] = items
+              } else {
+                throw new Error('Collection must be defined in the data.')
+              }
+            } else if (this[location]) {
+              this[location] = items
+            } else {
+              throw new Error('Collection must be defined in the data.')
+            }
+          })()
+        }
+      } catch (error) {
+        this.$notify({
+          isError: true,
+          message: error.message
+        })
+      } finally {
+        this.$setLoading(false)
+      }
+    },
+    setActiveTab(activeTab) {
+      this.activeTab = activeTab
     }
   }
 }

@@ -31,7 +31,7 @@
   "scripts": {
     "build": "nuxt build",
     "coverage": "codecov",
-    "dev": "HOST=0.0.0.0 nuxt",
+    "dev": "nuxt --hostname localhost --port 3000",
     "generate": "nuxt generate",
     "start": "nuxt start",
     "test": "npm run test:unit",
@@ -47,6 +47,7 @@
     "@nuxtjs/pwa": "^3.0.0-beta.17",
     "@nuxtjs/sentry": "^3.0.0",
     "@sindresorhus/slugify": "^0.9.1",
+    "chart.js": "^2.9.3",
     "clean-deep": "^3.0.4",
     "cookie-universal-nuxt": "^2.0.17",
     "fast-deep-equal": "^2.0.1",
@@ -66,6 +67,7 @@
     "uuid": "^3.3.3",
     "v-clipboard": "^2.2.2",
     "vee-validate": "^2.2.15",
+    "vue-chartjs": "^3.5.0",
     "vue-qrcode-reader": "^2.0.4"
   },
   "devDependencies": {

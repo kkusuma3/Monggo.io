@@ -130,7 +130,11 @@ export default {
     '~plugins/vue-clipboard.client',
     '~plugins/notify',
     '~plugins/loading',
-    '~plugins/components'
+    '~plugins/components',
+    {
+      src: '@/plugins/vue-chartjs',
+      ssr: false
+    }
   ],
 
   // https://nuxtjs.org/api/configuration-css
