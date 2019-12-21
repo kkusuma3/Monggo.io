@@ -64,5 +64,8 @@ export default {
   sortBy: 'Sort by',
   average: 'Average',
   today: 'Today',
-  history: 'History'
+  history: 'History',
+  daily: 'Daily',
+  monthly: 'Monthly',
+  complete: 'Completed'
 }
