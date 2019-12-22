@@ -31,6 +31,7 @@
           outlined
           hide-details
           style="min-height: 50px"
+          @change="selectHotel"
         ></v-select>
       </v-col>
       <v-col cols="12" md="8">
@@ -60,7 +61,7 @@
         </v-btn-toggle>
       </v-col>
     </v-row>
-    <template v-if="activeTab === 'average'">
+    <template v-if="activeTab === 'average' && !hideDashboard">
       <v-row>
         <v-col cols="12" md="4">
           <v-card>
@@ -124,7 +125,7 @@
         </v-col>
       </v-row>
     </template>
-    <template v-else-if="activeTab === 'hitoday'">
+    <template v-else-if="activeTab === 'hitoday' && !hideDashboard">
       <v-row>
         <v-col cols="12">
           <v-card class="pt-8 px-8">
@@ -161,20 +162,15 @@
         </v-col>
       </v-row>
     </template>
-    <template v-else-if="activeTab === 'history'">
-      <v-row>
-        <v-col cols="12">
-          <v-card class="py-8 px-8">
-            <bar-chart :chart-data="chartData" :options="chartOptions" />
-          </v-card>
-        </v-col>
-      </v-row>
+    <template v-else-if="activeTab === 'history' && !hideDashboard">
+      <tabs-history ref="tabsHistory" :orders="orders"></tabs-history>
     </template>
   </v-container>
 </template>
 
 <script>
 import { mapState, mapGetters } from 'vuex'
+import tabsHistory from './dashboard/tabs-history.vue'
 import { db } from '~/utils/firebase'
 
 export default {
@@ -184,27 +180,17 @@ export default {
       title: 'Dashboard - Admin'
     }
   },
+  components: {
+    'tabs-history': tabsHistory
+  },
   data() {
     return {
+      hideDashboard: true,
       activeTab: 'average',
       items: [], // Array hold all dashboard data
       hotels: [], // Array hold hotel data
-      users: [], // Array hold user data
-      chartOptions: {
-        maintainAspectRatio: false,
-        scales: {
-          xAxes: [
-            {
-              stacked: true
-            }
-          ],
-          yAxes: [
-            {
-              stacked: true
-            }
-          ]
-        }
-      }
+      orders: [], // Array hold orders data
+      users: [] // Array hold user data
     }
   },
   computed: {
@@ -273,23 +259,6 @@ export default {
         default:
           return []
       }
-    },
-    chartData() {
-      return {
-        labels: ['January', 'February'],
-        datasets: [
-          {
-            label: 'Canceled',
-            backgroundColor: '#FDD835',
-            data: [3, 6]
-          },
-          {
-            label: 'Completed',
-            backgroundColor: '#FB8C00',
-            data: [2, 3]
-          }
-        ]
-      }
     }
   },
   mounted() {
@@ -305,22 +274,22 @@ export default {
         this.collection = 'hotels'
         if (this.role === 'operator') {
           await Promise.all([
-            // this.getItems(
-            //   db
-            //     .collection(this.collection)
-            //     .where('hotel', '==', this.user.hotel)
-            //     .orderBy('createdAt', 'desc'),
-            //   'items',
-            //   this.itemsCallback
-            // ),
             this.getItems(
-              db
-                .collection('hotels')
-                .where('uid', '==', this.user.hotel)
-                .orderBy('createdAt', 'desc'),
+              db.collection('hotels').where('uid', '==', this.user.hotel),
               'hotels'
+            ),
+            this.getItems(
+              db.collection('orders').where('hotel', '==', this.user.hotel),
+              'orders'
             )
           ])
+
+          this.orders.sort(this.sortbyUpdateAt)
+          if (this.hotels.length === 0) {
+            this.hideDashboard = true
+          } else {
+            this.hideDashboard = false
+          }
         }
       } catch (error) {
         this.$notify({
@@ -331,50 +300,14 @@ export default {
         this.$setLoading(false)
       }
     },
-    async itemsCallback(data) {
-      try {
-        this.$setLoading(true)
-        let refData = null
-        if (data.hotelRef) {
-          const hotelRefDoc = await data.hotelRef.get()
-          let hotelRef = hotelRefDoc.data()
-          hotelRef = {
-            ...hotelRef,
-            createdAt:
-              hotelRef && hotelRef.createdAt && hotelRef.createdAt.toDate(),
-            updatedAt:
-              hotelRef && hotelRef.updatedAt && hotelRef.updatedAt.toDate()
-          }
-          delete data.hotelRef
-          refData = {
-            hotel: hotelRef
-          }
-        }
-        if (data.userRef) {
-          const userRefDoc = await data.userRef.get()
-          let userRef = userRefDoc.data()
-          userRef = {
-            ...userRef,
-            createdAt:
-              userRef && userRef.createdAt && userRef.createdAt.toDate(),
-            updatedAt:
-              userRef && userRef.updatedAt && userRef.updatedAt.toDate()
-          }
-          delete data.userRef
-          refData = {
-            ...refData,
-            user: userRef
-          }
-        }
-        return refData
-      } catch (error) {
-        this.$notify({
-          isError: true,
-          message: error.message
-        })
-      } finally {
-        this.$setLoading(false)
+    sortbyUpdateAt(a, b) {
+      if (a.updatedAt.getTime() > b.updatedAt.getTime()) {
+        return -1
       }
+      if (a.updatedAt.getTime() < b.updatedAt.getTime()) {
+        return 1
+      }
+      return 0
     },
     /**
      * Called to get all data
@@ -400,22 +333,12 @@ export default {
                 return {
                   ...data,
                   refData,
-                  imagesMeta: data.imagesMeta.map(meta => ({
-                    ...meta,
-                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-                  })),
-                  images: [],
                   createdAt: data && data.createdAt && data.createdAt.toDate(),
                   updatedAt: data && data.updatedAt && data.updatedAt.toDate()
                 }
               } else {
                 return {
                   ...data,
-                  imagesMeta: data.imagesMeta.map(meta => ({
-                    ...meta,
-                    createdAt: meta && meta.createdAt && meta.createdAt.toDate()
-                  })),
-                  images: [],
                   createdAt: data && data.createdAt && data.createdAt.toDate(),
                   updatedAt: data && data.updatedAt && data.updatedAt.toDate()
                 }
@@ -447,8 +370,19 @@ export default {
         this.$setLoading(false)
       }
     },
+    selectHotel(i) {
+      console.log(i)
+    },
+    /**
+     * Called when dashboard tab clicked
+     */
     setActiveTab(activeTab) {
       this.activeTab = activeTab
+      if (activeTab === 'history') {
+        this.$nextTick(() => {
+          this.$refs.tabsHistory.initHistoryChart('daily')
+        })
+      }
     }
   }
 }

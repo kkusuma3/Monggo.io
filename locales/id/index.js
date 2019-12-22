@@ -64,5 +64,8 @@ export default {
   sortBy: 'Urutkan berdasarkan',
   average: 'Rata-rata',
   today: 'Hari ini',
-  history: 'Histori'
+  history: 'Histori',
+  daily: 'Harian',
+  monthly: 'Bulanan',
+  complete: 'Selesai'
 }
