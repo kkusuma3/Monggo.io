@@ -378,11 +378,11 @@ export default {
      */
     setActiveTab(activeTab) {
       this.activeTab = activeTab
-      if (activeTab === 'history') {
-        this.$nextTick(() => {
-          this.$refs.tabsHistory.initHistoryChart('daily')
-        })
-      }
+      // if (activeTab === 'history') {
+      //   this.$nextTick(() => {
+      //     this.$refs.tabsHistory.initHistoryChart('daily')
+      //   })
+      // }
     }
   }
 }

@@ -67,13 +67,19 @@ export default {
             data: this.chartDataValues.canceled
           },
           {
-            label: this.$t('completed'),
+            label:
+              this.$t('completed')
+                .charAt(0)
+                .toUpperCase() + this.$t('completed').slice(1),
             backgroundColor: '#FB8C00',
             data: this.chartDataValues.completed
           }
         ]
       }
     }
+  },
+  mounted() {
+    this.initHistoryChart('daily')
   },
   methods: {
     /**
@@ -188,11 +194,104 @@ export default {
         this.chartLabels = chartLabels
         this.chartDataValues = chartDataValues
       } else if (history === 'monthly') {
-        this.chartLabels = ['January', 'February', 'Maret']
-        this.chartDataValues = {
-          canceled: [13, 16, 15],
-          completed: [12, 17, 14]
+        const nowVal = new Date(now)
+        const oneYearBefore = nowVal.setYear(nowVal.getFullYear() - 1)
+        const oneYearBeforeFormat = new Date(oneYearBefore)
+
+        const chartLabels = []
+        let orderIndex = 0
+        const chartVal = []
+        for (let i = 1; i <= 12; i++) {
+          const oneYearBeforeVal = new Date(oneYearBeforeFormat)
+          const oneMonthBefore = oneYearBeforeVal.setMonth(
+            oneYearBeforeVal.getMonth() + i
+          )
+          const oneMonthBeforeFormat = new Date(oneMonthBefore)
+          const twoYearBeforeVal = new Date(oneYearBeforeFormat)
+          const twoMonthBefore = twoYearBeforeVal.setMonth(
+            twoYearBeforeVal.getMonth() + (i - 1)
+          )
+          const twoMonthBeforeFormat = new Date(twoMonthBefore)
+          const twoMonthBeforeV2 = twoMonthBeforeFormat.setDate(
+            twoMonthBeforeFormat.getDate() - 1
+          )
+          const twoMonthBeforeV2Format = new Date(twoMonthBeforeV2)
+
+          const oneMonthBeforeVal =
+            twoMonthBeforeV2Format.getDate() +
+            ' ' +
+            twoMonthBeforeV2Format.toLocaleString('default', {
+              month: 'short'
+            }) +
+            ' ' +
+            twoMonthBeforeV2Format.getFullYear() +
+            ' - ' +
+            oneMonthBeforeFormat.getDate() +
+            ' ' +
+            oneMonthBeforeFormat.toLocaleString('default', { month: 'short' }) +
+            ' ' +
+            oneMonthBeforeFormat.getFullYear()
+          chartLabels.push(oneMonthBeforeVal)
+
+          const dateFrom = new Date(now)
+          const dateFromBefore = dateFrom.setMonth(
+            dateFrom.getMonth() - (i - 1)
+          )
+          const dateFromBeforeFormat = new Date(dateFromBefore)
+          const dateTo = new Date(now)
+          const dateToBefore = dateTo.setMonth(dateTo.getMonth() - i)
+          const dateToBeforeFormat = new Date(dateToBefore)
+
+          for (let iv2 = orderIndex; iv2 < this.orders.length; iv2++) {
+            const indexOrderCreatedAt = this.orders[iv2].createdAt
+            const indexOrderStatus = this.orders[iv2].status
+
+            if (
+              indexOrderCreatedAt <= dateFromBeforeFormat &&
+              indexOrderCreatedAt > dateToBeforeFormat
+            ) {
+              if (indexOrderStatus === 'canceled') {
+                chartVal['barIndex' + (12 - i)] += ',canceled'
+              } else if (indexOrderStatus === 'delivered') {
+                chartVal['barIndex' + (12 - i)] += ',completed'
+              }
+              orderIndex = iv2 + 1
+            } else {
+              iv2 = this.orders.length
+            }
+          }
         }
+
+        const chartDataValues = {
+          canceled: [],
+          completed: []
+        }
+        for (let i = 0; i < 12; i++) {
+          if (chartVal.hasOwnProperty('barIndex' + i)) {
+            const crtPrm = chartVal['barIndex' + i].slice(10).split(',')
+            const counts = {}
+            crtPrm.forEach(function(x) {
+              counts[x] = (counts[x] || 0) + 1
+            })
+
+            if (counts.canceled === undefined) {
+              chartDataValues.canceled[i] = 0
+              chartDataValues.completed[i] = counts.completed
+            } else if (counts.completed === undefined) {
+              chartDataValues.canceled[i] = counts.canceled
+              chartDataValues.completed[i] = 0
+            } else {
+              chartDataValues.canceled[i] = counts.canceled
+              chartDataValues.completed[i] = counts.completed
+            }
+          } else {
+            chartDataValues.canceled[i] = 0
+            chartDataValues.completed[i] = 0
+          }
+        }
+
+        this.chartLabels = chartLabels
+        this.chartDataValues = chartDataValues
       }
     }
   }
