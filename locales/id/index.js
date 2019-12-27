@@ -67,5 +67,9 @@ export default {
   history: 'Histori',
   daily: 'Harian',
   monthly: 'Bulanan',
-  complete: 'Selesai'
+  completed: 'Selesai',
+  requsetsMadeToday: 'Permintaan Dibuat Hari Ini',
+  requsetsCompleteToday: 'Permintaan Selesai Hari Ini',
+  requsetsCanceledToday: 'Permintaan Dibatalkan Hari Ini',
+  dailyAverage: 'Rata-rata harian dalam sebulan'
 }
