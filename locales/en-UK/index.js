@@ -71,5 +71,16 @@ export default {
   requsetsMadeToday: 'Requests Made Today',
   requsetsCompleteToday: 'Requests Complete Today',
   requsetsCanceledToday: 'Requests Canceled Today',
-  dailyAverage: 'Daily average in a month'
+  dailyAverage: 'Daily average in a month',
+  averageUsageRate: 'Average Usage Rate',
+  maxUsageRate: 'Max. Usage Rate',
+  minUsageRate: 'Min. Usage Rate',
+  perDayPerRoom: 'per day per room',
+  usersThatChoseEnglish: 'Users that chose English',
+  usersThatChoseIndonesian: 'Users that chose Indonesian',
+  typeRequest: 'Type of Request',
+  avgQuantityRequest: 'Avg. Quantity of Request',
+  mostFrequentTimePeriodRequested: 'Most Frequent Time Period Requested',
+  avgTimeFulfillRequest: 'Avg. Time to Fulfill Request',
+  requestsCancelled: 'Requests Cancelled'
 }

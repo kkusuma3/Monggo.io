@@ -71,5 +71,16 @@ export default {
   requsetsMadeToday: 'Permintaan Dibuat Hari Ini',
   requsetsCompleteToday: 'Permintaan Selesai Hari Ini',
   requsetsCanceledToday: 'Permintaan Dibatalkan Hari Ini',
-  dailyAverage: 'Rata-rata harian dalam sebulan'
+  dailyAverage: 'Rata-rata harian dalam sebulan',
+  averageUsageRate: 'Tingkat Penggunaan Rata-Rata',
+  maxUsageRate: 'Maks. Tingkat Penggunaan',
+  minUsageRate: 'Min. Tingkat Penggunaan',
+  perDayPerRoom: 'per hari per kamar',
+  usersThatChoseEnglish: 'Pengguna yang memilih bahasa Inggris',
+  usersThatChoseIndonesian: 'Pengguna yang memilih bahasa Indonesia',
+  typeRequest: 'Jenis Permintaan',
+  avgQuantityRequest: 'Rata-rata Jumlah Permintaan',
+  mostFrequentTimePeriodRequested: 'Periode Waktu Paling Sering Diminta',
+  avgTimeFulfillRequest: 'Rata-rata Waktu untuk Penuhi Permintaan',
+  requestsCancelled: 'Permintaan Dibatalkan'
 }
