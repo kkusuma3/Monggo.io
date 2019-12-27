@@ -67,5 +67,9 @@ export default {
   history: 'History',
   daily: 'Daily',
   monthly: 'Monthly',
-  complete: 'Completed'
+  completed: 'Completed',
+  requsetsMadeToday: 'Requests Made Today',
+  requsetsCompleteToday: 'Requests Complete Today',
+  requsetsCanceledToday: 'Requests Canceled Today',
+  dailyAverage: 'Daily average in a month'
 }

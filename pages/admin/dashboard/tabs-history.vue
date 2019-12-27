@@ -67,10 +67,7 @@ export default {
             data: this.chartDataValues.canceled
           },
           {
-            label:
-              this.$t('completed')
-                .charAt(0)
-                .toUpperCase() + this.$t('completed').slice(1),
+            label: this.$t('completed'),
             backgroundColor: '#FB8C00',
             data: this.chartDataValues.completed
           }
