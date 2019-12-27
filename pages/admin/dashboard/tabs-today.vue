@@ -10,7 +10,8 @@
             <div class="d-inline-block ml-8">
               <h1>{{ this.$t('requsetsMadeToday') }}</h1>
               <p class="primary--text">
-                {{ this.$t('dailyAverage') }}: {{ averageRequest.allRequest }}
+                {{ this.$t('dailyAverage') }}:
+                {{ averageRequest.allRequest }}
               </p>
             </div>
           </v-col>
@@ -81,19 +82,39 @@ export default {
       const nowVal = new Date(now)
       const oneMonthBefore = nowVal.setMonth(nowVal.getMonth() - 1)
       const oneMonthBeforeFormat = new Date(oneMonthBefore)
+
+      const dayFirst = nowVal.getDate()
+      const monthFirst = nowVal.getMonth() + 1
+      const yearFirst = nowVal.getFullYear()
+      const dateFirst = new Date(yearFirst, monthFirst, dayFirst)
+
+      const daySecond = oneMonthBeforeFormat.getDate()
+      const monthSecond = oneMonthBeforeFormat.getMonth()
+      const yearSecond = oneMonthBeforeFormat.getFullYear()
+      const dateSecond = new Date(yearSecond, monthSecond, daySecond)
+
+      const dateDiff = Math.round(
+        (dateFirst - dateSecond) / (1000 * 60 * 60 * 24)
+      )
+
+      const averageRequest = {
+        allRequest: 0,
+        requestCompleted: 0,
+        requestCanceled: 0
+      }
+
       for (let i = 0; i < this.orders.length; i++) {
         const indexOrderCreatedAt = this.orders[i].createdAt
         const indexOrderStatus = this.orders[i].status
-
         if (indexOrderCreatedAt >= oneMonthBeforeFormat) {
           if (indexOrderStatus === 'canceled') {
-            this.averageRequest.requestCanceled++
-            this.averageRequest.allRequest++
+            averageRequest.requestCanceled++
+            averageRequest.allRequest++
           } else if (indexOrderStatus === 'delivered') {
-            this.averageRequest.requestCompleted++
-            this.averageRequest.allRequest++
+            averageRequest.requestCompleted++
+            averageRequest.allRequest++
           } else if (indexOrderStatus === 'ordered') {
-            this.averageRequest.allRequest++
+            averageRequest.allRequest++
           }
 
           if (indexOrderCreatedAt >= todayDateFormat) {
@@ -111,6 +132,19 @@ export default {
           i = this.orders.length
         }
       }
+
+      const requestCanceled = averageRequest.requestCanceled / dateDiff
+      const requestCompleted = averageRequest.requestCompleted / dateDiff
+      const allRequest = averageRequest.allRequest / dateDiff
+
+      this.averageRequest.requestCanceled =
+        requestCanceled % 1 === 0 ? requestCanceled : requestCanceled.toFixed(2)
+      this.averageRequest.requestCompleted =
+        requestCompleted % 1 === 0
+          ? requestCompleted
+          : requestCompleted.toFixed(2)
+      this.averageRequest.allRequest =
+        allRequest % 1 === 0 ? allRequest : allRequest.toFixed(2)
     }
   }
 }

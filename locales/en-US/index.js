@@ -82,5 +82,9 @@ export default {
   avgQuantityRequest: 'Avg. Quantity of Request',
   mostFrequentTimePeriodRequested: 'Most Frequent Time Period Requested',
   avgTimeFulfillRequest: 'Avg. Time to Fulfill Request',
-  requestsCancelled: 'Requests Cancelled'
+  requestsCancelled: 'Requests Cancelled',
+  avgWebAppVisits: 'Avg. # of Web-App Visits',
+  avgRequestsMade: 'Avg. # of Requests Made',
+  avgRequestsTracked: 'Avg. # of Requests Tracked',
+  minutes: 'minutes'
 }

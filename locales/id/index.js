@@ -82,5 +82,9 @@ export default {
   avgQuantityRequest: 'Rata-rata Jumlah Permintaan',
   mostFrequentTimePeriodRequested: 'Periode Waktu Paling Sering Diminta',
   avgTimeFulfillRequest: 'Rata-rata Waktu untuk Penuhi Permintaan',
-  requestsCancelled: 'Permintaan Dibatalkan'
+  requestsCancelled: 'Permintaan Dibatalkan',
+  avgWebAppVisits: 'Rata-rata Kunjungan Web-Aplikasi',
+  avgRequestsMade: 'Rata-rata Jumlah Permintaan yang Dibuat',
+  avgRequestsTracked: 'Rata-rata Permintaan Dilacak',
+  minutes: 'menit'
 }
