@@ -62,68 +62,7 @@
       </v-col>
     </v-row>
     <template v-if="activeTab === 'average' && !hideDashboard">
-      <v-row>
-        <v-col cols="12" md="4">
-          <v-card>
-            <v-card-text>
-              <div>Word of the Day</div>
-              <p class="display-1 text--primary">
-                be•nev•o•lent
-              </p>
-              <p>adjective</p>
-              <div class="text--primary">
-                well meaning and kindly.<br />
-                "a benevolent smile"
-              </div>
-            </v-card-text>
-            <v-card-actions>
-              <v-btn text color="deep-purple accent-4">
-                Learn More
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-card>
-            <v-card-text>
-              <div>Word of the Day</div>
-              <p class="display-1 text--primary">
-                be•nev•o•lent
-              </p>
-              <p>adjective</p>
-              <div class="text--primary">
-                well meaning and kindly.<br />
-                "a benevolent smile"
-              </div>
-            </v-card-text>
-            <v-card-actions>
-              <v-btn text color="deep-purple accent-4">
-                Learn More
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-card>
-            <v-card-text>
-              <div>Word of the Day</div>
-              <p class="display-1 text--primary">
-                be•nev•o•lent
-              </p>
-              <p>adjective</p>
-              <div class="text--primary">
-                well meaning and kindly.<br />
-                "a benevolent smile"
-              </div>
-            </v-card-text>
-            <v-card-actions>
-              <v-btn text color="deep-purple accent-4">
-                Learn More
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-col>
-      </v-row>
+      <tabs-averages :orders="orders" :services="services"></tabs-averages>
     </template>
     <template v-else-if="activeTab === 'hitoday' && !hideDashboard">
       <tabs-today :orders="orders"></tabs-today>
@@ -136,6 +75,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
+import tabsAverages from './dashboard/tabs-averages.vue'
 import tabsToday from './dashboard/tabs-today.vue'
 import tabsHistory from './dashboard/tabs-history.vue'
 import { db } from '~/utils/firebase'
@@ -148,6 +88,7 @@ export default {
     }
   },
   components: {
+    'tabs-averages': tabsAverages,
     'tabs-today': tabsToday,
     'tabs-history': tabsHistory
   },
@@ -157,6 +98,7 @@ export default {
       activeTab: 'average',
       items: [], // Array hold all dashboard data
       hotels: [], // Array hold hotel data
+      services: [], // Array hold services data
       orders: [], // Array hold orders data
       users: [] // Array hold user data
     }
@@ -249,6 +191,10 @@ export default {
             this.getItems(
               db.collection('orders').where('hotel', '==', this.user.hotel),
               'orders'
+            ),
+            this.getItems(
+              db.collection('services').where('hotel', '==', this.user.hotel),
+              'services'
             )
           ])
 
