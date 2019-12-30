@@ -10,7 +10,9 @@ export default [
     hotelRef: null,
     imagesMeta: [
       {
-        url: 'https://chriskresser.com/wp-content/uploads/100278887.jpg'
+        name: 'Extra soap and shampoo',
+        url:
+          'https://firebasestorage.googleapis.com/v0/b/monggo-io.appspot.com/o/default-service%2Fsoap%20%26%20shampoo.jpg?alt=media&token=01da867b-530b-4306-af8b-4be4d4473343'
       }
     ],
     name: 'Extra soap and shampoo',
@@ -27,7 +29,9 @@ export default [
     hotelRef: null,
     imagesMeta: [
       {
-        url: 'https://cf.shopee.co.id/file/30dcf2eb06ad1edf8fa9e1370b9419c0_tn'
+        name: 'Mineral Water',
+        url:
+          'https://firebasestorage.googleapis.com/v0/b/monggo-io.appspot.com/o/default-service%2Fmineral%20water.jpg?alt=media&token=2c5f5204-93ad-4f98-97ea-1f072d1308c7'
       }
     ],
     name: 'Mineral Water',
@@ -44,8 +48,9 @@ export default [
     hotelRef: null,
     imagesMeta: [
       {
+        name: 'Extra Bed',
         url:
-          'http://www.babyonbaliholiday.com/wp-content/uploads/2016/02/Puri-Bhagawan.jpeg'
+          'https://firebasestorage.googleapis.com/v0/b/monggo-io.appspot.com/o/default-service%2Fextra%20bed.jpeg?alt=media&token=4598a937-cd84-4a5a-ade2-27d7e50687c9'
       }
     ],
     name: 'Extra Bed',
@@ -63,7 +68,9 @@ export default [
     hotelRef: null,
     imagesMeta: [
       {
-        url: 'https://linisehat.com/wp-content/uploads/2017/04/coffee-tea.jpg'
+        name: 'Tea/Coffee',
+        url:
+          'https://firebasestorage.googleapis.com/v0/b/monggo-io.appspot.com/o/default-service%2Ftea-coffee.jpg?alt=media&token=0dba1ff3-72c3-4e42-99d2-7e4d6f0cc370'
       }
     ],
     name: 'Tea/Coffee',
@@ -80,8 +87,9 @@ export default [
     hotelRef: null,
     imagesMeta: [
       {
+        name: 'Breakfast',
         url:
-          'https://qph.fs.quoracdn.net/main-qimg-d94ace9d28d38771711606ad433697fa.webp'
+          'https://firebasestorage.googleapis.com/v0/b/monggo-io.appspot.com/o/default-service%2FBreakfast.webp?alt=media&token=61fbde43-3b32-42be-affc-537c754c7627'
       }
     ],
     name: 'Breakfast',

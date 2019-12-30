@@ -566,10 +566,7 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.item = {
-          ...this.item,
-          imagesMeta: _cloneDeep(imagesMeta)
-        }
+        this.item.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.item.imagesMeta = []
       }
@@ -583,10 +580,7 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.itemOriginal = {
-          ...this.itemOriginal,
-          imagesMeta: _cloneDeep(imagesMeta)
-        }
+        this.itemOriginal.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.itemOriginal.imagesMeta = []
       }

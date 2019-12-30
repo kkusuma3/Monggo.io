@@ -531,10 +531,7 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.item = {
-          ...this.item,
-          imagesMeta: _cloneDeep(imagesMeta)
-        }
+        this.item.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.item.imagesMeta = []
       }
@@ -548,10 +545,7 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.itemOriginal = {
-          ...this.itemOriginal,
-          imagesMeta: _cloneDeep(imagesMeta)
-        }
+        this.itemOriginal.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.itemOriginal.imagesMeta = []
       }
@@ -874,73 +868,8 @@ export default {
           delete payload.images
           delete payload.refData
           this.isSaved = true
-          const roomNumber = Number(payload.rooms)
-          const newRoomArray = Array.from(Array(roomNumber).keys())
-          const addRooms = newRoomArray.map(room => {
-            const roomUid = uuidv4()
-            const qrUid = uuidv4()
-            return Promise.all([
-              /**
-               * Create Room
-               */
-              db
-                .collection('rooms')
-                .doc(roomUid)
-                .set({
-                  createdAt: payload.createdAt,
-                  description: null,
-                  hasQr: true,
-                  hotel: payload.uid,
-                  hotelRef: db.collection('hotels').doc(payload.uid),
-                  imagesMeta: null,
-                  name: 'Room ' + Number(room + 1),
-                  qrCode: 'https://monggo.io?qrCode=' + qrUid,
-                  status: 'empty',
-                  uid: roomUid,
-                  updatedAt: payload.updatedAt,
-                  user: null,
-                  usersRef: null
-                }),
-              /**
-               * Create QR
-               */
-              db
-                .collection('qr-codes')
-                .doc(qrUid)
-                .set({
-                  createdAt: payload.createdAt,
-                  hotel: payload.uid,
-                  hotelRef: db.collection('hotels').doc(payload.uid),
-                  room: roomUid,
-                  roomRef: db.collection('rooms').doc(roomUid),
-                  uid: qrUid,
-                  updatedAt: payload.updatedAt
-                })
-            ])
-          })
-          const addServices = services.map(service => {
-            const uid = uuidv4()
-            return db
-              .collection('services')
-              .doc(uid)
-              .set({
-                category: service.category,
-                categoryRef: db.collection('categories').doc(service.category),
-                count: service.count,
-                createdAt: payload.createdAt,
-                currency: service.currency,
-                description: service.description,
-                hotel: payload.uid,
-                hotelRef: db.collection('hotels').doc(payload.uid),
-                imagesMeta: service.imagesMeta,
-                name: service.name,
-                price: service.price,
-                uid,
-                updatedAt: payload.updatedAt
-              })
-          })
-          await Promise.all([
-            db
+          if (this.isEditing) {
+            await db
               .collection(this.collection)
               .doc(payload.uid)
               .set(
@@ -951,10 +880,93 @@ export default {
                   nullValues: false
                 }),
                 { merge: true }
-              ),
-            addRooms,
-            addServices
-          ])
+              )
+          } else {
+            const roomNumber = Number(payload.rooms)
+            const newRoomArray = Array.from(Array(roomNumber).keys())
+            const addRooms = newRoomArray.map(room => {
+              const roomUid = uuidv4()
+              const qrUid = uuidv4()
+              return Promise.all([
+                /**
+                 * Create Room
+                 */
+                db
+                  .collection('rooms')
+                  .doc(roomUid)
+                  .set({
+                    createdAt: payload.createdAt,
+                    description: null,
+                    hasQr: true,
+                    hotel: payload.uid,
+                    hotelRef: db.collection('hotels').doc(payload.uid),
+                    imagesMeta: null,
+                    name: 'Room ' + Number(room + 1),
+                    qrCode: 'https://monggo.io?qrCode=' + qrUid,
+                    status: 'empty',
+                    uid: roomUid,
+                    updatedAt: payload.updatedAt,
+                    user: null,
+                    usersRef: null
+                  }),
+                /**
+                 * Create QR
+                 */
+                db
+                  .collection('qr-codes')
+                  .doc(qrUid)
+                  .set({
+                    createdAt: payload.createdAt,
+                    hotel: payload.uid,
+                    hotelRef: db.collection('hotels').doc(payload.uid),
+                    room: roomUid,
+                    roomRef: db.collection('rooms').doc(roomUid),
+                    uid: qrUid,
+                    updatedAt: payload.updatedAt
+                  })
+              ])
+            })
+            const addServices = services.map(service => {
+              const uid = uuidv4()
+              return db
+                .collection('services')
+                .doc(uid)
+                .set({
+                  category: service.category,
+                  categoryRef: db
+                    .collection('categories')
+                    .doc(service.category),
+                  count: service.count,
+                  createdAt: payload.createdAt,
+                  currency: service.currency,
+                  description: service.description,
+                  hotel: payload.uid,
+                  hotelRef: db.collection('hotels').doc(payload.uid),
+                  imagesMeta: service.imagesMeta,
+                  name: service.name,
+                  price: service.price,
+                  uid,
+                  updatedAt: payload.updatedAt
+                })
+            })
+            await Promise.all([
+              db
+                .collection(this.collection)
+                .doc(payload.uid)
+                .set(
+                  cleanDeep(payload, {
+                    emptyArrays: false,
+                    emptyObjects: false,
+                    emptyStrings: false,
+                    nullValues: false
+                  }),
+                  { merge: true }
+                ),
+              addRooms,
+              addServices
+            ])
+          }
+
           await this.getItems()
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
