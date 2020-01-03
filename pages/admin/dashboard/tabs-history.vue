@@ -7,12 +7,20 @@
           class="col-12 px-0 py-1 d-flex justify-end mb-8"
           background-color="transparent"
         >
-          <v-btn small class="col-2" @click.native="setHistory('daily')">{{
-            $t('daily')
-          }}</v-btn>
-          <v-btn small class="col-2" @click.native="setHistory('monthly')">{{
-            $t('monthly')
-          }}</v-btn>
+          <v-btn
+            small
+            class="col-2"
+            :loading="isLoading"
+            @click.native="setHistory('daily')"
+            >{{ $t('daily') }}</v-btn
+          >
+          <v-btn
+            small
+            class="col-2"
+            :loading="isLoading"
+            @click.native="setHistory('monthly')"
+            >{{ $t('monthly') }}</v-btn
+          >
         </v-btn-toggle>
         <bar-chart :chart-data="chartData" :options="chartOptions" />
       </v-card>
@@ -21,6 +29,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'TabsHistory',
   props: {
@@ -57,6 +67,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(['isLoading']),
     chartData() {
       return {
         labels: this.chartLabels,
