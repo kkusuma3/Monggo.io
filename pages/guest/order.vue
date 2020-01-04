@@ -182,11 +182,6 @@ import { types as guestTypes } from '~/store/guest'
 import { types as serviceTypes } from '~/store/service'
 
 export default {
-  head() {
-    return {
-      title: `${this.$t('order')} - ${this.$t('guest')}`
-    }
-  },
   data() {
     return {
       isCancelling: false, // Hold cancellation dialog status
@@ -211,6 +206,11 @@ export default {
       },
       // Hold interval id
       interval: null
+    }
+  },
+  head() {
+    return {
+      title: `${this.$t('order')} - ${this.$t('guest')}`
     }
   },
   computed: {

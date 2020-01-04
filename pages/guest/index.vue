@@ -179,11 +179,6 @@ import { types as serviceTypes } from '~/store/service'
 import { db } from '~/utils/firebase'
 
 export default {
-  head() {
-    return {
-      title: `${this.$t('home')} - ${this.$t('guest')}`
-    }
-  },
   data() {
     return {
       isService: false, // Hold service dialog
@@ -205,6 +200,11 @@ export default {
         { text: this.$t('dateDesc'), value: 'createdAt desc' },
         { text: this.$t('dateAsc'), value: 'createdAt asc' }
       ]
+    }
+  },
+  head() {
+    return {
+      title: `${this.$t('home')} - ${this.$t('guest')}`
     }
   },
   computed: {
