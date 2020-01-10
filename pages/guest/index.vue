@@ -195,7 +195,10 @@ import cleanDeep from 'clean-deep'
 import _flatten from 'lodash.flatten'
 import { types as guestTypes } from '~/store/guest'
 import { types as serviceTypes } from '~/store/service'
+import { types as userTypes } from '~/store/user'
+
 import { db } from '~/utils/firebase'
+import { pubnub, notifyMe } from '~/utils/pubnub'
 
 export default {
   head() {
@@ -223,13 +226,14 @@ export default {
         { text: this.$t('priceDesc'), value: 'price desc' },
         { text: this.$t('dateDesc'), value: 'createdAt desc' },
         { text: this.$t('dateAsc'), value: 'createdAt asc' }
-      ]
+      ],
+      serviceName: null
     }
   },
   computed: {
     ...mapState(['isLoading', 'isDataLoaded']),
     ...mapState('service', ['services']),
-    ...mapState('user', ['user']),
+    ...mapState('user', ['user', 'pubnub']),
     ...mapState('category', ['categories']),
     ...mapGetters('user', ['isAuth']),
     ...mapState('guest', ['qr', 'service', 'rates']),
@@ -294,11 +298,37 @@ export default {
       }
     }
   },
+  mounted() {
+    notifyMe()
+    const user = this.user
+    console.log(user)
+    if (this.pubnub === false) {
+      pubnub.subscribe({
+        channels: [this.qr.room],
+        withPresence: true
+      })
+      pubnub.addListener({
+        message: function(event) {
+          if (user.uid !== event.message.content.sender) {
+            notifyMe(event.message)
+            let notif = Number(localStorage.getItem('notif'))
+            if (!notif) {
+              localStorage.setItem('notif', 1)
+            } else {
+              localStorage.setItem('notif', (notif += 1))
+            }
+          }
+        }
+      })
+      this.$store.commit(`user/${userTypes.SET_PUBNUB}`, true)
+    }
+  },
   methods: {
     /**
      * Called when the user click one of the service and the dialog appeared
      */
     onTriggerService(service) {
+      this.serviceName = service.name
       this.isService = true
       this.$store.commit(`guest/${guestTypes.SET_SERVICE}`, service)
     },
@@ -362,6 +392,24 @@ export default {
             kind: 'success',
             message: this.$t('orderPlaced')
           })
+          pubnub.publish(
+            {
+              channel: this.qr.room,
+              message: {
+                content: {
+                  sender: this.user.uid,
+                  message: {
+                    title: 'New Order from ' + this.qr.refData.room.name,
+                    body: `${this.serviceName} (${payload.count})`
+                  }
+                }
+              }
+            },
+            function(status, response) {
+              console.log(response)
+              // Handle error here
+            }
+          )
         }
       } catch (error) {
         this.$notify({

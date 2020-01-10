@@ -401,6 +401,7 @@ import pluralize from 'pluralize'
 import paramCase from 'param-case'
 
 import { db } from '~/utils/firebase'
+import { pubnub } from '~/utils/pubnub'
 
 export default {
   layout: 'admin',
@@ -497,7 +498,8 @@ export default {
         IDR: 'Rp'
       },
       // Hold interval id
-      interval: null
+      interval: null,
+      notif: null
     }
   },
   computed: {
@@ -666,13 +668,19 @@ export default {
         this.rooms = []
         this.services = []
       }
+    },
+    notif(value) {
+      document.querySelector("button[data-cy='trigger-refresh']").click()
     }
   },
   mounted() {
     this.initData()
-    this.interval = setInterval(() => {
-      this.initData()
-    }, 60 * 1000)
+    // this.interval = setInterval(() => {
+    //   this.initData()
+    // }, 60 * 1000)
+    setInterval(() => {
+      this.notif = localStorage.notif
+    }, 1000)
   },
   beforeDestroy() {
     clearInterval(this.interval)
@@ -733,6 +741,7 @@ export default {
             data.userRef.get(),
             data.serviceRef.get()
           ])
+          // console.log(serviceRefDoc)
           const [hotelRef, roomRef, userRef, serviceRef] = await Promise.all([
             hotelRefDoc.data(),
             roomRefDoc.data(),
@@ -808,6 +817,7 @@ export default {
             }
             if (cb) {
               const refData = await cb(data)
+              // console.log(data, refData)
               return {
                 ...data,
                 refData,
@@ -953,7 +963,27 @@ export default {
                 )
             }
           }
-          await this.getItems(this.collection, 'items', this.itemsCallback)
+          pubnub.publish(
+            {
+              channel: payload.room,
+              message: {
+                content: {
+                  sender: this.user.uid,
+                  message: {
+                    title: 'Order Updated for ' + this.item.refData.room.name,
+                    body: `${this.item.refData.service.name} (status: ${payload.status})`
+                  }
+                }
+              }
+            },
+            function(status, response) {
+              // Handle error here
+              console.log(response)
+            }
+          )
+          this.initData()
+          // document.querySelector("button[data-cy='trigger-refresh']").click()
+          // await this.getItems(this.collection, 'items', this.itemsCallback)
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
         }

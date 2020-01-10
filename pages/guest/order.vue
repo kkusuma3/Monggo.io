@@ -48,7 +48,7 @@
                   :disabled="isLoading"
                   :loading="isLoading"
                   color="primary"
-                  class="mb-5"
+                  class="mb-5 getOrders"
                   v-on="on"
                   @click="getOrders"
                 >
@@ -191,6 +191,8 @@ import { db } from '~/utils/firebase'
 import { types as guestTypes } from '~/store/guest'
 import { types as serviceTypes } from '~/store/service'
 
+import { pubnub } from '~/utils/pubnub'
+
 export default {
   head() {
     return {
@@ -220,12 +222,13 @@ export default {
         IDR: 'Rp'
       },
       // Hold interval id
-      interval: null
+      interval: null,
+      notif: null
     }
   },
   computed: {
     ...mapState(['isLoading', 'isDataLoaded']),
-    ...mapState('user', ['user']),
+    ...mapState('user', ['user', 'pubnub']),
     ...mapState('category', ['categories']),
     ...mapState('guest', ['qr', 'orders']),
     ...mapGetters('user', ['isAuth']),
@@ -311,10 +314,19 @@ export default {
       }
     }
   },
+  watch: {
+    notif(value) {
+      document.querySelector('.getOrders').click()
+    }
+  },
   mounted() {
-    this.interval = setInterval(() => {
-      this.getOrders()
-    }, 60 * 1000)
+    this.getOrders()
+    // this.interval = setInterval(() => {
+    //   this.getOrders()
+    // }, 60 * 1000)
+    setInterval(() => {
+      this.notif = localStorage.notif
+    }, 1000)
   },
   beforeDestroy() {
     clearInterval(this.interval)
@@ -348,6 +360,7 @@ export default {
      * Called when the user confirm cancellation process
      */
     async onCancelAction() {
+      const serviceName = this.item.refData.service.name
       try {
         this.$setLoading(true)
         await db
@@ -363,6 +376,24 @@ export default {
           )
         await Promise.all([this.getServices(), this.getOrders()])
         await this.onCancelCanceled()
+        pubnub.publish(
+          {
+            channel: this.qr.room,
+            message: {
+              content: {
+                sender: this.user.uid,
+                message: {
+                  title: 'Order canceled ' + this.qr.refData.room.name,
+                  body: serviceName
+                }
+              }
+            }
+          },
+          function(status, response) {
+            console.log(response)
+            // Handle error here
+          }
+        )
         await this.$notify({
           kind: 'success',
           message: this.$t('cancelationSuccess')

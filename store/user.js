@@ -5,10 +5,14 @@
 export const types = {
   SET_USER: 'SET_USER',
   SET_LOCALE: 'SET_LOCALE',
-  SET_QR: 'SET_QR'
+  SET_QR: 'SET_QR',
+  SET_PUBNUB: 'SET_PUBNUB',
+  SET_NOTIF: 'SET_NOTIF'
 }
 
 export const state = () => ({
+  notif: 0,
+  pubnub: false,
   qr: null,
   locale: null,
   user: null // object hold the entire user information,
@@ -49,5 +53,12 @@ export const mutations = {
   },
   [types.SET_QR]: (state, qr = null) => {
     state.qr = qr
+  },
+  [types.SET_PUBNUB]: (state, pubnub = false) => {
+    state.pubnub = pubnub
+  },
+  [types.SET_NOTIF]: (state, notif) => {
+    state.notif += notif
+    console.log(state.notif)
   }
 }
