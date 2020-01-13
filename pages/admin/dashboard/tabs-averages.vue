@@ -4,17 +4,17 @@
       <v-card>
         <v-card-text>
           <div class="display-1 text--primary">
-            30%
+            -
             <p class="body-2">Monggo.io {{ this.$t('averageUsageRate') }}</p>
           </div>
 
           <div class="display-1 text--primary">
-            70%
+            -
             <p class="body-2">Monggo.io {{ this.$t('maxUsageRate') }}</p>
           </div>
 
           <div class="display-1 text--primary">
-            4%
+            -
             <p class="body-2">Monggo.io {{ this.$t('minUsageRate') }}</p>
           </div>
         </v-card-text>
@@ -24,17 +24,17 @@
       <v-card>
         <v-card-text>
           <div class="display-1 text--primary">
-            30 <span class="body-2">{{ this.$t('perDayPerRoom') }}</span>
+            - <span class="body-2">{{ this.$t('perDayPerRoom') }}</span>
             <p class="body-2">{{ this.$t('avgWebAppVisits') }}</p>
           </div>
 
           <div class="display-1 text--primary">
-            12 <span class="body-2">{{ this.$t('perDayPerRoom') }}</span>
+            - <span class="body-2">{{ this.$t('perDayPerRoom') }}</span>
             <p class="body-2">{{ this.$t('avgRequestsMade') }}</p>
           </div>
 
           <div class="display-1 text--primary">
-            5 <span class="body-2">{{ this.$t('perDayPerRoom') }}</span>
+            - <span class="body-2">{{ this.$t('perDayPerRoom') }}</span>
             <p class="body-2">{{ this.$t('avgRequestsTracked') }}</p>
           </div>
         </v-card-text>
@@ -44,12 +44,12 @@
       <v-card style="height: 100%">
         <v-card-text>
           <div class="display-1 text--primary">
-            50%
+            -
             <p class="body-2">{{ this.$t('usersThatChoseEnglish') }}</p>
           </div>
 
           <div class="display-1 text--primary">
-            50%
+            -
             <p class="body-2">{{ this.$t('usersThatChoseIndonesian') }}</p>
           </div>
         </v-card-text>
