@@ -22,9 +22,9 @@
     <v-row>
       <v-col cols="12" md="4">
         <v-select
-          v-model="hotels[0]"
-          item-value="name"
-          :items="hotels"
+          v-model="hotel"
+          item-value="uid"
+          :items="allHotel"
           item-text="name"
           label="Hotel"
           :loading="isLoading"
@@ -43,18 +43,21 @@
           <v-btn
             x-large
             class="col-4"
+            :loading="isLoading"
             @click.native="setActiveTab('average')"
             >{{ $t('average') }}</v-btn
           >
           <v-btn
             x-large
             class="col-4"
+            :loading="isLoading"
             @click.native="setActiveTab('hitoday')"
             >{{ $t('today') }}</v-btn
           >
           <v-btn
             x-large
             class="col-4"
+            :loading="isLoading"
             @click.native="setActiveTab('history')"
             >{{ $t('history') }}</v-btn
           >
@@ -62,10 +65,14 @@
       </v-col>
     </v-row>
     <template v-if="activeTab === 'average' && !hideDashboard">
-      <tabs-averages :orders="orders" :services="services"></tabs-averages>
+      <tabs-averages
+        ref="tabsAverages"
+        :orders="orders"
+        :services="services"
+      ></tabs-averages>
     </template>
     <template v-else-if="activeTab === 'hitoday' && !hideDashboard">
-      <tabs-today :orders="orders"></tabs-today>
+      <tabs-today ref="tabsToday" :orders="orders"></tabs-today>
     </template>
     <template v-else-if="activeTab === 'history' && !hideDashboard">
       <tabs-history ref="tabsHistory" :orders="orders"></tabs-history>
@@ -97,7 +104,8 @@ export default {
       hideDashboard: true,
       activeTab: 'average',
       items: [], // Array hold all dashboard data
-      hotels: [], // Array hold hotel data
+      allHotel: [], // Array hold all hotel data
+      hotel: [], // Array hold hotel data
       services: [], // Array hold services data
       orders: [], // Array hold orders data
       users: [] // Array hold user data
@@ -172,21 +180,20 @@ export default {
     }
   },
   mounted() {
-    this.initData()
+    this.initData('firstLoad')
   },
   methods: {
     /**
      * Called to initialize the data
      */
-    async initData() {
+    async initData(action, paramHotelUid) {
       try {
         this.$setLoading(true)
-        this.collection = 'hotels'
         if (this.role === 'operator') {
           await Promise.all([
             this.getItems(
               db.collection('hotels').where('uid', '==', this.user.hotel),
-              'hotels'
+              'allHotel'
             ),
             this.getItems(
               db.collection('orders').where('hotel', '==', this.user.hotel),
@@ -197,13 +204,52 @@ export default {
               'services'
             )
           ])
-
-          this.orders.sort(this.sortbyCreatedAt)
-          if (this.hotels.length === 0) {
-            this.hideDashboard = true
-          } else {
-            this.hideDashboard = false
+          this.hotel = this.allHotel[0]
+        } else if (this.role === 'admin') {
+          let hotelUid = ''
+          if (action === 'firstLoad') {
+            await Promise.all([
+              this.getItems(db.collection('hotels'), 'allHotel')
+            ])
+            this.hotel = this.allHotel[0]
+            hotelUid = this.hotel.uid
+          } else if (action === 'changeHotel') {
+            hotelUid = paramHotelUid
           }
+
+          await Promise.all([
+            this.getItems(
+              db.collection('orders').where('hotel', '==', hotelUid),
+              'orders'
+            ),
+            this.getItems(
+              db.collection('services').where('hotel', '==', hotelUid),
+              'services'
+            )
+          ])
+
+          if (action === 'changeHotel') {
+            if (this.activeTab === 'average') {
+              this.$nextTick(() => {
+                this.$refs.tabsAverages.setServicesValues()
+              })
+            } else if (this.activeTab === 'hitoday') {
+              this.$nextTick(() => {
+                this.$refs.tabsToday.initTodayTabs()
+              })
+            } else if (this.activeTab === 'history') {
+              this.$nextTick(() => {
+                this.$refs.tabsHistory.initHistoryChart('daily')
+              })
+            }
+          }
+        }
+
+        this.orders.sort(this.sortbyCreatedAt)
+        if (this.hotel.length === 0) {
+          this.hideDashboard = true
+        } else {
+          this.hideDashboard = false
         }
       } catch (error) {
         this.$notify({
@@ -284,19 +330,22 @@ export default {
         this.$setLoading(false)
       }
     },
-    selectHotel(i) {
-      console.log(i)
+    /**
+     * Called when <select> hotel changed
+     */
+    selectHotel(hotelUid) {
+      const selectedHotel = this.allHotel.find(o => o.uid === hotelUid)
+      this.hotel = selectedHotel
+
+      if (this.role === 'admin') {
+        this.initData('changeHotel', hotelUid)
+      }
     },
     /**
      * Called when dashboard tab clicked
      */
     setActiveTab(activeTab) {
       this.activeTab = activeTab
-      // if (activeTab === 'history') {
-      //   this.$nextTick(() => {
-      //     this.$refs.tabsHistory.initHistoryChart('daily')
-      //   })
-      // }
     }
   }
 }

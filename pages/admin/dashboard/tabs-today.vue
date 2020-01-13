@@ -74,6 +74,10 @@ export default {
      * Called when tab today clicked
      */
     initTodayTabs() {
+      this.allRequest = 0
+      this.requestCompleted = 0
+      this.requestCanceled = 0
+
       const now = new Date()
       const todayDate =
         now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate()
