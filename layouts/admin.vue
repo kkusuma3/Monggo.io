@@ -233,7 +233,7 @@ export default {
     }
   },
   watch: {
-    '$vuetify.breakpoint.name': function(value) {
+    '$vuetify.breakpoint.name'(value) {
       if (value !== 'sm') {
         this.isSidebar = false
       }

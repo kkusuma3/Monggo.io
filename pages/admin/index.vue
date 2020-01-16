@@ -27,13 +27,13 @@ import { mapGetters } from 'vuex'
 
 export default {
   layout: 'admin',
+  data() {
+    return {}
+  },
   head() {
     return {
       title: 'Admin'
     }
-  },
-  data() {
-    return {}
   },
   computed: {
     ...mapGetters('user', ['role']),
