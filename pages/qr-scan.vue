@@ -208,11 +208,6 @@ import { auth, db } from '~/utils/firebase'
 import { types as guestTypes } from '~/store/guest'
 
 export default {
-  head() {
-    return {
-      title: this.$t('qrScan')
-    }
-  },
   data() {
     return {
       item: {
@@ -221,6 +216,11 @@ export default {
       },
       hotels: [], // Array hold hotel list
       rooms: [] // Array hold room list
+    }
+  },
+  head() {
+    return {
+      title: this.$t('qrScan')
     }
   },
   computed: {
@@ -256,7 +256,7 @@ export default {
     }
   },
   watch: {
-    'item.hotel': async function(hotel) {
+    async 'item.hotel'(hotel) {
       if (hotel) {
         await Promise.all([
           this.getItems(

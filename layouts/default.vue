@@ -226,9 +226,7 @@
               "
               color="primary"
               :href="
-                `tel:${qr.refData.hotel.callingCodes[0]}${
-                  qr.refData.hotel.phone
-                }`
+                `tel:${qr.refData.hotel.callingCodes[0]}${qr.refData.hotel.phone}`
               "
             >
               <v-icon left="">mdi-phone</v-icon>

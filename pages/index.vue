@@ -48,8 +48,8 @@
               <v-item
                 v-for="(loc, i) in locales"
                 :key="`loc_${loc.code}`"
-                :value="loc.code"
                 #default="{ active, toggle }"
+                :value="loc.code"
               >
                 <v-btn
                   :outlined="!active"
@@ -95,11 +95,6 @@
 import locales from '~/utils/locales'
 
 export default {
-  head() {
-    return {
-      title: this.$t('home')
-    }
-  },
   data() {
     return {
       locales: [...locales] // Locale imported from locale list
@@ -115,6 +110,11 @@ export default {
         this.$cookies.set('i18n_redirected', locale)
         this.$router.push(this.switchLocalePath(locale))
       }
+    }
+  },
+  head() {
+    return {
+      title: this.$t('home')
     }
   }
 }
