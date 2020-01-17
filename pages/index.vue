@@ -58,8 +58,8 @@
               <v-item
                 v-for="(loc, i) in locales"
                 :key="`loc_${loc.code}`"
-                :value="loc.code"
                 #default="{ active, toggle }"
+                :value="loc.code"
               >
                 <v-btn
                   :outlined="!active"
@@ -111,11 +111,6 @@ import { types as guestTypes } from '~/store/guest'
 import { auth, db } from '~/utils/firebase'
 
 export default {
-  head() {
-    return {
-      title: this.$t('home')
-    }
-  },
   data() {
     return {
       locales: [...locales] // Locale imported from locale list
@@ -142,6 +137,7 @@ export default {
       }
     }
   },
+
   mounted() {
     const { qrCode } = this.$route.query
     if (qrCode) {
@@ -183,6 +179,11 @@ export default {
         })
       }
       this.$setLoading(false)
+
+  head() {
+    return {
+      title: this.$t('home')
+
     }
   }
 }

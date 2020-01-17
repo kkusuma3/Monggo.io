@@ -57,7 +57,13 @@
       </template>
       <template #item.price="{ item }">
         <span>
-          {{ rate(item.refData.service, item.rates, item.count) }}
+          {{
+            (item &&
+              item.refData &&
+              item.refData.service &&
+              rate(item.refData.service, item.rates, item.count)) ||
+              'Gratis'
+          }}
         </span>
       </template>
       <template #item.status="{ item }">
@@ -350,7 +356,6 @@
         v-if="service"
         v-model="item.count"
         style="margin-top: 32px; margin-bottom: 32px"
-        :hint="`${service.count} in stocks`"
         :min="1"
         :max="service.count"
         :thumb-size="24"
@@ -359,6 +364,7 @@
         thumb-label="always"
         ticks=""
       />
+      <!-- :hint="`${service.count} in stocks`" -->
       <v-select
         v-model="item.status"
         v-validate="'required'"
@@ -398,18 +404,13 @@ import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
 import pluralize from 'pluralize'
-import paramCase from 'param-case'
+import { paramCase } from 'param-case'
 
 import { db } from '~/utils/firebase'
 import { pubnub } from '~/utils/pubnub'
 
 export default {
   layout: 'admin',
-  head() {
-    return {
-      title: `${this.$t(paramCase(this.title))} - Admin`
-    }
-  },
   data() {
     return {
       title: 'Order', // Hold page name
@@ -493,13 +494,18 @@ export default {
       ],
       // Hold currency symbol
       currencySymbols: {
-        USD: '$',
-        GBP: '£',
+        USD: 'Rp', // '$',
+        GBP: 'Rp', // '£',
         IDR: 'Rp'
       },
       // Hold interval id
       interval: null,
       notif: null
+    }
+  },
+  head() {
+    return {
+      title: `${this.$t(paramCase(this.title))} - Admin`
     }
   },
   computed: {
@@ -621,7 +627,11 @@ export default {
       return service
     },
     rate() {
-      return ({ currency, price }, rates, count) => {
+      return (
+        { currency = 'IDR', price } = { currency: 'IDR', price: 0 },
+        rates,
+        count
+      ) => {
         if (!rates) {
           return `${this.currencySymbols[currency]}0`
         }
@@ -652,7 +662,7 @@ export default {
     }
   },
   watch: {
-    'item.hotel': async function(hotel) {
+    async 'item.hotel'(hotel) {
       if (hotel) {
         await Promise.all([
           this.getItems(
@@ -694,6 +704,7 @@ export default {
         this.$setLoading(true)
         if (this.role === 'operator') {
           this.item.hotel = this.user.hotel
+          // eslint-disable-next-line
           this.itemOriginal.hotel = this.itemOriginal.hotel
 
           await this.getItems(
@@ -1060,7 +1071,8 @@ export default {
     async getRates() {
       try {
         this.$setLoading(true)
-        const rates = ['USD', 'GBP', 'IDR']
+        // -----------------------change the rate to all IDR-------------//
+        const rates = ['IDR', 'IDR', 'IDR'] // ['USD', 'GBP', 'IDR']
         const ratesConversion = await Promise.all(
           rates.map(rate =>
             this.$http.$get(

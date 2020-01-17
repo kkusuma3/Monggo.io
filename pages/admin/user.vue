@@ -318,18 +318,15 @@ import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
 import pluralize from 'pluralize'
-import paramCase from 'param-case'
+
+import { paramCase } from 'param-case'
 import { types as userTypes } from '~/store/user'
+
 
 import { auth, db } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
-  head() {
-    return {
-      title: `${this.$t(paramCase(this.title))} - Admin`
-    }
-  },
   data() {
     return {
       title: 'User', // Hold page name
@@ -380,7 +377,7 @@ export default {
         name: null,
         email: null,
         phone: null,
-        currency: 'USD',
+        currency: 'IDR', // 'USD',
         avatar: '',
         role: null,
         hotel: null,
@@ -394,7 +391,7 @@ export default {
         name: null,
         email: null,
         phone: null,
-        currency: 'USD',
+        currency: 'IDR', // 'USD',
         avatar: '',
         role: null,
         hotel: null,
@@ -416,6 +413,11 @@ export default {
       ],
       // Array hold hotel data
       hotels: []
+    }
+  },
+  head() {
+    return {
+      title: `${this.$t(paramCase(this.title))} - Admin`
     }
   },
   computed: {
@@ -516,7 +518,7 @@ export default {
     }
   },
   watch: {
-    'item.role': function(role) {
+    'item.role'(role) {
       if (role !== 'operator' && role !== 'worker') {
         this.item.hotel = null
         this.itemOriginal.hotel = null
@@ -555,7 +557,7 @@ export default {
         name: null,
         email: null,
         phone: null,
-        currency: 'USD',
+        currency: 'IDR', // 'USD',
         avatar: '',
         role: null,
         hotel: null,

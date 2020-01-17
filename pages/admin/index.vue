@@ -30,14 +30,14 @@ import { pubnub, notifyMe } from '~/utils/pubnub'
 
 export default {
   layout: 'admin',
+  data() {
+    return {}
+  },
   head() {
     return {
       title: 'Admin',
       rooms: null
     }
-  },
-  data() {
-    return {}
   },
   computed: {
     ...mapState('user', ['user', 'pubnub']),

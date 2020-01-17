@@ -246,9 +246,7 @@
               "
               color="primary"
               :href="
-                `tel:${qr.refData.hotel.callingCodes[0]}${
-                  qr.refData.hotel.phone
-                }`
+                `tel:${qr.refData.hotel.callingCodes[0]}${qr.refData.hotel.phone}`
               "
             >
               <v-icon left="">mdi-phone</v-icon>
@@ -644,7 +642,7 @@ export default {
     async getRates() {
       try {
         this.$setLoading(true)
-        const rates = ['USD', 'GBP', 'IDR']
+        const rates = ['IDR', 'IDR', 'IDR'] // ['USD', 'GBP', 'IDR']
         const ratesConversion = await Promise.all(
           rates.map(rate =>
             this.$http.$get(
@@ -838,7 +836,7 @@ export default {
                 name: `User ${uuidv4().split('-')[4]}`,
                 email: user.email,
                 phone: user.phoneNumber,
-                currency: 'USD',
+                currency: 'IDR', // 'USD',
                 avatar: user.photoURL,
                 isAnonymous: user.isAnonymous,
                 role: 'guest',

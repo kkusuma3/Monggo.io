@@ -145,7 +145,6 @@
                   v-if="service"
                   v-model="count"
                   style="margin-top: 32px"
-                  :hint="`${service.count} in stocks`"
                   :min="1"
                   :max="5"
                   :thumb-size="24"
@@ -154,6 +153,8 @@
                   thumb-label="always"
                   ticks=""
                 />
+                <!--This is used to item avalaibality-->
+                <!-- :hint="`${service.count} in stocks`" -->
               </v-card-text>
               <v-card-text class="pa-5 pa-4">
                 <v-textarea
@@ -201,18 +202,13 @@ import { db } from '~/utils/firebase'
 import { pubnub, notifyMe } from '~/utils/pubnub'
 
 export default {
-  head() {
-    return {
-      title: `${this.$t('home')} - ${this.$t('guest')}`
-    }
-  },
   data() {
     return {
       isService: false, // Hold service dialog
       // Hold currency symbol
       currencySymbols: {
-        USD: '$',
-        GBP: '£',
+        USD: 'Rp', // '$',
+        GBP: 'Rp', // '£',
         IDR: 'Rp'
       },
       // Hold service count
@@ -228,6 +224,11 @@ export default {
         { text: this.$t('dateAsc'), value: 'createdAt asc' }
       ],
       serviceName: null
+    }
+  },
+  head() {
+    return {
+      title: `${this.$t('home')} - ${this.$t('guest')}`
     }
   },
   computed: {

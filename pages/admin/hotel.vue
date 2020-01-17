@@ -363,18 +363,13 @@ import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
 import pluralize from 'pluralize'
-import paramCase from 'param-case'
+import { paramCase } from 'param-case'
 
 import services from '~/utils/services'
 import { db, storage } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
-  head() {
-    return {
-      title: `${this.$t(paramCase(this.title))} - Admin`
-    }
-  },
   data() {
     return {
       title: 'Hotel', // Hold page name
@@ -471,6 +466,11 @@ export default {
       ]
     }
   },
+  head() {
+    return {
+      title: `${this.$t(paramCase(this.title))} - Admin`
+    }
+  },
   computed: {
     ...mapState(['isLoading']),
     collection() {
@@ -522,7 +522,7 @@ export default {
     }
   },
   watch: {
-    'item.images': async function(images) {
+    async 'item.images'(images) {
       if (images && images.length > 0) {
         const imagesMeta = await Promise.all(
           images.map(async (image, i) => ({
@@ -536,7 +536,7 @@ export default {
         this.item.imagesMeta = []
       }
     },
-    'itemOriginal.images': async function(images) {
+    async 'itemOriginal.images'(images) {
       if (images && images.length > 0) {
         const imagesMeta = await Promise.all(
           images.map(async (image, i) => ({

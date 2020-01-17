@@ -289,18 +289,13 @@ import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
 import pluralize from 'pluralize'
-import paramCase from 'param-case'
+import { paramCase } from 'param-case'
 import QrCode from '@chenfengyuan/vue-qrcode'
 
 import { db } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
-  head() {
-    return {
-      title: `${this.$t(paramCase(this.title))} - Admin`
-    }
-  },
   components: {
     QrCode
   },
@@ -368,6 +363,11 @@ export default {
       hotels: []
     }
   },
+  head() {
+    return {
+      title: `${this.$t(paramCase(this.title))} - Admin`
+    }
+  },
   computed: {
     ...mapState(['isLoading']),
     ...mapState('user', ['user']),
@@ -426,7 +426,7 @@ export default {
     }
   },
   watch: {
-    'item.hotel': async function(hotel) {
+    async 'item.hotel'(hotel) {
       if (hotel) {
         await Promise.all([
           this.getItems(
@@ -439,7 +439,7 @@ export default {
         this.rooms = []
       }
     },
-    'item.room': function(id) {
+    'item.room'(id) {
       if (id) {
         const room = this.rooms.find(({ uid }) => uid === id)
         if (id !== this.itemOriginal.room) {
@@ -474,6 +474,7 @@ export default {
         this.$setLoading(true)
         if (this.role === 'operator') {
           this.item.hotel = this.user.hotel
+          // eslint-disable-next-line
           this.itemOriginal.hotel = this.itemOriginal.hotel
 
           await Promise.all([

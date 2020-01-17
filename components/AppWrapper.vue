@@ -285,7 +285,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import paramCase from 'param-case'
+import { paramCase } from 'param-case'
 
 export default {
   name: 'AppWrapper',

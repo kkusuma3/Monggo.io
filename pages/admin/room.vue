@@ -359,6 +359,7 @@ import { db, storage } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
+
   head() {
     return {
       title: `${this.$t(this.title.toLowerCase())} - Admin`
@@ -367,6 +368,7 @@ export default {
   components: {
     QrCode
   },
+
   data() {
     return {
       title: 'Room', // Hold page name
@@ -525,7 +527,7 @@ export default {
     }
   },
   watch: {
-    'item.images': async function(images) {
+    async 'item.images'(images) {
       if (images && images.length > 0) {
         const imagesMeta = await Promise.all(
           images.map(async (image, i) => ({
@@ -539,7 +541,7 @@ export default {
         this.item.imagesMeta = []
       }
     },
-    'itemOriginal.images': async function(images) {
+    async 'itemOriginal.images'(images) {
       if (images && images.length > 0) {
         const imagesMeta = await Promise.all(
           images.map(async (image, i) => ({
@@ -553,7 +555,7 @@ export default {
         this.itemOriginal.imagesMeta = []
       }
     },
-    'item.status': async function(status) {
+    async 'item.status'(status) {
       try {
         this.$setLoading(true)
         if (status === 'reserved') {
@@ -587,6 +589,7 @@ export default {
         this.$setLoading(true)
         if (this.role === 'operator') {
           this.item.hotel = this.user.hotel
+          // eslint-disable-next-line
           this.itemOriginal.hotel = this.itemOriginal.hotel
 
           await Promise.all([

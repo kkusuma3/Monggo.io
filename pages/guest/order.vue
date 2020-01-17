@@ -194,11 +194,6 @@ import { types as serviceTypes } from '~/store/service'
 import { pubnub } from '~/utils/pubnub'
 
 export default {
-  head() {
-    return {
-      title: `${this.$t('order')} - ${this.$t('guest')}`
-    }
-  },
   data() {
     return {
       isCancelling: false, // Hold cancellation dialog status
@@ -217,13 +212,18 @@ export default {
       },
       // Hold currency symbol
       currencySymbols: {
-        USD: '$',
-        GBP: '£',
+        USD: 'Rp', // '$',
+        GBP: 'RP', // '£',
         IDR: 'Rp'
       },
       // Hold interval id
       interval: null,
       notif: null
+    }
+  },
+  head() {
+    return {
+      title: `${this.$t('order')} - ${this.$t('guest')}`
     }
   },
   computed: {
