@@ -29,6 +29,26 @@
     "priceDesc": "Paling Mahal",
     "dateDesc": "Terbaru",
     "dateAsc": "Terlama"
+  },
+  "cn": {
+    "orderPlaced": "您的请求已发送。检查菜单上的订单状态 @:(order)",
+    "noService": "没有适用于此类别的服务",
+    "nameAsc": "AZ名称",
+    "nameDesc": "名字叫Z-A",
+    "priceAsc": "最便宜的",
+    "priceDesc": "最贵的",
+    "dateDesc": "最新的",
+    "dateAsc": "最长的"
+  },
+  "ja": {
+    "orderPlaced": "リクエストが送信されました。メニューで注文状況を確認する @:(order)",
+    "noService": "このカテゴリで利用できるサービスはありません",
+    "nameAsc": "A-Z名",
+    "nameDesc": "名前Z-A",
+    "priceAsc": "最も安い",
+    "priceDesc": "最も高価な",
+    "dateDesc": "最新の",
+    "dateAsc": "最長"
   }
 }
 </i18n>
@@ -176,7 +196,10 @@ import cleanDeep from 'clean-deep'
 import _flatten from 'lodash.flatten'
 import { types as guestTypes } from '~/store/guest'
 import { types as serviceTypes } from '~/store/service'
+import { types as userTypes } from '~/store/user'
+
 import { db } from '~/utils/firebase'
+import { pubnub, notifyMe } from '~/utils/pubnub'
 
 export default {
   data() {
@@ -199,7 +222,8 @@ export default {
         { text: this.$t('priceDesc'), value: 'price desc' },
         { text: this.$t('dateDesc'), value: 'createdAt desc' },
         { text: this.$t('dateAsc'), value: 'createdAt asc' }
-      ]
+      ],
+      serviceName: null
     }
   },
   head() {
@@ -210,7 +234,7 @@ export default {
   computed: {
     ...mapState(['isLoading', 'isDataLoaded']),
     ...mapState('service', ['services']),
-    ...mapState('user', ['user']),
+    ...mapState('user', ['user', 'pubnub']),
     ...mapState('category', ['categories']),
     ...mapGetters('user', ['isAuth']),
     ...mapState('guest', ['qr', 'service', 'rates']),
@@ -251,9 +275,9 @@ export default {
             }
             const rate = this.rates.find(({ base }) => base === currency)
             if (rate) {
-              return `${this.currencySymbols[this.user.currency]}${(
+              return `${this.currencySymbols[this.user.currency]}${parseFloat(
                 newPrice * rate.rates[this.user.currency] || 1
-              ).toPrecision(4)}`
+              ).toFixed(2)}`
             }
             return `${this.currencySymbols[currency]}0`
           }
@@ -275,11 +299,37 @@ export default {
       }
     }
   },
+  mounted() {
+    notifyMe()
+    const user = this.user
+    console.log(user)
+    if (this.pubnub === false) {
+      pubnub.subscribe({
+        channels: [this.qr.room],
+        withPresence: true
+      })
+      pubnub.addListener({
+        message: function(event) {
+          if (user.uid !== event.message.content.sender) {
+            notifyMe(event.message)
+            let notif = Number(localStorage.getItem('notif'))
+            if (!notif) {
+              localStorage.setItem('notif', 1)
+            } else {
+              localStorage.setItem('notif', (notif += 1))
+            }
+          }
+        }
+      })
+      this.$store.commit(`user/${userTypes.SET_PUBNUB}`, true)
+    }
+  },
   methods: {
     /**
      * Called when the user click one of the service and the dialog appeared
      */
     onTriggerService(service) {
+      this.serviceName = service.name
       this.isService = true
       this.$store.commit(`guest/${guestTypes.SET_SERVICE}`, service)
     },
@@ -343,6 +393,24 @@ export default {
             kind: 'success',
             message: this.$t('orderPlaced')
           })
+          pubnub.publish(
+            {
+              channel: this.qr.room,
+              message: {
+                content: {
+                  sender: this.user.uid,
+                  message: {
+                    title: 'New Order from ' + this.qr.refData.room.name,
+                    body: `${this.serviceName} (${payload.count})`
+                  }
+                }
+              }
+            },
+            function(status, response) {
+              console.log(response)
+              // Handle error here
+            }
+          )
         }
       } catch (error) {
         this.$notify({

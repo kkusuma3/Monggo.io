@@ -24,7 +24,7 @@
   },
   "id": {
     "scan": "Pindai kode QR pada ruangan di kotak di bawah ini",
-    "or": "Atau",
+    "or": "或",
     "manual": "Masukkan secara manual",
     "hotelCode": "Kode Hotel",
     "roomCode": "Kode Ruangan",
@@ -32,6 +32,28 @@
     "hintRoomCode": "Contoh: 4321",
     "submit": "Kirim",
     "qrScan": "Pemindaian @:(qr-code)"
+  },
+  "cn": {
+    "scan": "在下面的方框中扫描房间中的QR码",
+    "or": "Atau",
+    "manual": "手动输入",
+    "hotelCode": "酒店代码",
+    "roomCode": "房间代码",
+    "hintHotelCode": "示例：HIL1092",
+    "hintRoomCode": "示例：4321",
+    "submit": "提交",
+    "qrScan": "扫瞄 @:(qr-code)"
+  },
+  "ja": {
+    "scan": "下のボックス内の部屋でQRコードをスキャンします",
+    "or": "または",
+    "manual": "手動で入力してください",
+    "hotelCode": "ホテルコード",
+    "roomCode": "ルームコード",
+    "hintHotelCode": "例：HIL1092",
+    "hintRoomCode": "例：4321",
+    "submit": "提出する",
+    "qrScan": "スキャン @:(qr-code)"
   }
 }
 </i18n>
@@ -344,13 +366,33 @@ export default {
       async function(uid) {
         try {
           this.$setLoading(true)
-          if (!this.isAuth) {
-            await auth.signInAnonymously()
+          const qr = await db
+            .collection('qr-codes')
+            .where('uid', '==', uid)
+            .get()
+          if (qr.docs[0]) {
+            const room = await qr.docs[0].data().roomRef.get()
+            const roomData = room.data()
+            if (roomData.status !== 'empty') {
+              this.$notify({
+                isError: true,
+                message: roomData.name + ' is not available'
+              })
+            } else {
+              if (!this.isAuth) {
+                await auth.signInAnonymously()
+              }
+              this.$store.commit(`guest/${guestTypes.SET_UID}`, uid)
+              this.$cookies.set('qr', uid)
+              const path = this.localePath({ name: 'guest' })
+              this.$router.replace(path)
+            }
+          } else {
+            this.$notify({
+              isError: true,
+              message: 'Invalid QR-Code'
+            })
           }
-          this.$store.commit(`guest/${guestTypes.SET_UID}`, uid)
-          this.$cookies.set('qr', uid)
-          const path = this.localePath({ name: 'guest' })
-          this.$router.replace(path)
         } catch (error) {
           this.$notify({
             kind: 'error',
