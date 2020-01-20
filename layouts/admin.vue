@@ -14,16 +14,6 @@
     "loginSuccess": "Berhasil @:(login)",
     "logoutSuccess": "Berhasil @:(logout)",
     "notAdminOperatorNorWorker": "Anda bukan admin, operator maupun pegawai"
-  },
-  "cn": {
-    "loginSuccess": "成功了 @:(login)",
-    "logoutSuccess": "成功了 @:(logout)",
-    "notAdminOperatorNorWorker": "您不是管理员，操作员或员工"
-  },
-  "ja": {
-    "loginSuccess": "成功しました @:(login)",
-    "logoutSuccess": "成功しました @:(logout)",
-    "notAdminOperatorNorWorker": "あなたは管理者、オペレーター、従業員ではありません"
   }
 }
 </i18n>
@@ -280,10 +270,8 @@ export default {
      * Called to get user state change (after logged in)
      */
     onAuthStateChanged() {
-      this.$setLoading(true)
       auth.onAuthStateChanged(async user => {
         if (user === null) {
-          this.$setLoading(false)
           this.$cookies.remove('qr')
           this.$router.replace(this.localePath({ name: 'admin-login' }))
           return
@@ -360,7 +348,6 @@ export default {
      * Called to initialize authentication
      */
     initAuth() {
-      this.$setLoading(true)
       if (!this.isAuth) {
         const path = this.localePath({ name: 'admin-login' })
         this.$router.replace(path)

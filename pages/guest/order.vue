@@ -14,16 +14,6 @@
     "orderEmpty": "Anda masih belum memiliki pesanan. Anda dapat memesan layanan kami melalui halaman beranda.",
     "cancelConfirmationWarn": "Apakah Anda yakin ingin membatalkan pesanan ini?",
     "cancelationSuccess": "Pembatalan pesanan sukses"
-  },
-  "cn": {
-    "orderEmpty": "您仍然没有订单。您可以通过主页订购我们的服务。",
-    "cancelConfirmationWarn": "您确定要取消此订单吗？",
-    "cancelationSuccess": "订单取消成功"
-  },
-  "ja": {
-    "orderEmpty": "あなたにはまだ注文がありません。ホームページから当社のサービスを注文できます。",
-    "cancelConfirmationWarn": "この注文をキャンセルしてもよろしいですか？",
-    "cancelationSuccess": "注文のキャンセルに成功しました"
   }
 }
 </i18n>
@@ -48,7 +38,7 @@
                   :disabled="isLoading"
                   :loading="isLoading"
                   color="primary"
-                  class="mb-5 getOrders"
+                  class="mb-5"
                   v-on="on"
                   @click="getOrders"
                 >
@@ -191,8 +181,6 @@ import { db } from '~/utils/firebase'
 import { types as guestTypes } from '~/store/guest'
 import { types as serviceTypes } from '~/store/service'
 
-import { pubnub } from '~/utils/pubnub'
-
 export default {
   data() {
     return {
@@ -217,8 +205,7 @@ export default {
         IDR: 'Rp'
       },
       // Hold interval id
-      interval: null,
-      notif: null
+      interval: null
     }
   },
   head() {
@@ -228,7 +215,7 @@ export default {
   },
   computed: {
     ...mapState(['isLoading', 'isDataLoaded']),
-    ...mapState('user', ['user', 'pubnub']),
+    ...mapState('user', ['user']),
     ...mapState('category', ['categories']),
     ...mapState('guest', ['qr', 'orders']),
     ...mapGetters('user', ['isAuth']),
@@ -302,9 +289,9 @@ export default {
             }
             const rate = rates.find(({ base }) => base === currency)
             if (rate) {
-              return `${this.currencySymbols[this.user.currency]}${parseFloat(
+              return `${this.currencySymbols[this.user.currency]}${(
                 newPrice * rate.rates[this.user.currency] || 1
-              ).toFixed(2)}`
+              ).toPrecision(4)}`
             }
             return `${this.currencySymbols[currency]}0`
           }
@@ -314,19 +301,10 @@ export default {
       }
     }
   },
-  watch: {
-    notif(value) {
-      document.querySelector('.getOrders').click()
-    }
-  },
   mounted() {
-    this.getOrders()
-    // this.interval = setInterval(() => {
-    //   this.getOrders()
-    // }, 60 * 1000)
-    setInterval(() => {
-      this.notif = localStorage.notif
-    }, 1000)
+    this.interval = setInterval(() => {
+      this.getOrders()
+    }, 60 * 1000)
   },
   beforeDestroy() {
     clearInterval(this.interval)
@@ -360,7 +338,6 @@ export default {
      * Called when the user confirm cancellation process
      */
     async onCancelAction() {
-      const serviceName = this.item.refData.service.name
       try {
         this.$setLoading(true)
         await db
@@ -376,24 +353,6 @@ export default {
           )
         await Promise.all([this.getServices(), this.getOrders()])
         await this.onCancelCanceled()
-        pubnub.publish(
-          {
-            channel: this.qr.room,
-            message: {
-              content: {
-                sender: this.user.uid,
-                message: {
-                  title: 'Order canceled ' + this.qr.refData.room.name,
-                  body: serviceName
-                }
-              }
-            }
-          },
-          function(status, response) {
-            console.log(response)
-            // Handle error here
-          }
-        )
         await this.$notify({
           kind: 'success',
           message: this.$t('cancelationSuccess')

@@ -11,14 +11,6 @@
   "id": {
     "wifiName": "@:(name) @:(wifi)",
     "wifiPass": "@:(password) @:(wifi)"
-  },
-  "cn": {
-    "wifiName": "@:(name) @:(wifi)",
-    "wifiPass": "@:(password) @:(wifi)"
-  },
-  "ja": {
-    "wifiName": "@:(name) @:(wifi)",
-    "wifiPass": "@:(password) @:(wifi)"
   }
 }
 </i18n>
@@ -142,22 +134,6 @@
         required=""
         :label="$t('name')"
         outlined=""
-      />
-      <v-text-field
-        v-if="!isEditing"
-        v-model="item.rooms"
-        v-validate="'required|numeric'"
-        :error-messages="errors.collect('rooms')"
-        :disabled="isLoading"
-        data-vv-name="rooms"
-        :data-vv-as="$t('rooms')"
-        name="rooms"
-        clearable=""
-        data-vv-value-path="item.rooms"
-        required=""
-        :label="$t('numberOfRooms')"
-        outlined=""
-        type="number"
       />
       <v-row>
         <v-col cols="12" md="6">
@@ -365,7 +341,6 @@ import initials from 'initials'
 import pluralize from 'pluralize'
 import { paramCase } from 'param-case'
 
-import services from '~/utils/services'
 import { db, storage } from '~/utils/firebase'
 
 export default {
@@ -417,7 +392,6 @@ export default {
       item: {
         uid: uuidv4(),
         name: null,
-        rooms: 1,
         callingCodes: [],
         phone: null,
         wifiName: null,
@@ -434,7 +408,6 @@ export default {
       itemOriginal: {
         uid: uuidv4(),
         name: null,
-        rooms: 1,
         callingCodes: [],
         phone: null,
         wifiName: null,
@@ -531,7 +504,10 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.item.imagesMeta = _cloneDeep(imagesMeta)
+        this.item = {
+          ...this.item,
+          imagesMeta: _cloneDeep(imagesMeta)
+        }
       } else {
         this.item.imagesMeta = []
       }
@@ -545,7 +521,10 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.itemOriginal.imagesMeta = _cloneDeep(imagesMeta)
+        this.itemOriginal = {
+          ...this.itemOriginal,
+          imagesMeta: _cloneDeep(imagesMeta)
+        }
       } else {
         this.itemOriginal.imagesMeta = []
       }
@@ -641,7 +620,6 @@ export default {
       const item = {
         uid: uuidv4(),
         name: null,
-        rooms: 1,
         callingCodes: [],
         phone: null,
         wifiName: null,
@@ -868,105 +846,18 @@ export default {
           delete payload.images
           delete payload.refData
           this.isSaved = true
-          if (this.isEditing) {
-            await db
-              .collection(this.collection)
-              .doc(payload.uid)
-              .set(
-                cleanDeep(payload, {
-                  emptyArrays: false,
-                  emptyObjects: false,
-                  emptyStrings: false,
-                  nullValues: false
-                }),
-                { merge: true }
-              )
-          } else {
-            const roomNumber = Number(payload.rooms)
-            const newRoomArray = Array.from(Array(roomNumber).keys())
-            const addRooms = newRoomArray.map(room => {
-              const roomUid = uuidv4()
-              const qrUid = uuidv4()
-              return Promise.all([
-                /**
-                 * Create Room
-                 */
-                db
-                  .collection('rooms')
-                  .doc(roomUid)
-                  .set({
-                    createdAt: payload.createdAt,
-                    description: null,
-                    hasQr: true,
-                    hotel: payload.uid,
-                    hotelRef: db.collection('hotels').doc(payload.uid),
-                    imagesMeta: null,
-                    name: 'Room ' + Number(room + 1),
-                    qrCode: 'https://monggo.io?qrCode=' + qrUid,
-                    status: 'empty',
-                    uid: roomUid,
-                    updatedAt: payload.updatedAt,
-                    user: null,
-                    usersRef: null
-                  }),
-                /**
-                 * Create QR
-                 */
-                db
-                  .collection('qr-codes')
-                  .doc(qrUid)
-                  .set({
-                    createdAt: payload.createdAt,
-                    hotel: payload.uid,
-                    hotelRef: db.collection('hotels').doc(payload.uid),
-                    room: roomUid,
-                    roomRef: db.collection('rooms').doc(roomUid),
-                    uid: qrUid,
-                    updatedAt: payload.updatedAt
-                  })
-              ])
-            })
-            const addServices = services.map(service => {
-              const uid = uuidv4()
-              return db
-                .collection('services')
-                .doc(uid)
-                .set({
-                  category: service.category,
-                  categoryRef: db
-                    .collection('categories')
-                    .doc(service.category),
-                  count: service.count,
-                  createdAt: payload.createdAt,
-                  currency: service.currency,
-                  description: service.description,
-                  hotel: payload.uid,
-                  hotelRef: db.collection('hotels').doc(payload.uid),
-                  imagesMeta: service.imagesMeta,
-                  name: service.name,
-                  price: service.price,
-                  uid,
-                  updatedAt: payload.updatedAt
-                })
-            })
-            await Promise.all([
-              db
-                .collection(this.collection)
-                .doc(payload.uid)
-                .set(
-                  cleanDeep(payload, {
-                    emptyArrays: false,
-                    emptyObjects: false,
-                    emptyStrings: false,
-                    nullValues: false
-                  }),
-                  { merge: true }
-                ),
-              addRooms,
-              addServices
-            ])
-          }
-
+          await db
+            .collection(this.collection)
+            .doc(payload.uid)
+            .set(
+              cleanDeep(payload, {
+                emptyArrays: false,
+                emptyObjects: false,
+                emptyStrings: false,
+                nullValues: false
+              }),
+              { merge: true }
+            )
           await this.getItems()
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: this.$t('dataSaved') })

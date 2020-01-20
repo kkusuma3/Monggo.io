@@ -14,16 +14,6 @@
     "refreshData": "@:(refresh) data {title}",
     "deleteConfirmation": "@:confirmation Penghapusan",
     "deleteConfirmationWarn": "Apakah Anda yakin ingin menghapus data ini?"
-  },
-  "cn": {
-    "refreshData": "@:(refresh) 数据 {title}",
-    "deleteConfirmation": "@:confirmation 彭加山",
-    "deleteConfirmationWarn": "您确定要删除此数据吗？"
-  },
-  "ja": {
-    "refreshData": "@:(refresh) データ {title}",
-    "deleteConfirmation": "@:confirmation 削除",
-    "deleteConfirmationWarn": "このデータを削除してもよろしいですか？"
   }
 }
 </i18n>
