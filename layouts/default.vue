@@ -29,6 +29,26 @@
     "wifiPassCopied": "@:(wifiPass) telah disalin",
     "takeSurvey": "Ikuti Survei",
     "winPrizes": "Menangkan Hadiah"
+  },
+  "cn": {
+    "searchService": "@:(search) @:(service)",
+    "hotelInfo": "Informasi @:(hotel)",
+    "wifiName": "@:(name) @:(wifi)",
+    "wifiPass": "@:(password) @:(wifi)",
+    "wifiNameCopied": "@:(wifiName) 复制了",
+    "wifiPassCopied": "@:(wifiPass) 复制了",
+    "takeSurvey": "参加调查",
+    "winPrizes": "赢奖品"
+  },
+  "ja": {
+    "searchService": "@:(search) @:(service)",
+    "hotelInfo": "情報 @:(hotel)",
+    "wifiName": "@:(name) @:(wifi)",
+    "wifiPass": "@:(password) @:(wifi)",
+    "wifiNameCopied": "@:(wifiName) コピーされました",
+    "wifiPassCopied": "@:(wifiPass) コピーされました",
+    "takeSurvey": "調査を受ける",
+    "winPrizes": "賞品を獲得する"
   }
 }
 </i18n>
@@ -226,9 +246,7 @@
               "
               color="primary"
               :href="
-                `tel:${qr.refData.hotel.callingCodes[0]}${
-                  qr.refData.hotel.phone
-                }`
+                `tel:${qr.refData.hotel.callingCodes[0]}${qr.refData.hotel.phone}`
               "
             >
               <v-icon left="">mdi-phone</v-icon>

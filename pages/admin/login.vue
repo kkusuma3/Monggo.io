@@ -21,13 +21,13 @@ import { types as userTypes } from '~/store/user'
 
 export default {
   layout: 'admin',
+  data() {
+    return {}
+  },
   head() {
     return {
       title: this.$t('login')
     }
-  },
-  data() {
-    return {}
   },
   computed: {
     ...mapState(['isLoading']),
@@ -39,6 +39,9 @@ export default {
         this.$store.commit(`user/${userTypes.SET_USER}`, user)
       }
     }
+  },
+  mounted() {
+    this.$setLoading(false)
   },
   methods: {
     /**

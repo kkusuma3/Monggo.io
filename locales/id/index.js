@@ -61,5 +61,6 @@ export default {
   callingCode: 'Kode Panggilan',
   free: 'Gratis',
   request: 'Pesan',
-  sortBy: 'Urutkan berdasarkan'
+  sortBy: 'Urutkan berdasarkan',
+  numberOfRooms: 'Jumlah Ruangan'
 }
