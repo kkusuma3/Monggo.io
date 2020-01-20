@@ -61,6 +61,5 @@ export default {
   callingCode: 'Calling Code',
   free: 'Free',
   request: 'Request',
-  sortBy: 'Sort by',
-  numberOfRooms: 'Number of Rooms'
+  sortBy: 'Sort by'
 }

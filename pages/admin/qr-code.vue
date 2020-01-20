@@ -23,22 +23,6 @@
     "seeQr": "@:(see) @:(qr-code) untuk {name}",
     "editQr": "@:(edit) @:(qr-code) untuk {name}",
     "deleteQr": "@:(delete) @:(qr-code) untuk {name}"
-  },
-  "cn": {
-    "alreadyHasQr": "已经有 @:(qr-code)",
-    "notHasQr": "没有 @:(qr-code)",
-    "uniqueQr": "请选择另一个房间，这个房间已经有 @:(qr-code)",
-    "seeQr": "@:(see) @:(qr-code) 对于 {name}",
-    "editQr": "@:(edit) @:(qr-code) 对于 {name}",
-    "deleteQr": "@:(delete) @:(qr-code) 对于 {name}"
-  },
-  "jp": {
-    "alreadyHasQr": "すでに持っています @:(qr-code)",
-    "notHasQr": "持っていない @:(qr-code)",
-    "uniqueQr": "別の部屋を選択してください。この部屋には既に @:(qr-code)",
-    "seeQr": "@:(see) @:(qr-code) ために {name}",
-    "editQr": "@:(edit) @:(qr-code) ために {name}",
-    "deleteQr": "@:(delete) @:(qr-code) ために {name}"
   }
 }
 </i18n>

@@ -23,10 +23,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex'
-import { db } from '~/utils/firebase'
-import { types as userTypes } from '~/store/user'
-import { pubnub, notifyMe } from '~/utils/pubnub'
+import { mapGetters } from 'vuex'
 
 export default {
   layout: 'admin',
@@ -35,12 +32,10 @@ export default {
   },
   head() {
     return {
-      title: 'Admin',
-      rooms: null
+      title: 'Admin'
     }
   },
   computed: {
-    ...mapState('user', ['user', 'pubnub']),
     ...mapGetters('user', ['role']),
     menus() {
       switch (this.role) {
@@ -104,38 +99,6 @@ export default {
         default:
           return []
       }
-    }
-  },
-  async mounted() {
-    notifyMe()
-    const user = this.user
-    const roomsSnap = await db
-      .collection('rooms')
-      .where('hotel', '==', this.user.hotel)
-      .orderBy('createdAt', 'desc')
-      .get()
-    this.rooms = roomsSnap.docs.map(room => {
-      return room.data().uid
-    })
-    if (this.pubnub === false) {
-      pubnub.subscribe({
-        channels: [this.rooms],
-        withPresence: true
-      })
-      pubnub.addListener({
-        message: function(event) {
-          if (user.uid !== event.message.content.sender) {
-            notifyMe(event.message)
-            let notif = Number(localStorage.getItem('notif'))
-            if (!notif) {
-              localStorage.setItem('notif', 1)
-            } else {
-              localStorage.setItem('notif', (notif += 1))
-            }
-          }
-        }
-      })
-      this.$store.commit(`user/${userTypes.SET_PUBNUB}`, true)
     }
   }
 }

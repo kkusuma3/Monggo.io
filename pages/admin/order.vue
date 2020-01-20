@@ -11,14 +11,6 @@
   "id": {
     "editOrder": "@:(edit) @:(order) untuk {name}",
     "deleteOrder": "@:(delete) @:(order) untuk {name}"
-  },
-  "cn": {
-    "editOrder": "@:(edit) @:(order) 对于 {name}",
-    "deleteOrder": "@:(delete) @:(order) 对于 {name}"
-  },
-  "jp": {
-    "editOrder": "@:(edit) @:(order) ために {name}",
-    "deleteOrder": "@:(delete) @:(order) ために {name}"
   }
 }
 </i18n>
@@ -407,7 +399,6 @@ import pluralize from 'pluralize'
 import { paramCase } from 'param-case'
 
 import { db } from '~/utils/firebase'
-import { pubnub } from '~/utils/pubnub'
 
 export default {
   layout: 'admin',
@@ -499,8 +490,7 @@ export default {
         IDR: 'Rp'
       },
       // Hold interval id
-      interval: null,
-      notif: null
+      interval: null
     }
   },
   head() {
@@ -649,9 +639,9 @@ export default {
             }
             const rate = rates.find(({ base }) => base === currency)
             if (rate) {
-              return `${this.currencySymbols[this.user.currency]}${parseFloat(
+              return `${this.currencySymbols[this.user.currency]}${(
                 newPrice * rate.rates[this.user.currency] || 1
-              ).toFixed(2)}`
+              ).toPrecision(4)}`
             }
             return `${this.currencySymbols[currency]}0`
           }
@@ -678,19 +668,13 @@ export default {
         this.rooms = []
         this.services = []
       }
-    },
-    notif(value) {
-      document.querySelector("button[data-cy='trigger-refresh']").click()
     }
   },
   mounted() {
     this.initData()
-    // this.interval = setInterval(() => {
-    //   this.initData()
-    // }, 60 * 1000)
-    setInterval(() => {
-      this.notif = localStorage.notif
-    }, 1000)
+    this.interval = setInterval(() => {
+      this.initData()
+    }, 60 * 1000)
   },
   beforeDestroy() {
     clearInterval(this.interval)
@@ -752,7 +736,6 @@ export default {
             data.userRef.get(),
             data.serviceRef.get()
           ])
-          // console.log(serviceRefDoc)
           const [hotelRef, roomRef, userRef, serviceRef] = await Promise.all([
             hotelRefDoc.data(),
             roomRefDoc.data(),
@@ -828,7 +811,6 @@ export default {
             }
             if (cb) {
               const refData = await cb(data)
-              // console.log(data, refData)
               return {
                 ...data,
                 refData,
@@ -974,27 +956,7 @@ export default {
                 )
             }
           }
-          pubnub.publish(
-            {
-              channel: payload.room,
-              message: {
-                content: {
-                  sender: this.user.uid,
-                  message: {
-                    title: 'Order Updated for ' + this.item.refData.room.name,
-                    body: `${this.item.refData.service.name} (status: ${payload.status})`
-                  }
-                }
-              }
-            },
-            function(status, response) {
-              // Handle error here
-              console.log(response)
-            }
-          )
-          this.initData()
-          // document.querySelector("button[data-cy='trigger-refresh']").click()
-          // await this.getItems(this.collection, 'items', this.itemsCallback)
+          await this.getItems(this.collection, 'items', this.itemsCallback)
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
         }
