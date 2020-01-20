@@ -1,13 +1,13 @@
 <template>
   <app-wrapper
     :title="title"
-    :is-add-active="false"
     :is-dialog="isDialog"
     :is-editing="isEditing"
     :is-confirming="isConfirming"
     :is-deleting="isDeleting"
     :is-previewing="isPreviewing"
     @trigger:refresh="initData"
+    @trigger:add="onTriggerAdd"
     @dialog:close="onDialogClose"
     @dialog:action="onDialogAction"
     @delete:close="onDeleteClose"
@@ -318,9 +318,12 @@ import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
 import pluralize from 'pluralize'
-import { paramCase } from 'param-case'
 
-import { db } from '~/utils/firebase'
+import { paramCase } from 'param-case'
+import { types as userTypes } from '~/store/user'
+
+
+import { auth, db } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
@@ -420,6 +423,9 @@ export default {
   computed: {
     ...mapState(['isLoading']),
     ...mapGetters('user', ['role']),
+    user() {
+      return this.$store.state.user.user
+    },
     collection() {
       return pluralize(paramCase(this.title))
     },
@@ -645,6 +651,13 @@ export default {
       }
     },
     /**
+     * Called to trigger displaying dialog for adding data
+     */
+    onTriggerAdd() {
+      this.$validator.reset()
+      this.isDialog = true
+    },
+    /**
      * Called to trigger displaying dialog for editing data
      */
     onTriggerEdit(_item) {
@@ -756,21 +769,46 @@ export default {
           }
           delete payload.refData
           this.isSaved = true
-          await db
-            .collection(this.collection)
-            .doc(payload.uid)
-            .set(
-              cleanDeep(payload, {
-                emptyArrays: false,
-                emptyObjects: false,
-                emptyStrings: false,
-                nullValues: false
-              }),
-              { merge: true }
-            )
+          const user = this.user
+          if (payload.uid === null) {
+            /**
+             * Create user for auth
+             */
+            await auth
+              .createUserWithEmailAndPassword(payload.email, payload.email)
+              .then(async response => {
+                payload.uid = response.user.uid
+                await db
+                  .collection(this.collection)
+                  .doc(payload.uid)
+                  .set(
+                    cleanDeep(payload, {
+                      emptyArrays: false,
+                      emptyObjects: false,
+                      emptyStrings: false,
+                      nullValues: false
+                    }),
+                    { merge: true }
+                  )
+              })
+          } else {
+            await db
+              .collection(this.collection)
+              .doc(payload.uid)
+              .set(
+                cleanDeep(payload, {
+                  emptyArrays: false,
+                  emptyObjects: false,
+                  emptyStrings: false,
+                  nullValues: false
+                }),
+                { merge: true }
+              )
+          }
           await this.getItems(this.collection, 'items', this.itemsCallback)
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: this.$t('dataSaved') })
+          this.$store.commit(`user/${userTypes.SET_USER}`, user)
         }
       } catch (error) {
         this.$notify({
