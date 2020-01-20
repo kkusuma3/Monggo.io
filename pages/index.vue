@@ -179,11 +179,11 @@ export default {
         })
       }
       this.$setLoading(false)
-
+    }
+  },
   head() {
     return {
       title: this.$t('home')
-
     }
   }
 }
