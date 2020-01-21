@@ -2,12 +2,12 @@
 {
   "en-us": {
     "hotelSimpler": "Your hotel <strong class='secondary--text'>needs</strong> made <strong class='secondary--text'>simpler</strong>",
-    "langPref": "Choose your Language of Preference below",
+    "langPref": "Choose your Language of Preference below:",
     "operatorLogin": "@:(operator) @:(login)"
   },
   "en-uk": {
     "hotelSimpler": "Your hotel <strong class='secondary--text'>needs</strong> made <strong class='secondary--text'>simpler</strong>",
-    "langPref": "Choose your Language of Preference below",
+    "langPref": "Choose your Language of Preference below:",
     "operatorLogin": "@:(operator) @:(login)"
   },
   "id": {
