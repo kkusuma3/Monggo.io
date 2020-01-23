@@ -14,6 +14,16 @@
     "editService": "@:(edit) {name} untuk {hotel}",
     "deleteService": "@:(delete) {name} untuk {hotel}",
     "hintPrice": "Atur harga menjadi 0 untuk membuatnya gratis"
+  },
+  "cn": {
+    "editService": "@:(edit) {name} 对于 {hotel}",
+    "deleteService": "@:(delete) {name} 对于 {hotel}",
+    "hintPrice": "将价格设为0以使其免费"
+  },
+  "ja": {
+    "editService": "@:(edit) {name} ために {hotel}",
+    "deleteService": "@:(delete) {name} ために {hotel}",
+    "hintPrice": "価格を0に設定して無料にします"
   }
 }
 </i18n>
@@ -373,17 +383,12 @@ import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
 import pluralize from 'pluralize'
-import paramCase from 'param-case'
+import { paramCase } from 'param-case'
 
 import { db, storage } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
-  head() {
-    return {
-      title: `${this.$t(paramCase(this.title))} - Admin`
-    }
-  },
   data() {
     return {
       title: 'Service', // Hold page name
@@ -489,6 +494,11 @@ export default {
       ]
     }
   },
+  head() {
+    return {
+      title: `${this.$t(paramCase(this.title))} - Admin`
+    }
+  },
   computed: {
     ...mapState(['isLoading']),
     ...mapState('user', ['user']),
@@ -547,7 +557,7 @@ export default {
     }
   },
   watch: {
-    'item.images': async function(images) {
+    async 'item.images'(images) {
       if (images && images.length > 0) {
         const imagesMeta = await Promise.all(
           images.map(async (image, i) => ({
@@ -556,15 +566,12 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.item = {
-          ...this.item,
-          imagesMeta: _cloneDeep(imagesMeta)
-        }
+        this.item.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.item.imagesMeta = []
       }
     },
-    'itemOriginal.images': async function(images) {
+    async 'itemOriginal.images'(images) {
       if (images && images.length > 0) {
         const imagesMeta = await Promise.all(
           images.map(async (image, i) => ({
@@ -573,10 +580,7 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.itemOriginal = {
-          ...this.itemOriginal,
-          imagesMeta: _cloneDeep(imagesMeta)
-        }
+        this.itemOriginal.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.itemOriginal.imagesMeta = []
       }
@@ -594,6 +598,7 @@ export default {
         this.$setLoading(true)
         if (this.role === 'operator') {
           this.item.hotel = this.user.hotel
+          // eslint-disable-next-line
           this.itemOriginal.hotel = this.itemOriginal.hotel
 
           await this.getItems(

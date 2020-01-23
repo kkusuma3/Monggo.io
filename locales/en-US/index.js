@@ -87,4 +87,5 @@ export default {
   avgRequestsMade: 'Avg. # of Requests Made',
   avgRequestsTracked: 'Avg. # of Requests Tracked',
   minutes: 'minutes'
+  numberOfRooms: 'Number of Rooms'
 }

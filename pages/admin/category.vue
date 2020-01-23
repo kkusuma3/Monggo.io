@@ -101,17 +101,12 @@ import _cloneDeep from 'lodash.clonedeep'
 import cleanDeep from 'clean-deep'
 import isEqual from 'fast-deep-equal'
 import pluralize from 'pluralize'
-import paramCase from 'param-case'
+import { paramCase } from 'param-case'
 
 import { db } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
-  head() {
-    return {
-      title: `${this.$t(paramCase(this.title))} - Admin`
-    }
-  },
   data() {
     return {
       title: 'Category', // Hold page name
@@ -162,6 +157,11 @@ export default {
         createdAt: null,
         updatedAt: null
       }
+    }
+  },
+  head() {
+    return {
+      title: `${this.$t(paramCase(this.title))} - Admin`
     }
   },
   computed: {

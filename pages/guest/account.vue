@@ -153,11 +153,6 @@ import { auth, GoogleAuthProvider, db } from '~/utils/firebase'
 import { types as userTypes } from '~/store/user'
 
 export default {
-  head() {
-    return {
-      title: `${this.$t('account')} - ${this.$t('guest')}`
-    }
-  },
   data() {
     return {
       isEditing: false,
@@ -177,6 +172,11 @@ export default {
         { text: 'Pound Sterling', value: 'GBP', symbol: '£' },
         { text: 'Indonesian Rupiah', value: 'IDR', symbol: 'Rp' }
       ]
+    }
+  },
+  head() {
+    return {
+      title: `${this.$t('account')} - ${this.$t('guest')}`
     }
   },
   computed: {

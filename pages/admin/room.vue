@@ -1,3 +1,23 @@
+<i18n>
+{
+  "en-us": {
+    "seeQr": "@:(see) @:(qr-code) for {name}"
+  },
+  "en-uk": {
+    "seeQr": "@:(see) @:(qr-code) for {name}"
+  },
+  "id": {
+    "seeQr": "@:(see) @:(qr-code) untuk {name}"
+  },
+  "cn": {
+    "seeQr": "@:(see) @:(qr-code) 对于 {name}"
+  },
+  "jp": {
+    "seeQr": "@:(see) @:(qr-code) ために {name}"
+  }
+}
+</i18n>
+
 <template>
   <app-wrapper
     :title="title"
@@ -81,6 +101,26 @@
         </time>
       </template>
       <template #item.action="{ item }">
+        <v-tooltip v-if="item.qrCode" bottom="">
+          <template #activator="{ on }">
+            <v-btn
+              :data-cy="`trigger-preview-${slugify(item.name)}`"
+              :disabled="isLoading"
+              :loading="isLoading"
+              class="ma-1"
+              color="secondary"
+              @click="previewQr(item.qrCode)"
+              v-on="on"
+            >
+              <v-icon>mdi-qrcode</v-icon>
+            </v-btn>
+          </template>
+          <span>{{
+            $t('seeQr', {
+              name: item.name
+            })
+          }}</span>
+        </v-tooltip>
         <v-tooltip bottom="">
           <template #activator="{ on }">
             <v-btn
@@ -295,6 +335,9 @@
         :src="image.url"
         :alt="image.name"
       />
+      <div class="d-flex justify-center align-center">
+        <qr-code :value="qrCode" :options="{ scale: 10 }" />
+      </div>
     </template>
   </app-wrapper>
 </template>
@@ -310,16 +353,22 @@ import isDarkColor from 'is-dark-color'
 import materialColorHash from 'material-color-hash'
 import initials from 'initials'
 import pluralize from 'pluralize'
+import QrCode from '@chenfengyuan/vue-qrcode'
 
 import { db, storage } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
+
   head() {
     return {
       title: `${this.$t(this.title.toLowerCase())} - Admin`
     }
   },
+  components: {
+    QrCode
+  },
+
   data() {
     return {
       title: 'Room', // Hold page name
@@ -401,6 +450,7 @@ export default {
         fullPath: '',
         createdAt: ''
       },
+      qrCode: null,
       hotels: [], // Array hold hotel data
       // Array hold status data
       statuses: [
@@ -477,7 +527,7 @@ export default {
     }
   },
   watch: {
-    'item.images': async function(images) {
+    async 'item.images'(images) {
       if (images && images.length > 0) {
         const imagesMeta = await Promise.all(
           images.map(async (image, i) => ({
@@ -486,15 +536,12 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.item = {
-          ...this.item,
-          imagesMeta: _cloneDeep(imagesMeta)
-        }
+        this.item.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.item.imagesMeta = []
       }
     },
-    'itemOriginal.images': async function(images) {
+    async 'itemOriginal.images'(images) {
       if (images && images.length > 0) {
         const imagesMeta = await Promise.all(
           images.map(async (image, i) => ({
@@ -503,15 +550,12 @@ export default {
             url: await this.getUrlFromFile(image)
           }))
         )
-        this.itemOriginal = {
-          ...this.itemOriginal,
-          imagesMeta: _cloneDeep(imagesMeta)
-        }
+        this.itemOriginal.imagesMeta = _cloneDeep(imagesMeta)
       } else {
         this.itemOriginal.imagesMeta = []
       }
     },
-    'item.status': async function(status) {
+    async 'item.status'(status) {
       try {
         this.$setLoading(true)
         if (status === 'reserved') {
@@ -545,6 +589,7 @@ export default {
         this.$setLoading(true)
         if (this.role === 'operator') {
           this.item.hotel = this.user.hotel
+          // eslint-disable-next-line
           this.itemOriginal.hotel = this.itemOriginal.hotel
 
           await Promise.all([
@@ -831,6 +876,16 @@ export default {
       this.image = _cloneDeep(item)
     },
     /**
+     * Called to trigger displaying dialog for previewing qrCode
+     */
+    previewQr(qrCode) {
+      if (qrCode) {
+        this.qrCode = qrCode
+        this.isPreviewing = true
+        console.log(qrCode)
+      }
+    },
+    /**
      * Called when the user close dialog for adding or editing data
      */
     onDialogClose() {
@@ -901,18 +956,38 @@ export default {
           payload.hotelRef = db.collection('hotels').doc(payload.hotel)
           delete payload.refData
           this.isSaved = true
-          await db
-            .collection(this.collection)
-            .doc(payload.uid)
-            .set(
-              cleanDeep(payload, {
-                emptyArrays: false,
-                emptyObjects: false,
-                emptyStrings: false,
-                nullValues: false
-              }),
-              { merge: true }
-            )
+
+          const qrCode = uuidv4()
+          payload.hasQr = true
+          payload.qrCode = 'https://monggo.io?qrCode=' + qrCode
+
+          await Promise.all([
+            db
+              .collection(this.collection)
+              .doc(payload.uid)
+              .set(
+                cleanDeep(payload, {
+                  emptyArrays: false,
+                  emptyObjects: false,
+                  emptyStrings: false,
+                  nullValues: false
+                }),
+                { merge: true }
+              ),
+            db
+              .collection('qr-codes')
+              .doc(qrCode)
+              .set({
+                createdAt: payload.createdAt,
+                hotel: payload.hotel,
+                hotelRef: payload.hotelRef,
+                room: payload.uid,
+                roomRef: db.collection('rooms').doc(payload.uid),
+                uid: qrCode,
+                updatedAt: payload.updatedAt
+              })
+          ])
+
           await this.initData()
           await this.onDialogClose()
           await this.$notify({ kind: 'success', message: this.$t('dataSaved') })

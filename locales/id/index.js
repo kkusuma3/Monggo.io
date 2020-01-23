@@ -87,4 +87,5 @@ export default {
   avgRequestsMade: 'Rata-rata Jumlah Permintaan yang Dibuat',
   avgRequestsTracked: 'Rata-rata Permintaan Dilacak',
   minutes: 'menit'
+  numberOfRooms: 'Jumlah Ruangan'
 }

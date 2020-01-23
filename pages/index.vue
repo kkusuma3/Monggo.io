@@ -2,17 +2,27 @@
 {
   "en-us": {
     "hotelSimpler": "Your hotel <strong class='secondary--text'>needs</strong> made <strong class='secondary--text'>simpler</strong>",
-    "langPref": "Choose your Language of Preference below",
+    "langPref": "Choose your Language of Preference below:",
     "operatorLogin": "@:(operator) @:(login)"
   },
   "en-uk": {
     "hotelSimpler": "Your hotel <strong class='secondary--text'>needs</strong> made <strong class='secondary--text'>simpler</strong>",
-    "langPref": "Choose your Language of Preference below",
+    "langPref": "Choose your Language of Preference below:",
     "operatorLogin": "@:(operator) @:(login)"
   },
   "id": {
     "hotelSimpler": "<strong class='secondary--text'>Kebutuhan</strong> hotel Anda dibuat <strong class='secondary--text'>lebih sederhana</strong>",
     "langPref": "Pilih preferensi bahasa Anda",
+    "operatorLogin": "@:(login) @:(operator)"
+  },
+  "cn": {
+    "hotelSimpler": "您的酒店需求变得更加简单",
+    "langPref": "在下面选择您的偏好语言",
+    "operatorLogin": "@:(login) @:(operator)"
+  },
+  "ja": {
+    "hotelSimpler": "ホテルのニーズがよりシンプルに",
+    "langPref": "言語設定を選択してください",
     "operatorLogin": "@:(login) @:(operator)"
   }
 }
@@ -48,8 +58,8 @@
               <v-item
                 v-for="(loc, i) in locales"
                 :key="`loc_${loc.code}`"
-                :value="loc.code"
                 #default="{ active, toggle }"
+                :value="loc.code"
               >
                 <v-btn
                   :outlined="!active"
@@ -66,13 +76,15 @@
           </v-card-text>
         </v-card>
         <v-btn
+          :loading="isLoading"
+          :disabled="isLoading"
           color="secondary"
           block=""
           rounded=""
           nuxt=""
           exact=""
           class="mb-5"
-          :to="localePath({ name: 'qr-scan' })"
+          @click="checkQr()"
         >
           {{ $t('next') }}
         </v-btn>
@@ -92,20 +104,27 @@
 </template>
 
 <script>
+import { mapState, mapGetters } from 'vuex'
 import locales from '~/utils/locales'
+import { types as userTypes } from '~/store/user'
+import { types as guestTypes } from '~/store/guest'
+import { auth, db } from '~/utils/firebase'
 
 export default {
-  head() {
-    return {
-      title: this.$t('home')
-    }
-  },
   data() {
     return {
       locales: [...locales] // Locale imported from locale list
     }
   },
   computed: {
+    ...mapState(['isLoading']),
+    ...mapGetters('user', ['isAuth']),
+    localeSelected() {
+      return this.$store.state.user.locale
+    },
+    qr() {
+      return this.$store.state.user.qr
+    },
     locale: {
       get() {
         return this.$i18n.locale
@@ -113,8 +132,58 @@ export default {
       set(locale) {
         this.$vuetify.lang.current = locale
         this.$cookies.set('i18n_redirected', locale)
+        this.$store.commit(`user/${userTypes.SET_LOCALE}`, locale)
         this.$router.push(this.switchLocalePath(locale))
       }
+    }
+  },
+
+  mounted() {
+    const { qrCode } = this.$route.query
+    if (qrCode) {
+      this.$store.commit(`user/${userTypes.SET_QR}`, qrCode)
+    }
+  },
+  methods: {
+    async checkQr() {
+      this.$setLoading(true)
+      this.$store.commit(`user/${userTypes.SET_LOCALE}`, this.locale)
+      if (this.qr === null) {
+        this.$setLoading(false)
+        return this.$router.push('qr-scan')
+      }
+      const qr = await db
+        .collection('qr-codes')
+        .where('uid', '==', this.qr)
+        .get()
+      if (qr.docs[0]) {
+        const room = await qr.docs[0].data().roomRef.get()
+        const roomData = room.data()
+        if (roomData.status !== 'empty') {
+          this.$notify({
+            isError: true,
+            message: roomData.name + ' is not available'
+          })
+        } else {
+          if (!this.isAuth) {
+            await auth.signInAnonymously()
+          }
+          this.$store.commit(`guest/${guestTypes.SET_UID}`, this.qr)
+          this.$cookies.set('qr', this.qr)
+          this.$router.replace(this.localePath({ name: 'guest' }))
+        }
+      } else {
+        this.$notify({
+          isError: true,
+          message: 'Invalid QR-Code'
+        })
+      }
+      this.$setLoading(false)
+    }
+  },
+  head() {
+    return {
+      title: this.$t('home')
     }
   }
 }

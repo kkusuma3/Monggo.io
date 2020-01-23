@@ -82,16 +82,24 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
+
 import tabsAverages from './dashboard/tabs-averages.vue'
 import tabsToday from './dashboard/tabs-today.vue'
 import tabsHistory from './dashboard/tabs-history.vue'
 import { db } from '~/utils/firebase'
+import { types as userTypes } from '~/store/user'
+import { pubnub, notifyMe } from '~/utils/pubnub'
 
 export default {
   layout: 'admin',
+  data() {
+    return {}
+  },
   head() {
     return {
+
       title: 'Dashboard - Admin'
+      //rooms: null
     }
   },
   components: {
@@ -114,6 +122,7 @@ export default {
   computed: {
     ...mapState(['isLoading']),
     ...mapState('user', ['user']),
+
     ...mapGetters('user', ['role']),
     menus() {
       switch (this.role) {
@@ -179,6 +188,7 @@ export default {
       }
     }
   },
+//<<<<<<< master
   mounted() {
     this.initData('firstLoad')
   },
@@ -346,6 +356,38 @@ export default {
      */
     setActiveTab(activeTab) {
       this.activeTab = activeTab
+//******************
+  async mounted() {
+    notifyMe()
+    const user = this.user
+    const roomsSnap = await db
+      .collection('rooms')
+      .where('hotel', '==', this.user.hotel)
+      .orderBy('createdAt', 'desc')
+      .get()
+    this.rooms = roomsSnap.docs.map(room => {
+      return room.data().uid
+    })
+    if (this.pubnub === false) {
+      pubnub.subscribe({
+        channels: [this.rooms],
+        withPresence: true
+      })
+      pubnub.addListener({
+        message: function(event) {
+          if (user.uid !== event.message.content.sender) {
+            notifyMe(event.message)
+            let notif = Number(localStorage.getItem('notif'))
+            if (!notif) {
+              localStorage.setItem('notif', 1)
+            } else {
+              localStorage.setItem('notif', (notif += 1))
+            }
+          }
+        }
+      })
+      this.$store.commit(`user/${userTypes.SET_PUBNUB}`, true)
+//>>>>>>> master
     }
   }
 }
