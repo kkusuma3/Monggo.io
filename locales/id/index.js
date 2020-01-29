@@ -86,6 +86,6 @@ export default {
   avgWebAppVisits: 'Rata-rata Kunjungan Web-Aplikasi',
   avgRequestsMade: 'Rata-rata Jumlah Permintaan yang Dibuat',
   avgRequestsTracked: 'Rata-rata Permintaan Dilacak',
-  minutes: 'menit'
+  minutes: 'menit',
   numberOfRooms: 'Jumlah Ruangan'
 }
