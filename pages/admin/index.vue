@@ -97,12 +97,6 @@ export default {
     'tabs-today': tabsToday,
     'tabs-history': tabsHistory
   },
-  head() {
-    return {
-      title: 'Dashboard - Admin'
-      // rooms: null
-    }
-  },
   data() {
     return {
       hideDashboard: true,
@@ -113,6 +107,12 @@ export default {
       services: [], // Array hold services data
       orders: [], // Array hold orders data
       users: [] // Array hold user data
+    }
+  },
+  head() {
+    return {
+      title: 'Dashboard - Admin'
+      // rooms: null
     }
   },
   computed: {
@@ -201,7 +201,7 @@ export default {
         withPresence: true
       })
       pubnub.addListener({
-        message: function(event) {
+        message(event) {
           if (user.uid !== event.message.content.sender) {
             notifyMe(event.message)
             let notif = Number(localStorage.getItem('notif'))
