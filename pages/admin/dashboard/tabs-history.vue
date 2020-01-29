@@ -176,7 +176,7 @@ export default {
             oneMonthBeforeVal.getMonth() +
             '-' +
             oneMonthBeforeVal.getFullYear()
-          if (chartVal.hasOwnProperty(dateParam)) {
+          if ({}.hasOwnProperty.call(chartVal, dateParam)) {
             const crtPrm = chartVal[dateParam].slice(10).split(',')
             const counts = {}
             crtPrm.forEach(function(x) {
@@ -275,7 +275,7 @@ export default {
           completed: []
         }
         for (let i = 0; i < 12; i++) {
-          if (chartVal.hasOwnProperty('barIndex' + i)) {
+          if ({}.hasOwnProperty.call(chartVal, 'barIndex' + i)) {
             const crtPrm = chartVal['barIndex' + i].slice(10).split(',')
             const counts = {}
             crtPrm.forEach(function(x) {

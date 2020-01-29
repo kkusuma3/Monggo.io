@@ -359,12 +359,6 @@ import { db, storage } from '~/utils/firebase'
 
 export default {
   layout: 'admin',
-
-  head() {
-    return {
-      title: `${this.$t(this.title.toLowerCase())} - Admin`
-    }
-  },
   components: {
     QrCode
   },
@@ -469,6 +463,12 @@ export default {
             'https://firebasestorage.googleapis.com/v0/b/monggo-io.appspot.com/o/default%2Fde65cf77-9923-4fcd-b066-1d02a507c8f6.png?alt=media&token=5704205a-726a-4d40-a4bf-e782cec5b427'
         }
       ]
+    }
+  },
+
+  head() {
+    return {
+      title: `${this.$t(this.title.toLowerCase())} - Admin`
     }
   },
   computed: {
