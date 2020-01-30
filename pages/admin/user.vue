@@ -322,7 +322,6 @@ import pluralize from 'pluralize'
 import { paramCase } from 'param-case'
 import { types as userTypes } from '~/store/user'
 
-
 import { auth, db } from '~/utils/firebase'
 
 export default {

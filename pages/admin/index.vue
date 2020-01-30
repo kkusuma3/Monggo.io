@@ -92,16 +92,6 @@ import { pubnub, notifyMe } from '~/utils/pubnub'
 
 export default {
   layout: 'admin',
-  data() {
-    return {}
-  },
-  head() {
-    return {
-
-      title: 'Dashboard - Admin'
-      //rooms: null
-    }
-  },
   components: {
     'tabs-averages': tabsAverages,
     'tabs-today': tabsToday,
@@ -119,9 +109,15 @@ export default {
       users: [] // Array hold user data
     }
   },
+  head() {
+    return {
+      title: 'Dashboard - Admin'
+      // rooms: null
+    }
+  },
   computed: {
     ...mapState(['isLoading']),
-    ...mapState('user', ['user']),
+    ...mapState('user', ['user', 'pubnub']),
 
     ...mapGetters('user', ['role']),
     menus() {
@@ -188,8 +184,38 @@ export default {
       }
     }
   },
-//<<<<<<< master
-  mounted() {
+  async mounted() {
+    notifyMe()
+    const user = this.user
+    const roomsSnap = await db
+      .collection('rooms')
+      .where('hotel', '==', this.user.hotel)
+      .orderBy('createdAt', 'desc')
+      .get()
+    this.rooms = roomsSnap.docs.map(room => {
+      return room.data().uid
+    })
+    if (this.pubnub === false) {
+      pubnub.subscribe({
+        channels: [this.rooms],
+        withPresence: true
+      })
+      pubnub.addListener({
+        message(event) {
+          if (user.uid !== event.message.content.sender) {
+            notifyMe(event.message)
+            let notif = Number(localStorage.getItem('notif'))
+            if (!notif) {
+              localStorage.setItem('notif', 1)
+            } else {
+              localStorage.setItem('notif', (notif += 1))
+            }
+          }
+        }
+      })
+      this.$store.commit(`user/${userTypes.SET_PUBNUB}`, true)
+    }
+
     this.initData('firstLoad')
   },
   methods: {
@@ -356,38 +382,6 @@ export default {
      */
     setActiveTab(activeTab) {
       this.activeTab = activeTab
-//******************
-  async mounted() {
-    notifyMe()
-    const user = this.user
-    const roomsSnap = await db
-      .collection('rooms')
-      .where('hotel', '==', this.user.hotel)
-      .orderBy('createdAt', 'desc')
-      .get()
-    this.rooms = roomsSnap.docs.map(room => {
-      return room.data().uid
-    })
-    if (this.pubnub === false) {
-      pubnub.subscribe({
-        channels: [this.rooms],
-        withPresence: true
-      })
-      pubnub.addListener({
-        message: function(event) {
-          if (user.uid !== event.message.content.sender) {
-            notifyMe(event.message)
-            let notif = Number(localStorage.getItem('notif'))
-            if (!notif) {
-              localStorage.setItem('notif', 1)
-            } else {
-              localStorage.setItem('notif', (notif += 1))
-            }
-          }
-        }
-      })
-      this.$store.commit(`user/${userTypes.SET_PUBNUB}`, true)
-//>>>>>>> master
     }
   }
 }

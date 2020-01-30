@@ -258,7 +258,7 @@ export default {
           for (let ii = 0; ii < reqTime.length; ii++) {
             const timeReq = reqTime[ii].time.toString().replace(/t/g, '')
 
-            if (reMapReqTime.hasOwnProperty(reqTime[ii].count)) {
+            if ({}.hasOwnProperty.call(reMapReqTime, reqTime[ii].count)) {
               reMapReqTime[reqTime[ii].count].push(
                 timeReq.slice(0, 2) + ':00 - ' + timeReq.slice(2, 4) + ':00'
               )

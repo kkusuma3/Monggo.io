@@ -309,7 +309,7 @@ export default {
         withPresence: true
       })
       pubnub.addListener({
-        message: function(event) {
+        message(event) {
           if (user.uid !== event.message.content.sender) {
             notifyMe(event.message)
             let notif = Number(localStorage.getItem('notif'))
