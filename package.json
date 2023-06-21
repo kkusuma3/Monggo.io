@@ -57,7 +57,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.flatten": "^4.4.0",
     "material-color-hash": "^0.1.6",
-    "nuxt": "^2.11.0",
+    "nuxt": "^3.4.3",
     "nuxt-i18n": "^6.4.1",
     "on-change": "^1.6.2",
     "p-debounce": "^2.1.0",
